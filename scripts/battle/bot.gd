@@ -77,6 +77,7 @@ func think(sim: BattleSim) -> void:
 	var placement: Dictionary = Data.table("bot").placement
 	_wait = float(knob.reaction_time) * _rng.randf_range(0.7, 1.3)
 
+	_use_evolutions(sim, float(knob.counter_play))
 	var hand: Hand = sim.hands[_team]
 	var affordable := []
 	for slot in hand.in_hand().size():
@@ -102,6 +103,17 @@ func think(sim: BattleSim) -> void:
 	var full := float(Data.table("battle").ephrocity.max)
 	if hand.ephrocity >= lerpf(Hand.cost_of(hand.cards[slot]), full, smarts):
 		sim.play(_team, slot, _push_spot(placement))
+
+
+## Presses the bot's evolution buttons when one of the player's troops is close, as often as its counter-play allows.
+func _use_evolutions(sim: BattleSim, counter_play: float) -> void:
+	for unit in sim.evolution_buttons(_team):
+		if not sim.evolution_ready(unit) or _rng.randf() >= counter_play:
+			continue
+		for other in sim.units:
+			if other.team != _team and other.kind == "troop" and other.alive() and other.pos.distance_to(unit.pos) <= float(Data.table("bot").placement.evolution_reach_tiles):
+				sim.activate_evolution(unit)
+				break
 
 
 ## Player troops on the bot's half, closest to the bot's towers first.
