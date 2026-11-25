@@ -9,6 +9,7 @@ const COST_FILL := Color("#722F37")
 const COST_EDGE := Color("#A33B4C")
 const EVOLUTION_GLOW := Color("#B46CFF")
 const BAR_HEIGHT := 40.0
+const LIFT := 14.0
 
 var card_id := ""
 ## Shows the level and the bar of copies toward the next level under the tile.
@@ -41,6 +42,10 @@ func _draw() -> void:
 	var card: Dictionary = cards.cards[card_id]
 	var font := get_theme_default_font()
 	var tile := Rect2(Vector2.ZERO, size - Vector2(0, BAR_HEIGHT + 8 if show_progress else 0))
+	# In the hand, cards sit a little low, and a picked card lifts into that space unless reduced motion is on.
+	if not show_progress:
+		var lifted := button_pressed and not Settings.reduced_motion()
+		tile = Rect2(0, 0 if lifted else LIFT, size.x, size.y - LIFT)
 	var rarity := Progress.card_rarity(card_id)
 	var frame := Color(Data.table("chests").colours.get(rarity, "#9AA4B1"))
 	var class_colour := Color(cards.classes.get(card.get("class", ""), "#8A8A8A"))

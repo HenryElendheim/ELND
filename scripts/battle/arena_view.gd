@@ -55,6 +55,8 @@ func take_events(delta: float) -> void:
 			"hit":
 				_effects.append({"pos": event.pos, "amount": event.amount, "age": 0.0})
 				Sfx.play("hit")
+			"death":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
 			"tower_down":
 				Sfx.play("tower_down")
 				if not Settings.reduced_motion():
@@ -119,8 +121,9 @@ func _draw() -> void:
 
 
 func _draw_unit(unit: Unit) -> void:
-	var at := _to_screen(unit.prev_pos.lerp(unit.pos, blend))
-	var r := unit.radius * _tile
+	var motion := not Settings.reduced_motion()
+	var at := _to_screen(unit.prev_pos.lerp(unit.pos, blend)) + UnitArt.offset(unit, sim, _tile, motion)
+	var r := unit.radius * _tile * UnitArt.size_scale(unit, float(Data.table("battle").deploy_time), motion)
 	var team_colour := PLAYER_COLOUR if unit.team == Unit.Team.PLAYER else ENEMY_COLOUR
 	var fill := _fill_for(unit)
 	if unit.deploy_left > 0.0:
@@ -133,14 +136,15 @@ func _draw_unit(unit: Unit) -> void:
 	if show_targets and unit.target != null and unit.target.alive():
 		draw_line(at, _to_screen(unit.target.pos), Color(team_colour, 0.7), 3.0)
 
+	if unit.flying:
+		draw_circle(at + Vector2(0, r * 0.6), r * 0.8, SHADOW)
+		at.y -= r * 0.6
+	UnitArt.draw_ability_art(self, unit, sim, at, r, _tile, motion, false)
 	if unit.is_building():
 		var box := Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0)
 		draw_rect(box, fill)
 		draw_rect(box, team_colour, false, 4.0)
 	else:
-		if unit.flying:
-			draw_circle(at + Vector2(0, r * 0.6), r * 0.8, SHADOW)
-			at.y -= r * 0.6
 		if unit.evolved:
 			draw_circle(at, r * 1.35, Color("#A33B4C", 0.45))
 		if unit.hidden_left > 0.0:
@@ -148,6 +152,7 @@ func _draw_unit(unit: Unit) -> void:
 		draw_circle(at, r, fill)
 		draw_arc(at, r, 0, TAU, 32, team_colour, 4.0)
 		_draw_label(at, CardTile.short_name(unit.id), r)
+	UnitArt.draw_ability_art(self, unit, sim, at, r, _tile, motion, true)
 
 	if show_hitboxes:
 		draw_arc(at, r, 0, TAU, 32, Color.YELLOW, 2.0)
@@ -181,6 +186,11 @@ func _draw_projectile(shot: Projectile) -> void:
 func _draw_effect(effect: Dictionary) -> void:
 	var share: float = effect.age / EFFECT_TIME
 	var at := _to_screen(effect.pos)
+	# A troop that dies leaves a soft grey puff that spreads and fades.
+	if effect.get("puff", false):
+		var spread := share if not Settings.reduced_motion() else 0.5
+		draw_circle(at, _tile * (0.3 + 0.5 * spread), Color(0.85, 0.85, 0.9, 0.5 * (1.0 - share)))
+		return
 	var grow := 0.0 if Settings.reduced_motion() else share
 	draw_arc(at, _tile * (0.25 + 0.35 * grow), 0, TAU, 16, Color(1, 1, 1, 0.8 * (1.0 - share)), 3.0)
 	if Settings.get_value("damage_numbers"):
@@ -217,6 +227,9 @@ func _draw_spell(spell: Unit) -> void:
 	var colour := _fill_for(spell)
 	draw_circle(at, spell.radius * _tile, Color(colour, 0.25))
 	draw_arc(at, spell.radius * _tile, 0, TAU, 48, Color(colour, 0.8), 3.0)
+	for ability in spell.abilities:
+		if ability.params.get("id") == "spike_field":
+			UnitArt.draw_spikes(self, spell, sim, at, _tile, not Settings.reduced_motion())
 
 
 ## Linked troops are joined by a grey chain line to every other troop in the same link.

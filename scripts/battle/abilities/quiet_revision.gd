@@ -3,6 +3,8 @@ extends Ability
 ## is shifted back toward its own side. It only works while unobserved, which means any enemy troop close by stops it.
 
 var _wait := 0.0
+## When the last revision happened, so the screen can show a shimmer.
+var last_revision := -INF
 
 
 func tick(sim: BattleSim) -> void:
@@ -20,3 +22,4 @@ func tick(sim: BattleSim) -> void:
 			furthest = other
 	if furthest != null:
 		sim.push_back(furthest, number("push_back_tiles"))
+		last_revision = sim.time

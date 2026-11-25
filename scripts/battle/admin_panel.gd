@@ -57,6 +57,8 @@ func _ready() -> void:
 	var subjects := [["towers/side", "Side tower"], ["towers/main", "Main tower"]]
 	for id in cards:
 		subjects.append(["cards/" + id, CardTile.short_name(id)])
+	column.add_child(Ui.label("Edits save by themselves and stay in normal games too, until you reset them.", "MutedLabel"))
+	column.add_child(Ui.button("Export balance", func() -> void: Backup.export_balance(Nav.toast)))
 	column.add_child(Ui.choice("Edit stats", subjects, subjects[0][0], _show_fields))
 	column.add_child(_fields)
 	_show_fields(subjects[0][0])

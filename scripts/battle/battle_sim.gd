@@ -561,6 +561,8 @@ func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, sha
 	if flash:
 		victim.flash = 2
 		events.append({"type": "hit", "pos": victim.pos, "amount": amount, "team": victim.team})
+	if victim.kind == "troop" and not victim.alive():
+		events.append({"type": "death", "pos": victim.pos, "team": victim.team})
 	if victim.is_tower() and not victim.alive():
 		events.append({"type": "tower_down", "pos": victim.pos, "team": victim.team})
 		# When a main tower falls, the other towers on its side fall with it, which means it is worth every core.
