@@ -36,7 +36,7 @@ func _ready() -> void:
 	var hand := sim.hands[Unit.Team.PLAYER]
 	hand.infinite = true
 	for i in 8:
-		if not sim.play(Unit.Team.PLAYER, 0, Vector2(4, 24)):
+		if not sim.play(Unit.Team.PLAYER, 0, Vector2(6, 21)):
 			print("Broken file: playing a card failed")
 			broken += 1
 	if sim.play(Unit.Team.PLAYER, 0, Vector2(4, 8)):
