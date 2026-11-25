@@ -1,94 +1,134 @@
 extends Screen
-## Your cards. Tap a card to put it in or take it out of your deck, which is saved whenever it has exactly the right
-## number of cards. Each row shows the card's level and how many copies the next level needs, and wild cards can top it up.
+## The Cards screen. Your deck sits at the top as two rows of four tiles, each with its level and copies bar,
+## then the average Ephrocity cost and tower level, then the rest of your collection.
+## Tap a card to see what you can do with it: add it, swap it in, take it out, switch its evolution or spend wild cards.
+## The deck is saved whenever it has exactly the right number of cards.
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
+const COLUMNS := 4
 
-var _picked := []
-var _count: Label
-var _wild: Label
+var _deck := []
 var _size := 8
+var _selected := ""
+## A collection card waiting to be swapped in. The next deck card tapped is the one it replaces.
+var _swap_in := ""
 
 
 func build() -> void:
 	_size = int(Data.table("battle").deck.size)
-	_picked = BattleSim.starting_deck().duplicate()
+	if _deck.is_empty():
+		_deck = BattleSim.starting_deck().duplicate()
 	add(Ui.label("Cards", "TitleLabel"))
-	_count = add(Ui.label(""))
-	_wild = add(Ui.label("", "MutedLabel"))
-	for id in BattleSim.available_cards():
-		add(_row(id))
+
+	add(Ui.label("Deck  %d of %d" % [_deck.size(), _size], "HeadingLabel"))
+	add(_grid(_deck))
+	var costs := 0.0
+	for id in _deck:
+		costs += Hand.cost_of(id)
+	var average := costs / maxf(_deck.size(), 1)
+	add(Ui.label("Average cost %.1f     Towers level %d" % [average, Progress.tower_level()]))
+	add(Ui.label("%d wild cards   %d injections   %d of 3 shards" % [Progress.wild_cards(), Progress.injections(), Progress.shards()], "MutedLabel"))
+
+	if _selected != "":
+		_actions()
+
+	var rest := BattleSim.available_cards().filter(func(id: String) -> bool: return not id in _deck)
+	if not rest.is_empty():
+		add(Ui.spacer(12))
+		add(Ui.label("Collection", "HeadingLabel"))
+		add(_grid(rest))
 	add(Ui.spacer(24))
 	add(Ui.button("Back", go_back))
-	_show_counts()
 
 
-func _row(id: String) -> Control:
-	var card: Dictionary = Data.table("cards").cards[id]
-	var progress := Progress.card(id)
-	var row := HBoxContainer.new()
-	var pick := Ui.button("%s   %d" % [card.name.trim_prefix("The "), int(card.cost)], func() -> void: pass)
-	pick.toggle_mode = true
-	pick.button_pressed = id in _picked
-	pick.toggled.connect(func(on: bool) -> void: _toggle(id, on))
-	row.add_child(pick)
-	var level := int(progress.level)
-	var status := "Lv %d  max" % level if level >= Progress.max_card_level() else "Lv %d  %d/%d" % [level, progress.copies, Progress.copies_for_next(level)]
-	var info := Ui.label(status, "MutedLabel")
-	info.size_flags_horizontal = SIZE_FILL
-	info.custom_minimum_size.x = 260
-	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(info)
-	if Progress.has_evolution(id):
-		var evo := Ui.button("Evo", func() -> void: pass)
-		evo.toggle_mode = true
-		evo.button_pressed = id in Progress.deck_evolutions()
-		evo.size_flags_horizontal = SIZE_FILL
-		evo.toggled.connect(func(on: bool) -> void: _toggle_evolution(evo, id, on))
-		row.add_child(evo)
-	elif Progress.injections() > 0 and id in Progress.evolvable_cards():
-		var inject := Ui.button("Inject", func() -> void: _inject(id))
-		inject.size_flags_horizontal = SIZE_FILL
-		row.add_child(inject)
-	if Progress.wild_cards() > 0 and level < Progress.max_card_level():
-		var wild := Ui.button("Wild", func() -> void: _use_wild(id))
-		wild.size_flags_horizontal = SIZE_FILL
-		row.add_child(wild)
-	return row
+func _grid(ids: Array) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = COLUMNS
+	for id in ids:
+		var tile := CardTile.new(id, true)
+		tile.toggle_mode = true
+		tile.set_pressed_no_signal(id == _selected)
+		tile.evolution = id in Progress.deck_evolutions() and id in _deck
+		tile.pressed.connect(func() -> void: _tapped(id))
+		grid.add_child(tile)
+	return grid
 
 
-func _toggle(id: String, on: bool) -> void:
-	if on and not id in _picked:
-		_picked.append(id)
-	elif not on:
-		_picked.erase(id)
-	_show_counts()
-	if _picked.size() == _size:
-		Save.set_value("deck", _picked.duplicate())
+## The buttons for the selected card, which change with whether it is in the deck.
+func _actions() -> void:
+	var in_deck: bool = _selected in _deck
+	add(Ui.label(Data.table("cards").cards[_selected].name, "HeadingLabel"))
+	if in_deck:
+		add(Ui.button("Take out of deck", _remove))
+		if Progress.has_evolution(_selected):
+			var on := _selected in Progress.deck_evolutions()
+			add(Ui.button("Evolution off" if on else "Evolution on", func() -> void: _toggle_evolution(not on)))
+	else:
+		add(Ui.button("Add to deck" if _deck.size() < _size else "Swap into deck", _use))
+	if not Progress.has_evolution(_selected) and Progress.injections() > 0 and _selected in Progress.evolvable_cards():
+		add(Ui.button("Use an Evolution Injection", _inject))
+	if Progress.wild_cards() > 0 and int(Progress.card(_selected).level) < Progress.max_card_level():
+		add(Ui.button("Use wild cards", _wild))
 
 
-## Up to two cards in the deck can play their evolution. A third one is refused and the button pops back up.
-func _toggle_evolution(button: Button, id: String, on: bool) -> void:
-	if not Progress.set_deck_evolution(id, on):
-		button.set_pressed_no_signal(false)
+func _tapped(id: String) -> void:
+	if _swap_in != "" and id in _deck:
+		_deck[_deck.find(id)] = _swap_in
+		_swap_in = ""
+		_selected = ""
+		_save()
+	else:
+		_selected = "" if id == _selected else id
+	_rebuild()
+
+
+func _use() -> void:
+	if _deck.size() < _size:
+		_deck.append(_selected)
+		_selected = ""
+		_save()
+	else:
+		_swap_in = _selected
+		Nav.toast("Tap a deck card to swap it out")
+	_rebuild()
+
+
+func _remove() -> void:
+	_deck.erase(_selected)
+	_selected = ""
+	_rebuild()
+
+
+func _toggle_evolution(on: bool) -> void:
+	if not Progress.set_deck_evolution(_selected, on):
 		Nav.toast("Only %d evolutions per deck" % int(Data.table("battle").evolution.max_per_deck))
+	_rebuild()
 
 
-func _inject(id: String) -> void:
-	Progress.use_injection(id)
-	get_tree().reload_current_scene()
+func _inject() -> void:
+	Progress.use_injection(_selected)
+	_rebuild()
 
 
-func _use_wild(id: String) -> void:
-	Progress.use_wild_cards(id)
-	get_tree().reload_current_scene()
+func _wild() -> void:
+	Progress.use_wild_cards(_selected)
+	_rebuild()
 
 
-func _show_counts() -> void:
-	_count.text = "%d of %d cards in your deck" % [_picked.size(), _size]
-	_wild.text = "%d wild cards   %d injections   %d of 3 shards" % [Progress.wild_cards(), Progress.injections(), Progress.shards()]
+func _save() -> void:
+	if _deck.size() == _size:
+		Save.set_value("deck", _deck.duplicate())
+
+
+## Rebuilds the whole screen from the current state, which keeps every label and tile in step after a change.
+func _rebuild() -> void:
+	for child in content.get_children():
+		child.queue_free()
+	build()
 
 
 func go_back() -> bool:
+	if _deck.size() != _size:
+		Nav.toast("Your deck needs %d cards, so the last full deck is kept" % _size)
 	Nav.go(MENU_SCENE)
 	return true

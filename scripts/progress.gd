@@ -53,6 +53,12 @@ static func card(id: String) -> Dictionary:
 	return {"level": 1 if unlocked else 0, "copies": 0}
 
 
+## A card's rarity, which follows its Codex threat level.
+static func card_rarity(id: String) -> String:
+	var cards_table := Data.table("cards")
+	return cards_table.rarity_by_threat.get(str(int(cards_table.cards[id].threat)), "common")
+
+
 static func copies_for_next(level: int) -> int:
 	return int(_table("progression").cards.copies_per_level_step) * level
 
@@ -163,8 +169,8 @@ static func open_next_chest() -> Dictionary:
 	var pool := _unlocked_by_rarity()
 	var drops := {}
 	for i in count:
-		var card_rarity := _weighted(chests.rarity_weights[rarity])
-		var options: Array = pool.get(card_rarity, [])
+		var drop_rarity := _weighted(chests.rarity_weights[rarity])
+		var options: Array = pool.get(drop_rarity, [])
 		if options.is_empty():
 			options = pool.get("common", [])
 		var id: String = options[randi() % options.size()]
@@ -321,8 +327,7 @@ static func _unlocked_by_rarity() -> Dictionary:
 		var entry: Dictionary = cards_table.cards[id]
 		if int(entry.get("unlock_arena", 1)) > arena() or not entry.get("type") in Data.table("battle").playable_types:
 			continue
-		var rarity: String = cards_table.rarity_by_threat[str(int(entry.threat))]
-		groups.get_or_add(rarity, []).append(id)
+		groups.get_or_add(card_rarity(id), []).append(id)
 	return groups
 
 

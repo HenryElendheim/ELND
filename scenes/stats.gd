@@ -37,7 +37,7 @@ func build() -> void:
 		var names := PackedStringArray()
 		for id in deck.split(","):
 			if cards.has(id):
-				names.append(cards[id].name.trim_prefix("The "))
+				names.append(CardTile.short_name(id))
 		add(Ui.label("Favourite deck: " + ", ".join(names)))
 
 	_section("Chests")

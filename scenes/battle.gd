@@ -20,8 +20,8 @@ var _meter := EphrocityMeter.new()
 var _admin: AdminPanel
 var _accumulator := 0.0
 var _slot := -1
-var _slot_buttons: Array[Button] = []
-var _next_label: Label
+var _slot_buttons: Array[CardTile] = []
+var _next_tile: CardTile
 var _clock: Label
 var _rate := 1.0
 var _phase := "regular"
@@ -77,24 +77,24 @@ func _ready() -> void:
 	sim.use_progress()
 
 
-## Four card buttons and a small label for the card that comes in next.
+## Four card tiles and a smaller tile for the card that comes in next.
 func _build_hand() -> Control:
 	var row := HBoxContainer.new()
 	var group := ButtonGroup.new()
 	group.allow_unpress = true
+	_next_tile = CardTile.new()
+	_next_tile.size_flags_horizontal = SIZE_FILL
+	_next_tile.custom_minimum_size = Vector2(120, 170)
+	_next_tile.size_flags_vertical = SIZE_SHRINK_END
+	_next_tile.disabled = true
+	row.add_child(_next_tile)
 	for slot in 4:
-		var card := Ui.button("", func() -> void: _select(slot))
+		var card := CardTile.new()
 		card.toggle_mode = true
 		card.button_group = group
-		card.custom_minimum_size.y = 150
+		card.pressed.connect(func() -> void: _select(slot))
 		_slot_buttons.append(card)
 		row.add_child(card)
-	_next_label = Ui.label("", "MutedLabel")
-	_next_label.size_flags_horizontal = SIZE_FILL
-	_next_label.custom_minimum_size.x = 140
-	_next_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_next_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(_next_label)
 	return row
 
 
@@ -165,11 +165,13 @@ func _refresh_hand() -> void:
 		card.visible = slot < cards.size()
 		if not card.visible:
 			continue
-		var evo := "  EVO" if hand.evolution_ready(slot) else ""
-		card.text = "%s\n%d%s" % [_short_name(cards[slot]), Hand.cost_of(cards[slot]), evo]
+		card.card_id = cards[slot]
+		card.evolution = hand.evolution_ready(slot)
 		card.modulate.a = 1.0 if hand.can_afford(slot) else 0.5
-	var next := hand.next_card()
-	_next_label.text = "Next\n" + _short_name(next) if next != "" else ""
+		card.queue_redraw()
+	_next_tile.card_id = hand.next_card()
+	_next_tile.modulate.a = 0.6
+	_next_tile.queue_redraw()
 
 
 ## Keeps one button per evolved group of yours on the field. Each shows the troop, the cost, or the seconds of cooldown left,
@@ -184,6 +186,7 @@ func _refresh_evolutions() -> void:
 			var button := Ui.button("", func() -> void: _use_evolution(unit))
 			button.size_flags_horizontal = SIZE_FILL
 			button.custom_minimum_size.x = 220
+			button.clip_text = true
 			_evo_row.add_child(button)
 	var buttons := _evo_row.get_children().filter(func(node: Node) -> bool: return not node.is_queued_for_deletion())
 	for i in mini(buttons.size(), _evo_units.size()):
@@ -191,7 +194,7 @@ func _refresh_evolutions() -> void:
 		var button: Button = buttons[i]
 		var wait := ceili(unit.evolution_ready_at - sim.time)
 		var cost := sim.evolution_cost(unit)
-		button.text = "%s\n%s" % [_short_name(unit.id), "%ds" % wait if wait > 0 else "%d" % cost]
+		button.text = "%s\n%s" % [CardTile.short_name(unit.id), "%ds" % wait if wait > 0 else "%d" % cost]
 		var hand := sim.hands[Unit.Team.PLAYER]
 		button.modulate.a = 1.0 if sim.evolution_ready(unit) and (hand.infinite or hand.ephrocity >= cost) else 0.5
 
@@ -235,9 +238,6 @@ func _on_tapped(tile: Vector2) -> void:
 		_slot_buttons[_slot].button_pressed = false
 		_slot = -1
 
-
-static func _short_name(card_id: String) -> String:
-	return Data.table("cards").cards[card_id].name.trim_prefix("The ") if card_id != "" else ""
 
 
 ## Removes every troop and building but leaves the towers standing.

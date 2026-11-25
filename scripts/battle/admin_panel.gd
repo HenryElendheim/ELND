@@ -40,7 +40,7 @@ func _ready() -> void:
 	var troops := [["", "Off"]]
 	var cards: Dictionary = Data.table("cards").cards
 	for id in BattleSim.starting_deck():
-		troops.append([id, cards[id].name.trim_prefix("The ")])
+		troops.append([id, CardTile.short_name(id)])
 	column.add_child(Ui.choice("Spawn tool", troops, "", func(id: String) -> void: _battle.set("spawn_card", id), 4))
 	column.add_child(Ui.choice("Spawn for", SIDES, Unit.Team.PLAYER, func(team: int) -> void: _battle.set("spawn_team", team)))
 	var sim: BattleSim = _battle.get("sim")
@@ -56,7 +56,7 @@ func _ready() -> void:
 
 	var subjects := [["towers/side", "Side tower"], ["towers/main", "Main tower"]]
 	for id in cards:
-		subjects.append(["cards/" + id, cards[id].name.trim_prefix("The ")])
+		subjects.append(["cards/" + id, CardTile.short_name(id)])
 	column.add_child(Ui.choice("Edit stats", subjects, subjects[0][0], _show_fields))
 	column.add_child(_fields)
 	_show_fields(subjects[0][0])

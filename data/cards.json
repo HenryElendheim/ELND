@@ -49,7 +49,8 @@
 				"ability": "gorge",
 				"gorge_max_health": 300,
 				"gorge_range": 1.5
-			}
+			},
+			"short_name": "Hobb"
 		},
 		"editor": {
 			"number": 2,
@@ -73,7 +74,8 @@
 				"name": "Rewrite",
 				"ability": "rewrite",
 				"push_back_tiles": 2.5
-			}
+			},
+			"short_name": "Editor"
 		},
 		"john_arms": {
 			"number": 3,
@@ -110,7 +112,8 @@
 				"name": "No Hard Feelings",
 				"ability": "flurry_on_demand",
 				"exhausted_time": 2.0
-			}
+			},
+			"short_name": "John Arms"
 		},
 		"kardemosh": {
 			"number": 4,
@@ -149,7 +152,8 @@
 				"starting_skin": 150,
 				"flay_damage": 150,
 				"flay_range": 3.0
-			}
+			},
+			"short_name": "Kardemosh"
 		},
 		"gasket": {
 			"number": 5,
@@ -174,7 +178,8 @@
 				"name": "Do Not Enter",
 				"ability": "close_the_lid",
 				"lid_damage": 300
-			}
+			},
+			"short_name": "Gasket"
 		},
 		"creeler": {
 			"number": 6,
@@ -204,7 +209,8 @@
 				"ability": "drop",
 				"drop_damage": 200,
 				"drop_radius": 1.5
-			}
+			},
+			"short_name": "Creeler"
 		},
 		"spiker": {
 			"number": 7,
@@ -225,7 +231,8 @@
 					"slow": 0.35
 				}
 			],
-			"tower_damage_share": 0.35
+			"tower_damage_share": 0.35,
+			"short_name": "Spiker"
 		},
 		"dargalean": {
 			"number": 8,
@@ -252,7 +259,8 @@
 				"ability": "cuddle",
 				"duration": 2.0,
 				"radius": 3.0
-			}
+			},
+			"short_name": "Dargalean"
 		},
 		"spacefarer": {
 			"number": 9,
@@ -288,7 +296,8 @@
 				"speed": 16,
 				"size": 0.6,
 				"colour": "#6FF2FF"
-			}
+			},
+			"short_name": "Spacefarer"
 		},
 		"individuals": {
 			"number": 10,
@@ -321,7 +330,8 @@
 				"name": "Seen Through a Screen",
 				"ability": "flatten",
 				"duration": 2.0
-			}
+			},
+			"short_name": "Individuals"
 		},
 		"chain": {
 			"number": 11,
@@ -339,7 +349,8 @@
 					"duration": 6.0
 				}
 			],
-			"radius": 2.5
+			"radius": 2.5,
+			"short_name": "Chain"
 		}
 	},
 	"spell_kinds": {

@@ -133,7 +133,7 @@ func _draw_unit(unit: Unit) -> void:
 			fill.a = 0.3
 		draw_circle(at, r, fill)
 		draw_arc(at, r, 0, TAU, 32, team_colour, 4.0)
-		_draw_label(at, unit.label, r)
+		_draw_label(at, CardTile.short_name(unit.id), r)
 
 	if show_hitboxes:
 		draw_arc(at, r, 0, TAU, 32, Color.YELLOW, 2.0)
@@ -193,7 +193,7 @@ func _draw_links(unit: Unit) -> void:
 func _draw_label(at: Vector2, text: String, r: float) -> void:
 	var font := ThemeDB.fallback_font
 	var font_size := maxi(int(r * 0.7), 10)
-	var short := text.trim_prefix("The ").left(5)
+	var short := text.left(5)
 	var width := font.get_string_size(short, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	draw_string(font, at + Vector2(-width / 2.0, font_size * 0.35), short, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.BLACK)
 
