@@ -71,5 +71,11 @@
 		"building",
 		"spell"
 	],
-	"area_radius_tiles": 1.0
+	"area_radius_tiles": 1.0,
+	"default_projectile": {
+		"style": "orb",
+		"speed": 10,
+		"size": 0.2,
+		"colour": "#FFFFFF"
+	}
 }

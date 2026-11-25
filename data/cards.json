@@ -280,6 +280,12 @@
 				"ability": "time_skip",
 				"blink_tiles": 3.0,
 				"cycles": null
+			},
+			"projectile": {
+				"style": "bolt",
+				"speed": 16,
+				"size": 0.6,
+				"colour": "#6FF2FF"
 			}
 		},
 		"individuals": {

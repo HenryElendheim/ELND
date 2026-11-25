@@ -65,6 +65,8 @@ func _draw() -> void:
 	for unit in sim.units:
 		if unit.flying:
 			_draw_unit(unit)
+	for shot in sim.projectiles:
+		_draw_projectile(shot)
 	if show_fps:
 		draw_string(ThemeDB.fallback_font, Vector2(16, 48), "%d FPS" % Engine.get_frames_per_second(), HORIZONTAL_ALIGNMENT_LEFT, -1, 36)
 
@@ -102,6 +104,25 @@ func _draw_unit(unit: Unit) -> void:
 		_draw_health(at - Vector2(r, r + 14), r * 2.0, unit.hp / unit.max_hp, team_colour)
 	if unit.shield > 0.0:
 		_draw_health(at - Vector2(r, r + 26), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
+
+
+## Shots are drawn on top of everything so they are never hidden. Every shot has an edge in its team colour.
+## An orb is a round shot with a short trail, which is what towers fire. A bolt is a short bright streak, like a blaster.
+func _draw_projectile(shot: Projectile) -> void:
+	var at := _to_screen(shot.prev_pos.lerp(shot.pos, blend))
+	var heading := (shot.target.pos - shot.pos).normalized() if shot.target.pos != shot.pos else Vector2.UP
+	var team_colour := PLAYER_COLOUR if shot.team == Unit.Team.PLAYER else ENEMY_COLOUR
+	var colour := Color(shot.look.get("colour", "#FFFFFF"))
+	var size := float(shot.look.get("size", 0.2)) * _tile
+	if shot.look.get("style") == "bolt":
+		var tail := at - heading * size
+		draw_line(tail, at, team_colour, maxf(size * 0.28, 4.0))
+		draw_line(tail, at, colour, maxf(size * 0.16, 2.0))
+		draw_circle(at, maxf(size * 0.1, 2.0), Color.WHITE)
+		return
+	draw_line(at - heading * size * 2.5, at, Color(team_colour, 0.55), maxf(size * 0.9, 3.0))
+	draw_circle(at, size, team_colour)
+	draw_circle(at, size * 0.65, colour)
 
 
 ## Spells show as a soft circle over the area they cover, in their class colour.

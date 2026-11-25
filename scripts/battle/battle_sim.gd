@@ -5,6 +5,7 @@ extends RefCounted
 ## Positions are in tiles, with the player at the bottom of an 18 by 32 arena.
 
 var units: Array[Unit] = []
+var projectiles: Array[Projectile] = []
 ## One hand per team, in the same order as Unit.Team, so hands[Unit.Team.ENEMY] is the enemy's.
 var hands: Array[Hand] = []
 var bot := Bot.new(randi())
@@ -253,6 +254,7 @@ func step() -> void:
 	for unit in units:
 		if unit.alive():
 			_update(unit)
+	_move_projectiles()
 	_keep_apart()
 	drop_dead()
 	_check_result()
@@ -275,6 +277,7 @@ func clear() -> void:
 		unit.carrier = null
 		unit.abilities.clear()
 	units.clear()
+	projectiles.clear()
 
 
 func _place_towers() -> void:
@@ -373,11 +376,41 @@ func _should_wake(tower: Unit) -> bool:
 func _hit(attacker: Unit, victim: Unit) -> void:
 	attacker.cooldown = attacker.hit_speed / maxf(attacker.attack_speed, 0.05)
 	attacker.last_attack_time = time
+	if attacker.ranged and not attacker.area and not attacker.projectile.is_empty():
+		_fire(attacker, victim)
+		return
 	var victims: Array[Unit] = [victim]
 	if attacker.area:
 		victims = enemies_near(attacker, victim.pos, float(_battle.area_radius_tiles) + victim.radius)
 	for each in victims:
 		deal_damage(attacker, each, attacker.damage)
+
+
+func _fire(attacker: Unit, victim: Unit) -> void:
+	var shot := Projectile.new()
+	shot.attacker = attacker
+	shot.target = victim
+	shot.team = attacker.team
+	shot.damage = attacker.damage
+	shot.pos = attacker.pos
+	shot.prev_pos = attacker.pos
+	shot.look = attacker.projectile
+	projectiles.append(shot)
+
+
+## Moves every shot toward its target and lands the ones that arrive this tick.
+func _move_projectiles() -> void:
+	var flying: Array[Projectile] = []
+	for shot in projectiles:
+		shot.prev_pos = shot.pos
+		if not shot.target.alive():
+			continue
+		shot.pos = shot.pos.move_toward(shot.target.pos, float(shot.look.get("speed", 10.0)) * tick)
+		if shot.pos.distance_to(shot.target.pos) <= 0.05:
+			deal_damage(shot.attacker, shot.target, shot.damage)
+		else:
+			flying.append(shot)
+	projectiles = flying
 
 
 ## Every bit of damage goes through here, which means abilities, shields and damage taken changes always apply.

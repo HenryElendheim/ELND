@@ -39,8 +39,13 @@ func _ready() -> void:
 
 	Data.set_override("cards", ["cards", "hobb", "health"], 400.0)
 	Data.reset_override("cards", ["cards", "hobb"])
+	var shots_seen := false
 	for i in TICKS:
 		sim.step()
+		shots_seen = shots_seen or not sim.projectiles.is_empty()
+	if not shots_seen:
+		print("Broken file: no projectile was ever fired")
+		broken += 1
 	for i in 3:
 		await get_tree().process_frame
 

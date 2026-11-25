@@ -15,7 +15,13 @@
 				14.5,
 				25.5
 			]
-		]
+		],
+		"projectile": {
+			"style": "orb",
+			"speed": 11,
+			"size": 0.2,
+			"colour": "#FFE9A8"
+		}
 	},
 	"main": {
 		"health": 3000,
@@ -33,6 +39,12 @@
 				9,
 				29
 			]
-		]
+		],
+		"projectile": {
+			"style": "orb",
+			"speed": 10,
+			"size": 0.3,
+			"colour": "#FFE9A8"
+		}
 	}
 }

@@ -27,6 +27,8 @@ var flying := false
 var targets := "ground"
 
 var area := false
+## How this unit's shots look when it attacks from range. Melee units leave it empty.
+var projectile := {}
 ## Bigger than one when an ability makes the unit grow, which scales its health, damage and size.
 var growth := 1.0
 var abilities: Array[Ability] = []
@@ -108,5 +110,6 @@ func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
 	flying = stats.get("movement", "ground") == "flying"
 	targets = stats.get("targets", "air_ground" if is_spell() else "ground")
 	area = stats.get("area", false)
+	projectile = stats.get("projectile", battle.default_projectile) if ranged else {}
 	radius = float(stats.get("size", 0)) / 2.0 if stats.has("size") else float(stats.get("radius", battle.unit_radius_tiles))
 	radius *= 1.0 + (growth - 1.0) / 2.0
