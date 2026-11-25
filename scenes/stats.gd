@@ -91,7 +91,7 @@ func _build_advanced(s: Dictionary) -> void:
 		for rarity in colours:
 			if chests.has(rarity):
 				var line := _row(rows, String(rarity).capitalize(), str(int(chests[rarity])))
-				line.get_child(0).get_child(0).add_theme_color_override("font_color", Color(colours[rarity]))
+				line.get_child(0).get_child(0).get_child(0).add_theme_color_override("font_color", Color(colours[rarity]))
 		_row(rows, "Legendary cards pulled", str(int(s.get("legendaries_pulled", 0))))
 
 	rows = _section("Records")
