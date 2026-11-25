@@ -4,7 +4,7 @@ class_name Backup
 
 const FORMAT := 1
 const FILE_NAME := "elnd-backup.json"
-const IMPORTED := "Backup imported"
+const IMPORTED := "Imported"
 
 
 static func collect() -> Dictionary:
@@ -27,34 +27,55 @@ static func restore(backup: Dictionary) -> bool:
 	return true
 
 
+const BALANCE_FILE_NAME := "elnd-balance.json"
+
+
 ## Asks the system where to save the backup and writes it there. The callback gets a short message for the player.
 static func export_to_device(done: Callable) -> void:
-	_pick(DisplayServer.FILE_DIALOG_MODE_SAVE_FILE, func(path: String) -> void: _write(path, done), done)
+	_pick(DisplayServer.FILE_DIALOG_MODE_SAVE_FILE, FILE_NAME, func(path: String) -> void: _write(path, collect(), done), done)
 
 
 ## Asks the system which backup file to open and restores it.
 static func import_from_device(done: Callable) -> void:
-	_pick(DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, func(path: String) -> void: _read(path, done), done)
+	_pick(DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, FILE_NAME, func(path: String) -> void: _read(path, "backup", done), done)
 
 
-static func _write(path: String, done: Callable) -> void:
-	var saved := JsonFile.write(path, collect())
-	done.call("Backup saved" if saved else "Could not save the backup")
+## A balance setup is only the Admin Mode edits, so it can be shared or swapped without touching progress or settings.
+static func export_balance(done: Callable) -> void:
+	var balance := {"format": FORMAT, "balance": Data.overrides}
+	_pick(DisplayServer.FILE_DIALOG_MODE_SAVE_FILE, BALANCE_FILE_NAME, func(path: String) -> void: _write(path, balance, done), done)
 
 
-static func _read(path: String, done: Callable) -> void:
-	var restored := restore(JsonFile.read(path, {}))
-	done.call(IMPORTED if restored else "That file is not an ELND backup")
+static func import_balance(done: Callable) -> void:
+	_pick(DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, BALANCE_FILE_NAME, func(path: String) -> void: _read(path, "balance", done), done)
+
+
+static func restore_balance(file: Dictionary) -> bool:
+	if not file.get("balance") is Dictionary:
+		return false
+	Data.replace_overrides(file.balance)
+	return true
+
+
+static func _write(path: String, contents: Dictionary, done: Callable) -> void:
+	done.call("Saved" if JsonFile.write(path, contents) else "Could not save the file")
+
+
+## Reads a file and puts it in place as a full backup or as a balance setup, depending on kind.
+static func _read(path: String, kind: String, done: Callable) -> void:
+	var contents: Dictionary = JsonFile.read(path, {})
+	var applied := restore_balance(contents) if kind == "balance" else restore(contents)
+	done.call(IMPORTED if applied else "That file is not an ELND file")
 
 
 ## Opens the phone's own file picker when it has one. Without it, the file goes to the Downloads folder instead.
-static func _pick(mode: DisplayServer.FileDialogMode, on_path: Callable, done: Callable) -> void:
+static func _pick(mode: DisplayServer.FileDialogMode, file_name: String, on_path: Callable, done: Callable) -> void:
 	if not DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG_FILE):
-		on_path.call(OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS).path_join(FILE_NAME))
+		on_path.call(OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS).path_join(file_name))
 		return
 	var start_dir := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
 	var filters := PackedStringArray(["*.json"])
-	DisplayServer.file_dialog_show("ELND backup", start_dir, FILE_NAME, false, mode, filters,
+	DisplayServer.file_dialog_show("ELND", start_dir, file_name, false, mode, filters,
 		func(picked: bool, paths: PackedStringArray, _filter: int) -> void: _picked(picked, paths, on_path, done))
 
 

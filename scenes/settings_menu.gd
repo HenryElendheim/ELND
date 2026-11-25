@@ -44,6 +44,8 @@ func build() -> void:
 	add(Ui.button("Export backup", func() -> void: Backup.export_to_device(Nav.toast)))
 	add(Ui.button("Import backup", func() -> void: Backup.import_from_device(_after_import)))
 
+	if Settings.get_value("admin_mode"):
+		add(Ui.button("Admin tools", func() -> void: Nav.go("res://scenes/admin.tscn")))
 	add(Ui.spacer(24))
 	add(Ui.button("Back", go_back))
 	add(Ui.spacer(24))

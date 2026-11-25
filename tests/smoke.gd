@@ -18,7 +18,7 @@ func _ready() -> void:
 	if not Progress.buy_chest("common"):
 		print("Broken file: buying a chest with enough gold failed")
 		broken += 1
-	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest", "shop", "stats"]:
+	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest", "shop", "stats", "codex", "admin"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame

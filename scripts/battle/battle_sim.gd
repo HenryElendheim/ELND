@@ -66,6 +66,8 @@ static func available_cards() -> Array:
 	var cards: Dictionary = Data.table("cards").cards
 	var found := []
 	for id in cards:
+		if cards[id].get("neutralized", false):
+			continue
 		if cards[id].get("type") in battle.playable_types and int(cards[id].get("unlock_arena", 1)) <= Progress.arena():
 			found.append(id)
 	return found

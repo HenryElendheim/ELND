@@ -4,7 +4,7 @@ extends Node
 
 signal changed
 
-const FILES := ["cards", "towers", "battle", "chests", "economy", "progression", "bot", "defense"]
+const FILES := ["cards", "towers", "battle", "chests", "economy", "progression", "bot", "defense", "codex"]
 const OVERRIDES_PATH := "user://overrides.json"
 
 var _defaults := {}

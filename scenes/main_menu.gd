@@ -6,6 +6,7 @@ const CHEST_SCENE := "res://scenes/chest.tscn"
 const DECK_SCENE := "res://scenes/deck.tscn"
 const SETTINGS_SCENE := "res://scenes/settings_menu.tscn"
 const SHOP_SCENE := "res://scenes/shop.tscn"
+const CODEX_SCENE := "res://scenes/codex.tscn"
 const STATS_SCENE := "res://scenes/stats.tscn"
 
 
@@ -24,4 +25,5 @@ func build() -> void:
 	add(Ui.button("Cards", func() -> void: Nav.go(DECK_SCENE)))
 	add(Ui.button("Shop", func() -> void: Nav.go(SHOP_SCENE)))
 	add(Ui.button("Stats", func() -> void: Nav.go(STATS_SCENE)))
+	add(Ui.button("Codex", func() -> void: Nav.go(CODEX_SCENE)))
 	add(Ui.button("Settings", func() -> void: Nav.go(SETTINGS_SCENE)))
