@@ -4,6 +4,7 @@ extends PanelContainer
 ## time controls, debug overlays, clearing the field, and live stat editing for every card and tower.
 
 const SPEEDS := [[0.0, "Pause"], [0.25, "0.25x"], [0.5, "0.5x"], [1.0, "1x"], [2.0, "2x"]]
+const SIDES := [[Unit.Team.PLAYER, "You"], [Unit.Team.ENEMY, "Enemy"]]
 const OVERLAYS := [["Hitboxes", "show_hitboxes"], ["Attack ranges", "show_ranges"], ["Targeting lines", "show_targets"], ["FPS", "show_fps"]]
 
 var _battle: Node
@@ -34,12 +35,23 @@ func _ready() -> void:
 	column.add_child(header)
 
 	column.add_child(Ui.choice("Speed", SPEEDS, _battle.get("speed"), func(value: float) -> void: _battle.set("speed", value)))
+
+	# The spawn tool drops any troop anywhere for free, on either side.
+	var troops := [["", "Off"]]
+	var cards: Dictionary = Data.table("cards").cards
+	for id in BattleSim.starting_deck():
+		troops.append([id, cards[id].name.trim_prefix("The ")])
+	column.add_child(Ui.choice("Spawn tool", troops, "", func(id: String) -> void: _battle.set("spawn_card", id), 4))
+	column.add_child(Ui.choice("Spawn for", SIDES, Unit.Team.PLAYER, func(team: int) -> void: _battle.set("spawn_team", team)))
+	var hands: Array = _battle.get("sim").hands
+	for side in SIDES:
+		var hand: Hand = hands[side[0]]
+		column.add_child(Ui.toggle("Endless Ephrocity: " + side[1], false, func(on: bool) -> void: hand.infinite = on))
 	for overlay in OVERLAYS:
 		column.add_child(Ui.toggle(overlay[0], _view.get(overlay[1]), func(on: bool) -> void: _view.set(overlay[1], on)))
 	column.add_child(Ui.button("Clear troops", Callable(_battle, "clear_troops")))
 
 	var subjects := [["towers/side", "Side tower"], ["towers/main", "Main tower"]]
-	var cards: Dictionary = Data.table("cards").cards
 	for id in cards:
 		subjects.append(["cards/" + id, cards[id].name.trim_prefix("The ")])
 	column.add_child(Ui.choice("Edit stats", subjects, subjects[0][0], _show_fields))

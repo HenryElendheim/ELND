@@ -5,6 +5,8 @@ extends RefCounted
 ## Positions are in tiles, with the player at the bottom of an 18 by 32 arena.
 
 var units: Array[Unit] = []
+## One hand per team, in the same order as Unit.Team, so hands[Unit.Team.ENEMY] is the enemy's.
+var hands: Array[Hand] = []
 var tick := 1.0 / 30.0
 var time := 0.0
 
@@ -17,6 +19,56 @@ func _init() -> void:
 	_arena = _battle.arena
 	tick = 1.0 / float(_battle.tick_rate)
 	_place_towers()
+	for team in Unit.Team.size():
+		hands.append(Hand.new(starting_deck(), _battle))
+
+
+## Every card that can be played so far, up to the deck size. Later milestones replace this with the player's own deck.
+static func starting_deck() -> Array:
+	var battle := Data.table("battle")
+	var cards: Dictionary = Data.table("cards").cards
+	var deck := []
+	for id in cards:
+		if cards[id].get("type") in battle.playable_types and deck.size() < int(battle.deck.size):
+			deck.append(id)
+	return deck
+
+
+## How many times faster than normal Ephrocity is filling right now, which is 1, 2 or 3.
+func ephrocity_rate() -> float:
+	var rate := 1.0
+	for phase in _battle.ephrocity.phases:
+		if time >= float(phase.from_second):
+			rate = float(phase.rate)
+	return rate
+
+
+## Checks whether a team may put a troop at a spot. Each side has its own half, and once an enemy
+## side tower falls, that lane on the enemy's half opens up too, as deep as the pocket setting allows.
+func can_place(team: Unit.Team, at: Vector2) -> bool:
+	var length := float(_arena.length_tiles)
+	if at.x < 0.0 or at.y < 0.0 or at.x > float(_arena.width_tiles) or at.y > length:
+		return false
+	# Flipping the enemy's spot means the same rules can be written once from the player's side.
+	var y := at.y if team == Unit.Team.PLAYER else length - at.y
+	if y > float(_arena.river_bottom):
+		return true
+	if y < float(_arena.river_top) - float(_battle.pocket_depth_tiles) or y > float(_arena.river_top):
+		return false
+	var left_lane := at.x < float(_arena.width_tiles) / 2.0
+	for unit in units:
+		if unit.kind == "side" and unit.team != team and (unit.pos.x < float(_arena.width_tiles) / 2.0) == left_lane:
+			return false
+	return true
+
+
+## Plays the card in a hand slot at a spot, paying its Ephrocity cost. It returns false when the spot or the cost is not allowed.
+func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
+	var hand := hands[team]
+	if not can_place(team, at) or not hand.can_afford(slot):
+		return false
+	spawn(hand.play(slot), team, at)
+	return true
 
 
 ## Puts a card on the field. Swarm cards spawn several copies spread around the spot.
@@ -40,6 +92,9 @@ func refresh_stats() -> void:
 
 func step() -> void:
 	time += tick
+	var bars := tick * ephrocity_rate() / float(_battle.ephrocity.seconds_per_bar)
+	for hand in hands:
+		hand.regenerate(bars)
 	for unit in units:
 		unit.prev_pos = unit.pos
 	for unit in units:

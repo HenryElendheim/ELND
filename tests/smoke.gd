@@ -22,8 +22,17 @@ func _ready() -> void:
 	var cards: Dictionary = Data.table("cards").cards
 	for id in cards:
 		if cards[id].type == "troop":
-			sim.spawn(id, Unit.Team.PLAYER, Vector2(4, 24))
 			sim.spawn(id, Unit.Team.ENEMY, Vector2(14, 8))
+	# The player side plays its whole hand through the normal rules, which checks costs, placement and cycling.
+	var hand := sim.hands[Unit.Team.PLAYER]
+	hand.infinite = true
+	for i in 8:
+		if not sim.play(Unit.Team.PLAYER, 0, Vector2(4, 24)):
+			print("Broken file: playing a card failed")
+			broken += 1
+	if sim.play(Unit.Team.PLAYER, 0, Vector2(4, 8)):
+		print("Broken file: placing on the enemy half was allowed")
+		broken += 1
 
 	Data.set_override("cards", ["cards", "hobb", "health"], 400.0)
 	Data.reset_override("cards", ["cards", "hobb"])

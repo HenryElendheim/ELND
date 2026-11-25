@@ -63,5 +63,9 @@
 	"sight_range_tiles": 5.5,
 	"unit_radius_tiles": 0.45,
 	"default_hit_speed": 1.0,
-	"swarm_spread_tiles": 0.6
+	"swarm_spread_tiles": 0.6,
+	"pocket_depth_tiles": 9,
+	"playable_types": [
+		"troop"
+	]
 }
