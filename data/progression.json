@@ -1,0 +1,6 @@
+{
+	"trophies": { "win": 30, "loss": -15, "per_arena": 400 },
+	"xp": { "per_win": 100, "per_card_level_up": 50, "next_level_base": 200, "next_level_per_level": 50 },
+	"towers": { "level_up_every_player_levels": 3, "max_level": 20 },
+	"cards": { "max_level": 20, "copies_per_level_step": 3 }
+}

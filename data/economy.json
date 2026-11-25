@@ -1,0 +1,5 @@
+{
+	"gold": { "per_win": 50, "per_card_upgrade_times_level": 20, "per_player_level": 100 },
+	"rank_up_chest": { "every_player_levels": 2, "chest": "rare", "gold": 100 },
+	"shop_prices": { "common": 200, "rare": 500, "epic": 1200, "legendary": 3000 }
+}

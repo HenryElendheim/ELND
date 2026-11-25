@@ -1,0 +1,12 @@
+{
+	"odds": { "common": 0.60, "rare": 0.25, "epic": 0.12, "legendary": 0.03 },
+	"legendary_pity_games": 30,
+	"arena_scaling": 0.25,
+	"contents": {
+		"common": { "cards": 5, "guaranteed": { "rare_card": 1 } },
+		"rare": { "cards": 10, "guaranteed": { "epic_card": 1 } },
+		"epic": { "cards": 20, "guaranteed": { "evolution": 1 } },
+		"legendary": { "cards": 40, "guaranteed": { "evolution": 1, "injection": 1, "legendary_card": 1 } }
+	},
+	"injection_shards_per_injection": 3
+}

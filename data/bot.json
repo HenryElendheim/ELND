@@ -1,0 +1,8 @@
+{
+	"default_difficulty": "medium",
+	"presets": {
+		"easy": { "reaction_time": 2.5, "ephrocity_smarts": 0.2, "counter_play": 0.2, "deck_quality": "random" },
+		"medium": { "reaction_time": 1.5, "ephrocity_smarts": 0.5, "counter_play": 0.5, "deck_quality": "mixed" },
+		"hard": { "reaction_time": 0.7, "ephrocity_smarts": 0.85, "counter_play": 0.85, "deck_quality": "synergy" }
+	}
+}

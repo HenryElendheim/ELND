@@ -1,0 +1,5 @@
+# Godot keeps its import cache here, which means it is rebuilt on every machine.
+.godot/
+build/
+*.keystore
+*.jks

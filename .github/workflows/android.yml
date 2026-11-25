@@ -1,0 +1,143 @@
+name: Android build
+
+on:
+  push:
+    branches: [main, testing]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: 4.7.2
+  APP_NAME: ELND
+  APP_SUMMARY: ELND is a card battle game where you collect anomalies, build decks and fight bots in real-time battles.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Release tags go v1.0, v1.001, v1.002 and so on, so the next version is the newest tag plus one step.
+      # The Android version code is the release count, which means every release installs over the last one.
+      - name: Work out the version
+        run: |
+          last=$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)
+          count=$(git tag --list 'v1.*' | wc -l)
+          if [ -z "$last" ]; then
+            next="1.0"
+          else
+            step=${last#v1.}
+            next=$(printf '1.%03d' $((10#$step + 1)))
+          fi
+          name="$next"
+          if [ "$GITHUB_REF_NAME" != "main" ]; then name="$next-testing"; fi
+          echo "VERSION=$next" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$name" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$((count + 1))" >> "$GITHUB_ENV"
+
+      - name: Stamp the version into the project
+        run: |
+          sed -i "s|^config/version=.*|config/version=\"$VERSION_NAME\"|" project.godot
+          sed -i "s|^version/code=.*|version/code=$VERSION_CODE|; s|^version/name=.*|version/name=\"$VERSION_NAME\"|" export_presets.cfg
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-android
+
+      # Only the Android templates are kept, which keeps the cache small.
+      - name: Install Godot and the Android templates
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          if [ ! -x ~/godot/godot ]; then
+            mkdir -p ~/godot
+            curl -fsSL -o /tmp/editor.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+            unzip -q /tmp/editor.zip -d /tmp/editor
+            mv "/tmp/editor/Godot_v${GODOT_VERSION}-stable_linux.x86_64" ~/godot/godot
+          fi
+          templates=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          if [ ! -f "$templates/android_release.apk" ]; then
+            curl -fsSL -o /tmp/templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+            unzip -q /tmp/templates.tpz -d /tmp/tpl
+            mkdir -p "$templates"
+            mv /tmp/tpl/templates/* "$templates"/
+            find "$templates" -type f ! -name 'android*' ! -name version.txt -delete
+          fi
+
+      - name: Point Godot at the Android SDK
+        run: |
+          mkdir -p ~/.config/godot
+          for file in "editor_settings-${GODOT_VERSION%.*}.tres" editor_settings-4.tres; do
+            printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\n' \
+              "$ANDROID_HOME" "$JAVA_HOME" > ~/.config/godot/$file
+          done
+
+      # Main builds must use the release key so installs on the phone update cleanly.
+      # Testing builds fall back to a debug key when the release key has not been added yet.
+      - name: Set up signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            {
+              echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$RUNNER_TEMP/release.keystore"
+              echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$KEY_ALIAS"
+              echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "EXPORT_MODE=release"
+            } >> "$GITHUB_ENV"
+          elif [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "::error::The release signing key is missing. Add the ANDROID_KEYSTORE secrets before pushing to main."
+            exit 1
+          else
+            echo "EXPORT_MODE=debug" >> "$GITHUB_ENV"
+          fi
+
+      # The game is run headless for a few seconds first, which means any script error fails the build here instead of on the phone.
+      - name: Import and check scripts
+        run: |
+          ~/godot/godot --headless --import
+          ~/godot/godot --headless --quit-after 300 2>&1 | tee run.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Compile Error" run.log; then exit 1; fi
+
+      - name: Build the APK
+        run: |
+          mkdir -p build
+          ~/godot/godot --headless --export-$EXPORT_MODE Android "build/$APP_NAME.apk"
+          test -f "build/$APP_NAME.apk"
+
+      - name: Keep the testing APK
+        if: github.ref_name != 'main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-testing
+          path: build/${{ env.APP_NAME }}.apk
+
+      - name: Publish the release
+        if: github.ref_name == 'main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Elendheim "${{ env.APP_NAME }}" v${{ env.VERSION }}
+          body: ${{ env.APP_SUMMARY }}
+          target_commitish: ${{ github.sha }}
+          files: build/${{ env.APP_NAME }}.apk
+          make_latest: true
