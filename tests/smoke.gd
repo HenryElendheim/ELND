@@ -41,6 +41,8 @@ func _ready() -> void:
 	for i in 3:
 		await get_tree().process_frame
 
+	broken += _check_win_rules()
+
 	var hurt := 0
 	for unit in sim.units:
 		if unit.is_tower() and unit.hp < unit.max_hp:
@@ -51,6 +53,36 @@ func _ready() -> void:
 		print("Smoke test passed")
 	Settings.set_value("admin_mode", false)
 	get_tree().quit()
+
+
+## Checks that more crowns win once time is up, and that the tiebreaker always ends the match.
+func _check_win_rules() -> int:
+	var broken := 0
+	var regular := float(Data.table("battle").match.regular_seconds)
+	var lead := BattleSim.new()
+	lead.bot.enabled = false
+	for unit in lead.units:
+		if unit.kind == "side" and unit.team == Unit.Team.ENEMY:
+			unit.hp = 0.0
+			break
+	lead.drop_dead()
+	lead.time = regular
+	lead.step()
+	if lead.result != "player":
+		print("Broken file: one crown up at full time did not win, result was '%s'" % lead.result)
+		broken += 1
+	var tied := BattleSim.new()
+	tied.bot.enabled = false
+	tied.time = regular + float(Data.table("battle").match.overtime_seconds)
+	for i in 30 * 30:
+		tied.step()
+	if tied.result == "":
+		print("Broken file: the tiebreaker never ended the match")
+		broken += 1
+	print("Tiebreaker result: " + tied.result)
+	lead.clear()
+	tied.clear()
+	return broken
 
 
 ## Loads every script and scene in a folder and its subfolders, and counts the ones that fail.

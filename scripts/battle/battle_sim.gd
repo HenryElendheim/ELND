@@ -115,25 +115,53 @@ func towers_lost(team: Unit.Team) -> int:
 	return towers.side.positions.size() + towers.main.positions.size() - standing
 
 
+## Which part of the match is running: "regular", "overtime" or "tiebreaker".
+func phase() -> String:
+	var regular := float(_battle.match.regular_seconds)
+	if time < regular:
+		return "regular"
+	return "overtime" if time < regular + float(_battle.match.overtime_seconds) else "tiebreaker"
+
+
+## Time left in the current part of the match. The tiebreaker has no clock.
 func seconds_left() -> float:
-	return maxf(float(_battle.match.regular_seconds) - time, 0.0)
+	var end := float(_battle.match.regular_seconds)
+	if phase() != "regular":
+		end += float(_battle.match.overtime_seconds)
+	return maxf(end - time, 0.0)
 
 
-## Destroying the main tower wins straight away. When time runs out, whoever destroyed more towers wins.
-## Overtime and the tiebreaker come in the next milestone, so for now an even count is a draw.
+func _main_standing(team: Unit.Team) -> bool:
+	for unit in units:
+		if unit.kind == "main" and unit.team == team:
+			return true
+	return false
+
+
+## The win rules from the design doc, checked after every tick:
+## destroying the main tower wins straight away. Once regular time is up, whoever has destroyed more towers wins,
+## and during overtime that means the first tower to fall decides it. In the tiebreaker every tower drains,
+## so the first tower to fall loses. If both sides lose their main tower at the same moment, it is a draw.
 func _check_result() -> void:
-	for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
-		var main_standing := false
-		for unit in units:
-			if unit.kind == "main" and unit.team == team:
-				main_standing = true
-		if not main_standing:
-			result = "enemy" if team == Unit.Team.PLAYER else "player"
-			return
-	if seconds_left() <= 0.0:
-		var player_crowns := towers_lost(Unit.Team.ENEMY)
-		var enemy_crowns := towers_lost(Unit.Team.PLAYER)
-		result = "draw" if player_crowns == enemy_crowns else ("player" if player_crowns > enemy_crowns else "enemy")
+	var player_main := _main_standing(Unit.Team.PLAYER)
+	var enemy_main := _main_standing(Unit.Team.ENEMY)
+	if not player_main or not enemy_main:
+		result = "draw" if player_main == enemy_main else ("player" if player_main else "enemy")
+		return
+	if phase() == "regular":
+		return
+	var player_crowns := towers_lost(Unit.Team.ENEMY)
+	var enemy_crowns := towers_lost(Unit.Team.PLAYER)
+	if player_crowns != enemy_crowns:
+		result = "player" if player_crowns > enemy_crowns else "enemy"
+
+
+## Every tower loses the same amount, which means the most damaged tower is the first to fall.
+func _drain_towers() -> void:
+	var amount := float(_battle.match.tiebreaker_drain_per_second) * tick
+	for unit in units:
+		if unit.is_tower():
+			deal_damage(null, unit, amount)
 
 
 func step() -> void:
@@ -141,6 +169,8 @@ func step() -> void:
 		return
 	time += tick
 	bot.think(self)
+	if phase() == "tiebreaker":
+		_drain_towers()
 	var bars := tick * ephrocity_rate() / float(_battle.ephrocity.seconds_per_bar)
 	for hand in hands:
 		hand.regenerate(bars)

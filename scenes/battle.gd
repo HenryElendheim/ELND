@@ -6,6 +6,7 @@ const MENU_SCENE := "res://scenes/main_menu.tscn"
 ## Caps how many ticks can run in one frame, which stops a slow frame from snowballing into a freeze.
 const MAX_STEPS_PER_FRAME := 8
 const RATE_NAMES := {2.0: "Double Ephrocity", 3.0: "Triple Ephrocity"}
+const PHASE_NAMES := {"overtime": "Overtime", "tiebreaker": "Tiebreaker"}
 
 var sim := BattleSim.new()
 var speed := 1.0
@@ -22,6 +23,8 @@ var _slot_buttons: Array[Button] = []
 var _next_label: Label
 var _clock: Label
 var _rate := 1.0
+var _phase := "regular"
+var _crowns: Label
 var _result_shown := false
 
 
@@ -43,6 +46,10 @@ func _ready() -> void:
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top.add_child(_clock)
+	_crowns = Ui.label("", "HeadingLabel")
+	_crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_crowns.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top.add_child(_crowns)
 	if Settings.get_value("admin_mode"):
 		_admin = AdminPanel.new(self, _view)
 		top.add_child(Ui.button("Admin", func() -> void: _admin.visible = not _admin.visible))
@@ -93,7 +100,11 @@ func _process(delta: float) -> void:
 	_refresh_hand()
 	_announce_rate()
 	var left := ceili(sim.seconds_left())
-	_clock.text = "%d:%02d" % [left / 60, left % 60]
+	_clock.text = "Tiebreaker" if sim.phase() == "tiebreaker" else "%d:%02d" % [left / 60, left % 60]
+	_crowns.text = "%d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	if sim.phase() != _phase:
+		_phase = sim.phase()
+		Nav.toast(PHASE_NAMES.get(_phase, ""))
 	if sim.result != "" and not _result_shown:
 		_show_result()
 

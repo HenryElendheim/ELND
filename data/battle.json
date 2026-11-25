@@ -19,7 +19,8 @@
 	},
 	"match": {
 		"regular_seconds": 180,
-		"overtime_seconds": 120
+		"overtime_seconds": 120,
+		"tiebreaker_drain_per_second": 150
 	},
 	"ephrocity": {
 		"max": 10,
