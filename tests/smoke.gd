@@ -19,7 +19,13 @@ func _ready() -> void:
 		print("Broken file: buying a chest with enough gold failed")
 		broken += 1
 	broken += _check_placement()
-	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "codex", "admin"]:
+	# Every card's details open and close cleanly, which checks the info and codex text for every card.
+	for id in Data.table("cards").cards:
+		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
+		add_child(detail)
+		await get_tree().process_frame
+		detail.close()
+	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame

@@ -13,15 +13,23 @@ func build() -> void:
 	var prices: Dictionary = Data.table("economy").shop_prices
 	for rarity in prices:
 		add(Ui.button("%s chest   %d gold" % [String(rarity).capitalize(), int(prices[rarity])], func() -> void: _buy(rarity)))
-	add(Ui.spacer(24))
-	add(Ui.button("Open chests", func() -> void: Nav.go(CHEST_SCENE)))
+	var waiting := Progress.chests_waiting().size()
+	if waiting > 0:
+		add(Ui.spacer(24))
+		add(Ui.button("Open chests (%d)" % waiting, func() -> void: Nav.go(CHEST_SCENE)))
 	add_back_button()
 	_show_gold()
 
 
+## A bought chest waits with the others, so the screen is rebuilt to show the Open chests button with the new count.
 func _buy(rarity: String) -> void:
-	Nav.toast("%s chest bought" % rarity.capitalize() if Progress.buy_chest(rarity) else "Not enough gold")
-	_show_gold()
+	if not Progress.buy_chest(rarity):
+		Nav.banner("Not enough gold")
+		return
+	Nav.toast("%s chest bought" % rarity.capitalize())
+	for child in content.get_children():
+		child.queue_free()
+	build()
 
 
 func _show_gold() -> void:

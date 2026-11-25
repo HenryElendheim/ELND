@@ -99,6 +99,11 @@ func _tween_fade(alpha: float) -> void:
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
+	# Anything open on top, such as a card's details, closes first.
+	var open := get_tree().get_nodes_in_group(Pager.MODAL_GROUP)
+	if not open.is_empty():
+		open[-1].close()
+		return
 	var screen := get_tree().current_scene
 	if screen != null and screen.has_method("go_back") and screen.go_back():
 		return

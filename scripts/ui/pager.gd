@@ -17,6 +17,11 @@ var _press_at: Variant = null
 var _swiping := false
 var _drag := 0.0
 var _tween: Tween
+var _tabs: Array[Button] = []
+
+## Anything open on top of everything else, such as a card's details, joins this group.
+## A pager underneath it ignores swipes, which means only the pager inside the open view slides.
+const MODAL_GROUP := "modal"
 
 
 func _ready() -> void:
@@ -33,6 +38,23 @@ func add_page(node: Control) -> void:
 	_layout()
 
 
+## A row of tabs, one per page, that jumps to its page and lights up while that page is showing.
+func make_tabs(names: Array, height := 130.0) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	var group := ButtonGroup.new()
+	for i in names.size():
+		var tab := Ui.button(names[i], func() -> void: go_to(i))
+		tab.toggle_mode = true
+		tab.button_group = group
+		tab.clip_text = true
+		tab.custom_minimum_size.y = height
+		tab.set_pressed_no_signal(i == page)
+		_tabs.append(tab)
+		row.add_child(tab)
+	return row
+
+
 func go_to(index: int, animate := true) -> void:
 	page = clampi(index, 0, _pages.size() - 1)
 	_drag = 0.0
@@ -44,6 +66,8 @@ func go_to(index: int, animate := true) -> void:
 		_tween.tween_property(_strip, "position", target, SLIDE_TIME)
 	else:
 		_strip.position = target
+	if page < _tabs.size():
+		_tabs[page].set_pressed_no_signal(true)
 	page_changed.emit(page)
 
 
@@ -59,6 +83,9 @@ func _layout() -> void:
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree():
 		return
+	for modal in get_tree().get_nodes_in_group(MODAL_GROUP):
+		if not modal.is_ancestor_of(self):
+			return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and get_global_rect().has_point(event.position):
 			_press_at = event.position

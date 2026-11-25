@@ -48,9 +48,11 @@
 				"name": "Insatiable",
 				"ability": "gorge",
 				"gorge_max_health": 300,
-				"gorge_range": 1.5
+				"gorge_range": 1.5,
+				"how_it_works": "Insatiable: eats buildings outright. Its button, Gorge, instantly devours a small enemy troop in front of it."
 			},
-			"short_name": "Hobb"
+			"short_name": "Hobb",
+			"how_it_works": "Three Stomachs: every enemy troop it kills is devoured. One full stomach heals it, two also add damage, and with all three full it grows bigger with more health and damage. Munchies: if it goes 8 seconds without devouring, it gets hungry and bites faster, with bonus damage against buildings and towers."
 		},
 		"editor": {
 			"number": 2,
@@ -73,9 +75,11 @@
 			"evolution": {
 				"name": "Rewrite",
 				"ability": "rewrite",
-				"push_back_tiles": 2.5
+				"push_back_tiles": 2.5,
+				"how_it_works": "Rewrite: its button pushes back every enemy troop in its lane at once."
 			},
-			"short_name": "Editor"
+			"short_name": "Editor",
+			"how_it_works": "Quiet Revision: every 5 seconds it pushes the enemy troop that has come furthest back by 1.5 tiles. It only works while no enemy troop is within 3 tiles of it."
 		},
 		"john_arms": {
 			"number": 3,
@@ -111,9 +115,11 @@
 			"evolution": {
 				"name": "No Hard Feelings",
 				"ability": "flurry_on_demand",
-				"exhausted_time": 2.0
+				"exhausted_time": 2.0,
+				"how_it_works": "No Hard Feelings: its button starts a Flurry whenever you like, and the exhaustion only lasts 2 seconds."
 			},
-			"short_name": "John Arms"
+			"short_name": "John Arms",
+			"how_it_works": "Respect: it never attacks first and only goes for whatever damages it. Flurry: once provoked it spins for 4 seconds, hitting everything around it and knocking enemies back, then it is exhausted for 3 seconds, slow and unable to attack."
 		},
 		"kardemosh": {
 			"number": 4,
@@ -151,9 +157,11 @@
 				"ability": "flay",
 				"starting_skin": 150,
 				"flay_damage": 150,
-				"flay_range": 3.0
+				"flay_range": 3.0,
+				"how_it_works": "God of Flesh: starts with some skin on. Its button, Flay, rips the skin off the nearest enemy troop for big damage and wears it."
 			},
-			"short_name": "Kardemosh"
+			"short_name": "Kardemosh",
+			"how_it_works": "Skin Stealer: every troop it kills gives it skin, a shield that slowly rots away. With little skin it hunts troops and moves faster. With plenty of skin it calms down and walks for buildings. Halt: a stun freezes it far longer than normal, but it adapts and a third stun does nothing."
 		},
 		"gasket": {
 			"number": 5,
@@ -177,9 +185,11 @@
 			"evolution": {
 				"name": "Do Not Enter",
 				"ability": "close_the_lid",
-				"lid_damage": 300
+				"lid_damage": 300,
+				"how_it_works": "Do Not Enter: its button, Close the Lid, hits the troop inside with a big burst of damage and opens the lid again straight away."
 			},
-			"short_name": "Gasket"
+			"short_name": "Gasket",
+			"how_it_works": "Comfortable End: while empty it lures the nearest enemy ground troop within 4 tiles inside, where the troop cannot act and slowly loses health. One troop at a time. Flying troops and troops that only attack buildings are never lured. Destroying it frees the troop, dazed."
 		},
 		"creeler": {
 			"number": 6,
@@ -208,9 +218,11 @@
 				"name": "Empty Basket",
 				"ability": "drop",
 				"drop_damage": 200,
-				"drop_radius": 1.5
+				"drop_radius": 1.5,
+				"how_it_works": "Empty Basket: its button, Drop, lets go of the carried troop early from height, hurting it and everything around it."
 			},
-			"short_name": "Creeler"
+			"short_name": "Creeler",
+			"how_it_works": "Snatch: it grabs an enemy ground troop that comes within reach and flies it all the way back to that troop's own back line, then returns to the towers. While carrying it cannot attack and takes extra damage. One troop at a time, every 10 seconds."
 		},
 		"spiker": {
 			"number": 7,
@@ -232,7 +244,8 @@
 				}
 			],
 			"tower_damage_share": 0.35,
-			"short_name": "Spiker"
+			"short_name": "Spiker",
+			"how_it_works": "Spike Field: black spikes erupt in the area, then stay for 4 seconds, hurting and slowing anything inside. The damage grows the longer something stays. Towers take less damage."
 		},
 		"dargalean": {
 			"number": 8,
@@ -258,9 +271,11 @@
 				"name": "Lost Hours",
 				"ability": "cuddle",
 				"duration": 2.0,
-				"radius": 3.0
+				"radius": 3.0,
+				"how_it_works": "Lost Hours: its button, Cuddle, makes nearby enemies stop attacking for 2 seconds."
 			},
-			"short_name": "Dargalean"
+			"short_name": "Dargalean",
+			"how_it_works": "Irresistible: every enemy troop within 3 tiles has to target it for as long as it lives. A cheap decoy to pull troops away."
 		},
 		"spacefarer": {
 			"number": 9,
@@ -289,7 +304,8 @@
 			"evolution": {
 				"name": "From the Future",
 				"ability": "time_skip",
-				"blink_tiles": 3.0
+				"blink_tiles": 3.0,
+				"how_it_works": "From the Future: its button, Time Skip, blinks it 3 tiles back toward your side and it keeps its attack speed."
 			},
 			"projectile": {
 				"style": "bolt",
@@ -297,7 +313,8 @@
 				"size": 0.6,
 				"colour": "#6FF2FF"
 			},
-			"short_name": "Spacefarer"
+			"short_name": "Spacefarer",
+			"how_it_works": "Three Hours: it never tires. Every 3 seconds of non-stop attacking makes it attack 10% faster, up to 50%, until it stops for a moment."
 		},
 		"individuals": {
 			"number": 10,
@@ -329,9 +346,11 @@
 			"evolution": {
 				"name": "Seen Through a Screen",
 				"ability": "flatten",
-				"duration": 2.0
+				"duration": 2.0,
+				"how_it_works": "Seen Through a Screen: their button, Flatten, makes them impossible to target for 2 seconds."
 			},
-			"short_name": "Individuals"
+			"short_name": "Individuals",
+			"how_it_works": "Gaze: the troop they are fighting is filled with dread and attacks 30% slower. Every 4 seconds they blink for a second and the dread pauses. Distract: hit one and they all turn toward the attacker."
 		},
 		"chain": {
 			"number": 11,
@@ -350,7 +369,8 @@
 				}
 			],
 			"radius": 2.5,
-			"short_name": "Chain"
+			"short_name": "Chain",
+			"how_it_works": "Link: up to 3 enemy troops in the area are chained for 6 seconds. Damage dealt to one is dealt in full to all of them."
 		}
 	},
 	"spell_kinds": {
