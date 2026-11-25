@@ -78,6 +78,14 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	broken += _check_win_rules()
+	# Leaving a match through the confirm question must not record a win or a loss.
+	var games_before := float(Stats.all().get("games", 0))
+	battle.call("_ask_to_leave")
+	battle.call("_keep_playing")
+	Stats.record_cancel("battle")
+	if float(Stats.all().get("games", 0)) != games_before or float(Stats.all().get("cancelled", 0)) < 1.0:
+		print("Broken file: a cancelled match changed the results")
+		broken += 1
 	broken += _check_bot_counters()
 	broken += _check_evolutions()
 	broken += _check_defense()

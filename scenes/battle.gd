@@ -27,6 +27,9 @@ var _rate := 1.0
 var _phase := "regular"
 var _cores: Label
 var _result_shown := false
+var _confirm: PanelContainer = null
+var _leaving := false
+var _speed_before := 1.0
 ## The row of evolution ability buttons sits between the arena and the hand, on the right,
 ## which means it never covers the cards, the Ephrocity meter or the towers.
 var _evo_row := HBoxContainer.new()
@@ -46,7 +49,7 @@ func _ready() -> void:
 	margin.add_child(column)
 
 	var top := HBoxContainer.new()
-	top.add_child(Ui.button("Back", go_back))
+	top.add_child(Ui.button("Back", func() -> void: go_back()))
 	_clock = Ui.label("", "HeadingLabel")
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -276,9 +279,52 @@ func clear_troops() -> void:
 	sim.drop_dead()
 
 
+## Back during a match pauses it and asks first. A match that is left counts as cancelled: no win, no loss,
+## no trophies and no chest. Once the match is over, Back simply goes to the menu.
 func go_back() -> bool:
-	Nav.go(MENU_SCENE)
+	if sim.result != "" or _leaving:
+		Nav.go(MENU_SCENE)
+	elif _confirm != null:
+		_keep_playing()
+	else:
+		_ask_to_leave()
 	return true
+
+
+func _ask_to_leave() -> void:
+	_speed_before = speed
+	speed = 0.0
+	_confirm = PanelContainer.new()
+	_confirm.set_anchors_preset(PRESET_CENTER)
+	_confirm.grow_horizontal = GROW_DIRECTION_BOTH
+	_confirm.grow_vertical = GROW_DIRECTION_BOTH
+	_confirm.custom_minimum_size.x = 860
+	var column := VBoxContainer.new()
+	_confirm.add_child(column)
+	var title := Ui.label("Leave this match?", "HeadingLabel")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(title)
+	var note := Ui.label("It will count as cancelled, not as a win or a loss.")
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(note)
+	column.add_child(Ui.button("Leave", _leave))
+	column.add_child(Ui.button("Keep playing", _keep_playing))
+	add_child(_confirm)
+
+
+func _keep_playing() -> void:
+	if _confirm != null:
+		_confirm.queue_free()
+		_confirm = null
+	speed = _speed_before
+
+
+## Freezes the battle straight away, so nothing can finish while the screen fades, and records the match as cancelled.
+func _leave() -> void:
+	_leaving = true
+	speed = 0.0
+	Stats.record_cancel(sim.mode)
+	Nav.go(MENU_SCENE)
 
 
 func _exit_tree() -> void:

@@ -189,8 +189,12 @@ func _result_row(rows: VBoxContainer, title: String, group: Dictionary) -> void:
 	var won := int(group.get("wins", 0))
 	var lost := int(group.get("losses", 0))
 	var drawn := int(group.get("draws", 0))
+	var cancelled := int(group.get("cancelled", 0))
 	var rate := _rate(group)
-	_row(rows, title, "%d%%" % rate, "%d won   %d lost   %d drawn" % [won, lost, drawn], rate)
+	var detail := "%d won   %d lost   %d drawn" % [won, lost, drawn]
+	if cancelled > 0:
+		detail += "   %d cancelled" % cancelled
+	_row(rows, title, "%d%%" % rate, detail, rate)
 
 
 static func _rate(group: Dictionary) -> int:

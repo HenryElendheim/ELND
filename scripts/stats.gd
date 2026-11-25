@@ -50,6 +50,14 @@ static func record_match(mode: String, result: String, cores: int, played: Array
 	_store(stats)
 
 
+## A match the player left. It counts on its own and never touches wins, losses or the win streak.
+static func record_cancel(mode: String) -> void:
+	var stats := all()
+	bump(stats, ["cancelled"])
+	bump(stats, ["by_mode", mode, "cancelled"])
+	_store(stats)
+
+
 static func record_chest(rarity: String, legendary_cards: int) -> void:
 	var stats := all()
 	bump(stats, ["chests", rarity])
