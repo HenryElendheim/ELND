@@ -64,8 +64,8 @@ static func _fill_choices(box: Container, options: Array, current: Variant, on_c
 		box.add_child(node)
 
 
-## A label with the current value shown as a percentage, and a slider below it.
-static func slider(text: String, min_value: float, max_value: float, step: float, value: float, on_change: Callable) -> Control:
+## A label with the current value, and a slider below it. Values show as a percentage, or as seconds when asked.
+static func slider(text: String, min_value: float, max_value: float, step: float, value: float, on_change: Callable, seconds := false) -> Control:
 	var node := HSlider.new()
 	node.min_value = min_value
 	node.max_value = max_value
@@ -74,8 +74,8 @@ static func slider(text: String, min_value: float, max_value: float, step: float
 	node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var box := _stack(text, node)
 	var title: Label = box.get_child(0)
-	_show_percent(title, text, value)
-	node.value_changed.connect(func(v: float) -> void: _slid(title, text, v, on_change))
+	_show_value(title, text, value, seconds)
+	node.value_changed.connect(func(v: float) -> void: _slid(title, text, v, on_change, seconds))
 	return box
 
 
@@ -119,13 +119,13 @@ static func _toggled(knob: Button, pressed: bool, on_change: Callable) -> void:
 	on_change.call(pressed)
 
 
-static func _slid(title: Label, text: String, value: float, on_change: Callable) -> void:
-	_show_percent(title, text, value)
+static func _slid(title: Label, text: String, value: float, on_change: Callable, seconds: bool) -> void:
+	_show_value(title, text, value, seconds)
 	on_change.call(value)
 
 
-static func _show_percent(title: Label, text: String, value: float) -> void:
-	title.text = "%s: %d%%" % [text, roundi(value * 100)]
+static func _show_value(title: Label, text: String, value: float, seconds: bool) -> void:
+	title.text = "%s: %.1f s" % [text, value] if seconds else "%s: %d%%" % [text, roundi(value * 100)]
 
 
 static func _number_entered(field: LineEdit, entered: String, on_change: Callable) -> void:

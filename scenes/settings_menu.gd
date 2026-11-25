@@ -3,7 +3,7 @@ extends Screen
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const THEMES := [["dark", "Dark"], ["light", "Light"]]
-const DIFFICULTIES := [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]]
+const DIFFICULTIES := [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["custom", "Custom"]]
 const ADMIN_TAPS := 7
 const TAP_GAP_MS := 2000
 
@@ -27,7 +27,16 @@ func build() -> void:
 	_toggle("Vibration", "vibration")
 
 	_section("Battle")
-	_choice("Bot difficulty", "bot_difficulty", DIFFICULTIES)
+	_choice("Bot difficulty", "bot_difficulty", DIFFICULTIES, 4)
+	# The custom sliders only show while Custom is picked, which keeps the screen short for everyone else.
+	var custom := VBoxContainer.new()
+	add(custom)
+	var ranges: Dictionary = Data.table("bot").custom_ranges
+	_slider("Reaction time", "bot_reaction_time", ranges.reaction_time[0], ranges.reaction_time[1], 0.1, true, custom)
+	_slider("Saving up", "bot_ephrocity_smarts", ranges.ephrocity_smarts[0], ranges.ephrocity_smarts[1], 0.05, false, custom)
+	_slider("Counter-play", "bot_counter_play", ranges.counter_play[0], ranges.counter_play[1], 0.05, false, custom)
+	custom.visible = Settings.get_value("bot_difficulty") == "custom"
+	Settings.changed.connect(func() -> void: custom.visible = Settings.get_value("bot_difficulty") == "custom")
 	_toggle("Pure Balance", "pure_balance")
 
 	_section("Your data")
@@ -73,12 +82,17 @@ func _toggle(text: String, key: String) -> void:
 	add(Ui.toggle(text, Settings.get_value(key), func(value: bool) -> void: Settings.set_value(key, value)))
 
 
-func _choice(text: String, key: String, options: Array) -> void:
-	add(Ui.choice(text, options, Settings.get_value(key), func(value: Variant) -> void: Settings.set_value(key, value)))
+func _choice(text: String, key: String, options: Array, columns := 3) -> void:
+	add(Ui.choice(text, options, Settings.get_value(key), func(value: Variant) -> void: Settings.set_value(key, value), columns))
 
 
-func _slider(text: String, key: String, min_value: float, max_value: float, step: float) -> void:
-	add(Ui.slider(text, min_value, max_value, step, Settings.get_value(key), func(value: float) -> void: Settings.set_value(key, value)))
+## Adds a slider tied to a settings key, to the main column or to another box when one is given.
+func _slider(text: String, key: String, min_value: float, max_value: float, step: float, seconds := false, box: Control = null) -> void:
+	var node := Ui.slider(text, min_value, max_value, step, Settings.get_value(key), func(value: float) -> void: Settings.set_value(key, value), seconds)
+	if box == null:
+		add(node)
+	else:
+		box.add_child(node)
 
 
 ## After an import the screen is rebuilt, which means every control shows the restored values.

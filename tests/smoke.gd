@@ -42,6 +42,7 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	broken += _check_win_rules()
+	broken += _check_bot_counters()
 
 	var hurt := 0
 	for unit in sim.units:
@@ -83,6 +84,21 @@ func _check_win_rules() -> int:
 	lead.clear()
 	tied.clear()
 	return broken
+
+
+## Checks that the bot never thinks a ground melee card answers a flying troop, and prefers an anti-air card.
+func _check_bot_counters() -> int:
+	var cards: Dictionary = Data.table("cards").cards
+	var flyer := Unit.new()
+	flyer.flying = true
+	flyer.max_hp = 800.0
+	var threats: Array[Unit] = [flyer]
+	var melee := Bot.counter_score(cards.hobb, threats)
+	var anti_air := Bot.counter_score(cards.spacefarer, threats)
+	if melee > -50.0 or anti_air <= melee:
+		print("Broken file: bot counters are wrong, melee %.1f, anti-air %.1f" % [melee, anti_air])
+		return 1
+	return 0
 
 
 ## Loads every script and scene in a folder and its subfolders, and counts the ones that fail.

@@ -14,6 +14,9 @@ func _init() -> void:
 		"music_volume": 0.8,
 		"effects_volume": 0.8,
 		"bot_difficulty": "medium",
+		"bot_reaction_time": 1.5,
+		"bot_ephrocity_smarts": 0.5,
+		"bot_counter_play": 0.5,
 		"pure_balance": false,
 		"admin_mode": false,
 	}

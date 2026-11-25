@@ -24,6 +24,21 @@
 		"defend_offset_tiles": 2.5,
 		"push_row_from_back": 3.0,
 		"bridge_row_from_river": 1.5,
-		"push_at_bridge_chance": 0.4
+		"push_at_bridge_chance": 0.4,
+		"support_offset_tiles": 2.0
+	},
+	"custom_ranges": {
+		"reaction_time": [
+			0.4,
+			3.0
+		],
+		"ephrocity_smarts": [
+			0.0,
+			1.0
+		],
+		"counter_play": [
+			0.0,
+			1.0
+		]
 	}
 }
