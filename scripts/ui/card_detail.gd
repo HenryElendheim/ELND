@@ -26,6 +26,8 @@ func _ready() -> void:
 	var card: Dictionary = Data.table("cards").cards[card_id]
 	var cover := Panel.new()
 	cover.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# This layer sits outside the normal screens, so it takes the app's theme directly to get the right sizes.
+	cover.theme = Settings.current_theme
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = Settings.palette().bg
 	cover.add_theme_stylebox_override("panel", fill)
@@ -41,29 +43,41 @@ func _ready() -> void:
 	margin.add_child(column)
 
 	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 32)
 	var tile := CardTile.new(card_id)
 	tile.size_flags_horizontal = Control.SIZE_FILL
-	tile.custom_minimum_size = Vector2(230, 290)
+	tile.custom_minimum_size = Vector2(300, 380)
 	tile.disabled = true
 	header.add_child(tile)
 	var title := VBoxContainer.new()
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.add_child(Ui.label(card.name, "HeadingLabel"))
-	title.add_child(Ui.label("%s   %s" % [Progress.card_rarity(card_id).capitalize(), String(card.get("type", "")).capitalize()]))
+	title.alignment = BoxContainer.ALIGNMENT_CENTER
+	title.add_child(Ui.label(card.name, "StatNumber"))
+	var rarity := Progress.card_rarity(card_id)
+	var rarity_label := Ui.label("%s %s" % [rarity.capitalize(), String(card.get("type", "")).capitalize()], "HeadingLabel")
+	rarity_label.add_theme_color_override("font_color", Color(Data.table("chests").colours.get(rarity, "#FFFFFF")))
+	title.add_child(rarity_label)
 	var level := int(Progress.card(card_id).level)
-	title.add_child(Ui.label("Level %d" % level if level > 0 else "Not yet acquired", "MutedLabel"))
+	title.add_child(Ui.label("Level %d" % level if level > 0 else "Not yet acquired"))
 	header.add_child(title)
 	column.add_child(header)
 
 	var pager := Pager.new()
 	pager.add_page(_page(_info_lines(card)))
 	pager.add_page(_page(_codex_lines(card)))
-	column.add_child(pager.make_tabs(["Info", "Codex"], 100))
+	column.add_child(pager.make_tabs(["Info", "Codex"], 120))
 	column.add_child(pager)
 
+	var buttons := VBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 16)
 	for action in _actions:
-		column.add_child(Ui.button(action[0], func() -> void: _run(action[1])))
-	column.add_child(Ui.button("Close", close))
+		var button := Ui.button(action[0], func() -> void: _run(action[1]))
+		button.custom_minimum_size.y = 130
+		buttons.add_child(button)
+	var close_button := Ui.button("Close", close)
+	close_button.custom_minimum_size.y = 130
+	buttons.add_child(close_button)
+	column.add_child(buttons)
 
 
 func close() -> void:
@@ -75,43 +89,64 @@ func _run(action: Callable) -> void:
 	action.call()
 
 
-## One scrolling page made of labels.
-func _page(lines: Array) -> ScrollContainer:
+## One scrolling page. Each entry is either a line of text with its style, or a list of stats,
+## which becomes a grid of boxes with a small name and a big value, two to a row.
+func _page(entries: Array) -> ScrollContainer:
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 20)
 	scroll.add_child(box)
-	for line in lines:
-		box.add_child(Ui.label(line[0], line[1]))
+	for entry in entries:
+		if entry[0] is Array:
+			box.add_child(_stat_grid(entry[0]))
+		else:
+			box.add_child(Ui.label(entry[0], entry[1]))
 	return scroll
+
+
+func _stat_grid(stats: Array) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = 2
+	for stat in stats:
+		var cell := PanelContainer.new()
+		cell.theme_type_variation = "StatTile"
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var inside := VBoxContainer.new()
+		inside.add_theme_constant_override("separation", 2)
+		cell.add_child(inside)
+		inside.add_child(Ui.label(stat[0], "MutedLabel"))
+		inside.add_child(Ui.label(stat[1], "HeadingLabel"))
+		grid.add_child(cell)
+	return grid
 
 
 ## The Info page. Health and damage are shown at the player's own level, so they match what happens in battle.
 func _info_lines(card: Dictionary) -> Array:
 	var battle := Data.table("battle")
 	var scale := pow(1.0 + float(battle.level_scaling.per_level), maxi(int(Progress.card(card_id).level), 1) - 1)
-	var lines := [["Cost: %d Ephrocity" % int(card.cost), ""]]
+	var stats := [["Cost", "%d Ephrocity" % int(card.cost)]]
 	var type: String = card.get("type", "troop")
 	if card.has("health"):
-		lines.append(["Health: %d" % roundi(float(card.health) * scale), ""])
+		stats.append(["Health", str(roundi(float(card.health) * scale))])
 	if type == "building":
-		lines.append(["Lasts: %d seconds" % int(card.get("lifetime", 0)), ""])
+		stats.append(["Lasts", "%d s" % int(card.get("lifetime", 0))])
 	if float(card.get("damage", 0)) > 0.0:
-		var damage := "Damage: %d" % roundi(float(card.damage) * scale)
+		stats.append(["Damage", str(roundi(float(card.damage) * scale))])
 		if card.has("hit_speed"):
-			damage += " every %.1f s" % float(card.hit_speed)
-		lines.append([damage, ""])
+			stats.append(["Hit speed", "%.1f s" % float(card.hit_speed)])
 	if type == "troop":
 		var speed := float(battle.speeds_tiles_per_second.get(card.get("speed", ""), 0.0))
-		lines.append(["Speed: %s" % SPEED_NAMES.get(speed, String(card.get("speed", "")).capitalize()), ""])
-		lines.append(["Range: %s" % ("%.1f tiles" % float(card.range) if card.get("attack") == "ranged" else "Melee"), ""])
-		lines.append(["Targets: %s" % TARGET_NAMES.get(card.get("targets", "ground"), ""), ""])
-		lines.append(["Moves: %s" % String(card.get("movement", "ground")).capitalize(), ""])
+		stats.append(["Speed", SPEED_NAMES.get(speed, String(card.get("speed", "")).capitalize())])
+		stats.append(["Range", "%.1f tiles" % float(card.range) if card.get("attack") == "ranged" else "Melee"])
+		stats.append(["Targets", TARGET_NAMES.get(card.get("targets", "ground"), "")])
+		stats.append(["Moves", String(card.get("movement", "ground")).capitalize()])
 	if int(card.get("count", 1)) > 1:
-		lines.append(["Comes as a group of %d" % int(card.count), ""])
+		stats.append(["Group of", str(int(card.count))])
 	if card.has("radius"):
-		lines.append(["Area: %.1f tiles" % float(card.radius), ""])
+		stats.append(["Area", "%.1f tiles" % float(card.radius)])
+	var lines := [[stats, ""]]
 	if card.has("how_it_works"):
 		lines.append(["How it works", "HeadingLabel"])
 		lines.append([card.how_it_works, ""])
@@ -125,7 +160,7 @@ func _info_lines(card: Dictionary) -> Array:
 
 ## The Codex page: the ELND number, class and threat, and the Foundation entry once the card is acquired.
 func _codex_lines(card: Dictionary) -> Array:
-	var lines := [["ELND-%03d" % int(card.number), "HeadingLabel"], ["Class %s   Threat %d/5" % [card["class"], int(card.threat)], ""]]
+	var lines := [[[["Number", "ELND-%03d" % int(card.number)], ["Class", String(card["class"])], ["Threat", "%d of 5" % int(card.threat)], ["Rarity", Progress.card_rarity(card_id).capitalize()]], ""]]
 	if int(Progress.card(card_id).level) <= 0:
 		lines.append(["This entry unlocks once the anomaly is acquired.", "MutedLabel"])
 	else:

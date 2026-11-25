@@ -16,6 +16,8 @@ var _pages: Array[Control] = []
 var _press_at: Variant = null
 var _swiping := false
 var _drag := 0.0
+## Set while this pager sends its own pretend release, so it does not mistake it for the finger lifting.
+var _cancelling := false
 var _tween: Tween
 var _tabs: Array[Button] = []
 
@@ -66,9 +68,23 @@ func go_to(index: int, animate := true) -> void:
 		_tween.tween_property(_strip, "position", target, SLIDE_TIME)
 	else:
 		_strip.position = target
-	if page < _tabs.size():
-		_tabs[page].set_pressed_no_signal(true)
+	# Every tab is set, not just the new one, which means exactly one tab is ever lit.
+	for i in _tabs.size():
+		_tabs[i].set_pressed_no_signal(i == page)
 	page_changed.emit(page)
+
+
+## Lets go of whatever button the finger started on, far off screen, which means that button neither fires
+## nor stays looking pressed once the touch has turned into a swipe.
+func _cancel_press() -> void:
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = Vector2(-10000, -10000)
+	release.global_position = release.position
+	_cancelling = true
+	get_viewport().push_input(release)
+	_cancelling = false
 
 
 func _layout() -> void:
@@ -86,6 +102,8 @@ func _input(event: InputEvent) -> void:
 	for modal in get_tree().get_nodes_in_group(MODAL_GROUP):
 		if not modal.is_ancestor_of(self):
 			return
+	if _cancelling:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and get_global_rect().has_point(event.position):
 			_press_at = event.position
@@ -102,6 +120,7 @@ func _input(event: InputEvent) -> void:
 		if not _swiping and absf(moved.x) > SWIPE_START and absf(moved.x) > absf(moved.y) * 1.5:
 			_swiping = true
 			get_viewport().gui_release_focus()
+			_cancel_press()
 		if _swiping:
 			# Past the first and last page the strip only moves a little, which shows there is nothing further.
 			var edge := (page == 0 and moved.x > 0) or (page == _pages.size() - 1 and moved.x < 0)

@@ -30,10 +30,16 @@ func palette() -> Dictionary:
 	return ThemeBuilder.palette(get_value("theme"), get_value("high_contrast"))
 
 
+## The look of the app right now. Layers drawn over everything, such as messages and card details,
+## sit outside the normal screen tree and do not pick up the theme by themselves, so they use this.
+var current_theme: Theme
+
+
 func _on_values_changed() -> void:
 	var colors := palette()
 	RenderingServer.set_default_clear_color(colors.bg)
-	get_tree().root.theme = ThemeBuilder.build(colors, get_value("text_scale"))
+	current_theme = ThemeBuilder.build(colors, get_value("text_scale"))
+	get_tree().root.theme = current_theme
 	_apply_volume("Music", get_value("music_volume"))
 	_apply_volume("Effects", get_value("effects_volume"))
 

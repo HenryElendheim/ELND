@@ -7,6 +7,8 @@ const TOAST_TIME := 2.5
 ## Settings handed to the next screen, such as which mode the battle screen should run.
 var params := {}
 
+## Everything this layer shows hangs under one full-screen holder that carries the app's theme.
+var _holder := Control.new()
 var _fade := ColorRect.new()
 var _toast := Label.new()
 var _banner := Label.new()
@@ -18,10 +20,15 @@ const BANNER_TIME := 1.2
 func _ready() -> void:
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_holder)
+	_use_theme()
+	Settings.changed.connect(_use_theme)
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fade.color = Color(0, 0, 0, 0)
-	add_child(_fade)
+	_holder.add_child(_fade)
 
 	_toast.theme_type_variation = "ToastLabel"
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -34,7 +41,7 @@ func _ready() -> void:
 	_toast.custom_minimum_size.x = 900
 	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_toast.visible = false
-	add_child(_toast)
+	_holder.add_child(_toast)
 
 	_banner.theme_type_variation = "BannerLabel"
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -43,7 +50,11 @@ func _ready() -> void:
 	_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_banner.visible = false
-	add_child(_banner)
+	_holder.add_child(_banner)
+
+
+func _use_theme() -> void:
+	_holder.theme = Settings.current_theme
 
 
 ## Shows a big message in the middle of the screen that fades away, such as "Not enough Ephrocity".
