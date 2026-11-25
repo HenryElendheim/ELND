@@ -54,7 +54,13 @@ func _draw() -> void:
 		draw_rect(Rect2(_to_screen(Vector2(bridge - half, river_top)), Vector2(half * 2.0, river_height) * _tile), BRIDGE)
 
 	for unit in sim.units:
-		if not unit.flying:
+		if unit.is_spell():
+			_draw_spell(unit)
+	for unit in sim.units:
+		if unit.link_until > sim.time:
+			_draw_links(unit)
+	for unit in sim.units:
+		if not unit.flying and not unit.is_spell():
 			_draw_unit(unit)
 	for unit in sim.units:
 		if unit.flying:
@@ -96,6 +102,21 @@ func _draw_unit(unit: Unit) -> void:
 		_draw_health(at - Vector2(r, r + 14), r * 2.0, unit.hp / unit.max_hp, team_colour)
 	if unit.shield > 0.0:
 		_draw_health(at - Vector2(r, r + 26), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
+
+
+## Spells show as a soft circle over the area they cover, in their class colour.
+func _draw_spell(spell: Unit) -> void:
+	var at := _to_screen(spell.pos)
+	var colour := _fill_for(spell)
+	draw_circle(at, spell.radius * _tile, Color(colour, 0.25))
+	draw_arc(at, spell.radius * _tile, 0, TAU, 48, Color(colour, 0.8), 3.0)
+
+
+## Linked troops are joined by a grey chain line to every other troop in the same link.
+func _draw_links(unit: Unit) -> void:
+	for other in sim.units:
+		if other != unit and other.link_group == unit.link_group and other.link_until > sim.time and other.get_instance_id() > unit.get_instance_id():
+			draw_line(_to_screen(unit.pos), _to_screen(other.pos), Color("#C8C8D0"), 4.0)
 
 
 func _draw_label(at: Vector2, text: String, r: float) -> void:

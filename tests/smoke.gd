@@ -10,7 +10,7 @@ const TICKS := 30 * 60
 func _ready() -> void:
 	Settings.set_value("admin_mode", true)
 	var broken := _load_everything("res://scenes") + _load_everything("res://scripts")
-	for scene in ["splash", "main_menu", "settings_menu"]:
+	for scene in ["splash", "main_menu", "settings_menu", "deck"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
@@ -20,9 +20,9 @@ func _ready() -> void:
 	add_child(battle)
 	var sim: BattleSim = battle.sim
 	var cards: Dictionary = Data.table("cards").cards
+	# Every card goes in for the enemy, spells and buildings included, so every ability runs at least once.
 	for id in cards:
-		if cards[id].type == "troop":
-			sim.spawn(id, Unit.Team.ENEMY, Vector2(14, 8))
+		sim.spawn(id, Unit.Team.ENEMY, Vector2(14, 8))
 	# The player side plays its whole hand through the normal rules, which checks costs, placement and cycling.
 	var hand := sim.hands[Unit.Team.PLAYER]
 	hand.infinite = true

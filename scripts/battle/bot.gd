@@ -29,6 +29,46 @@ static func knobs() -> Dictionary:
 	return bot.presets.get(difficulty, bot.presets[bot.default_difficulty])
 
 
+## Builds the bot's deck. A random deck is just any cards. A synergy deck always has something that goes for towers
+## and something that can hit flying troops, then fills up at random. A mixed deck is a synergy deck half of the time.
+func pick_deck_for(available: Array, size: int, knob: Dictionary) -> Array:
+	return pick_deck(available, size, knob, _rng)
+
+
+static func pick_deck(available: Array, size: int, knob: Dictionary, rng: RandomNumberGenerator = null) -> Array:
+	if rng == null:
+		rng = RandomNumberGenerator.new()
+		rng.randomize()
+	var pool := available.duplicate()
+	for i in range(pool.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var swap: Variant = pool[i]
+		pool[i] = pool[j]
+		pool[j] = swap
+	var quality: String = knob.get("deck_quality", "mixed")
+	var deck := []
+	if quality == "synergy" or (quality == "mixed" and rng.randf() < 0.5):
+		var cards: Dictionary = Data.table("cards").cards
+		for need in ["towers", "air"]:
+			for id in pool:
+				if not id in deck and _fills(cards[id], need):
+					deck.append(id)
+					break
+	for id in pool:
+		if deck.size() >= size:
+			break
+		if not id in deck:
+			deck.append(id)
+	return deck
+
+
+## Whether a card covers a need a good deck has: something that goes for towers, or something that can hit the air.
+static func _fills(card: Dictionary, need: String) -> bool:
+	if need == "towers":
+		return card.get("targets") == "buildings"
+	return card.get("targets") == "air_ground" or card.get("type") == "spell"
+
+
 func think(sim: BattleSim) -> void:
 	_wait -= sim.tick
 	if not enabled or _wait > 0.0:
@@ -69,7 +109,7 @@ func _threats(sim: BattleSim) -> Array[Unit]:
 	var river_top := float(Data.table("battle").arena.river_top)
 	var found: Array[Unit] = []
 	for unit in sim.units:
-		if unit.team != _team and not unit.is_building() and unit.pos.y < river_top:
+		if unit.team != _team and unit.kind == "troop" and unit.pos.y < river_top:
 			found.append(unit)
 	found.sort_custom(func(a: Unit, b: Unit) -> bool: return a.pos.y < b.pos.y)
 	return found
@@ -117,7 +157,7 @@ static func counter_score(card: Dictionary, threats: Array[Unit]) -> float:
 func _own_push(sim: BattleSim) -> Unit:
 	var best: Unit = null
 	for unit in sim.units:
-		if unit.team == _team and not unit.is_building() and unit.deploy_left <= 0.0:
+		if unit.team == _team and unit.kind == "troop" and unit.deploy_left <= 0.0:
 			if best == null or unit.pos.y > best.pos.y:
 				best = unit
 	return best

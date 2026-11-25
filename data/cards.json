@@ -216,9 +216,13 @@
 			"abilities": [
 				{
 					"id": "spike_field",
-					"duration": 4.0
+					"duration": 4.0,
+					"damage_per_second": 20,
+					"growth_per_second": 0.25,
+					"slow": 0.35
 				}
-			]
+			],
+			"tower_damage_share": 0.35
 		},
 		"dargalean": {
 			"number": 8,
@@ -327,7 +331,8 @@
 					"max_targets": 3,
 					"duration": 6.0
 				}
-			]
+			],
+			"radius": 2.5
 		}
 	},
 	"spell_kinds": {

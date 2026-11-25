@@ -23,19 +23,29 @@ func _init() -> void:
 	_arena = _battle.arena
 	tick = 1.0 / float(_battle.tick_rate)
 	_place_towers()
-	for team in Unit.Team.size():
-		hands.append(Hand.new(starting_deck(), _battle))
+	hands.append(Hand.new(starting_deck(), _battle))
+	hands.append(Hand.new(bot.pick_deck_for(available_cards(), int(_battle.deck.size), Bot.knobs()), _battle))
 
 
-## Every card that can be played so far, up to the deck size. Later milestones replace this with the player's own deck.
-static func starting_deck() -> Array:
+## Every card the player has unlocked that can be played, in the order cards.json lists them.
+static func available_cards() -> Array:
 	var battle := Data.table("battle")
 	var cards: Dictionary = Data.table("cards").cards
-	var deck := []
+	var found := []
 	for id in cards:
-		if cards[id].get("type") in battle.playable_types and deck.size() < int(battle.deck.size):
-			deck.append(id)
-	return deck
+		if cards[id].get("type") in battle.playable_types and int(cards[id].get("unlock_arena", 1)) <= 1:
+			found.append(id)
+	return found
+
+
+## The player's saved deck when it is still valid, and otherwise the first cards that are available.
+static func starting_deck() -> Array:
+	var size := int(Data.table("battle").deck.size)
+	var available := available_cards()
+	var saved: Array = Save.get_value("deck") if Save.get_value("deck") is Array else []
+	if saved.size() == mini(size, available.size()) and saved.all(func(id: Variant) -> bool: return id in available):
+		return saved
+	return available.slice(0, size)
 
 
 ## How many times faster than normal Ephrocity is filling right now, which is 1, 2 or 3.
@@ -49,12 +59,14 @@ func ephrocity_rate() -> float:
 
 ## Checks whether a team may put a troop at a spot. Each side has its own half, and once an enemy
 ## side tower falls, that lane on the enemy's half opens up too, as deep as the pocket setting allows.
-func can_place(team: Unit.Team, at: Vector2) -> bool:
+func can_place(team: Unit.Team, at: Vector2, spell := false) -> bool:
 	var length := float(_arena.length_tiles)
 	if at.x < 0.0 or at.y < 0.0 or at.x > float(_arena.width_tiles) or at.y > length:
 		return false
 	# Flipping the enemy's spot means the same rules can be written once from the player's side.
 	var y := at.y if team == Unit.Team.PLAYER else length - at.y
+	if spell:
+		return true
 	if y > float(_arena.river_bottom):
 		return true
 	if y < float(_arena.river_top) - float(_battle.pocket_depth_tiles) or y > float(_arena.river_top):
@@ -66,10 +78,14 @@ func can_place(team: Unit.Team, at: Vector2) -> bool:
 	return true
 
 
+static func is_spell_card(card_id: String) -> bool:
+	return Data.table("cards").cards[card_id].get("type") == "spell"
+
+
 ## Plays the card in a hand slot at a spot, paying its Ephrocity cost. It returns false when the spot or the cost is not allowed.
 func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 	var hand := hands[team]
-	if not can_place(team, at) or not hand.can_afford(slot):
+	if not can_place(team, at, is_spell_card(hand.cards[slot])) or not hand.can_afford(slot):
 		return false
 	spawn(hand.play(slot), team, at)
 	return true
@@ -85,13 +101,42 @@ func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1) -> void:
 		if count > 1:
 			offset = Vector2.from_angle(TAU * i / count) * float(_battle.swarm_spread_tiles)
 		var unit := _make(card_id, card.get("type", "troop"), card.name, team, _clamp_to_arena(at + offset), level)
-		unit.deploy_left = float(_battle.deploy_time)
+		unit.deploy_left = 0.0 if unit.is_spell() else float(_battle.deploy_time)
 		unit.spawn_time = time + unit.deploy_left
 		unit.group = _next_group
 		for entry in card.get("abilities", []):
 			var ability := Ability.create(entry, unit)
 			if ability != null:
 				unit.abilities.append(ability)
+		if unit.is_spell():
+			_cast(unit, card)
+
+
+## A spell's instant hit when it lands. Towers take only part of it when the card says so.
+func _cast(spell: Unit, card: Dictionary) -> void:
+	for victim in enemies_near(spell, spell.pos, spell.radius):
+		var share := float(card.get("tower_damage_share", 1.0)) if victim.is_tower() else 1.0
+		deal_damage(spell, victim, spell.damage * share)
+	if spell.abilities.is_empty():
+		spell.hp = 0.0
+
+
+## Stuns a unit, letting its abilities change how long it lasts, as Kardemosh's Halt does.
+func stun(unit: Unit, seconds: float) -> void:
+	for ability in unit.abilities:
+		seconds = ability.on_stunned(self, seconds)
+	unit.stun_left = maxf(unit.stun_left, seconds)
+
+
+## How far a troop has come along its path toward the other side, in tiles.
+func progress(unit: Unit) -> float:
+	return float(_arena.length_tiles) - unit.pos.y if unit.team == Unit.Team.PLAYER else unit.pos.y
+
+
+## Shifts a troop back toward its own side.
+func push_back(unit: Unit, tiles: float) -> void:
+	var direction := 1.0 if unit.team == Unit.Team.PLAYER else -1.0
+	unit.pos = _clamp_to_arena(unit.pos + Vector2(0, direction * tiles))
 
 
 ## Re-reads every unit's numbers, which is how Admin Mode edits reach a match that is already running.
@@ -161,7 +206,7 @@ func _drain_towers() -> void:
 	var amount := float(_battle.match.tiebreaker_drain_per_second) * tick
 	for unit in units:
 		if unit.is_tower():
-			deal_damage(null, unit, amount)
+			deal_damage(null, unit, amount, false)
 
 
 func step() -> void:
@@ -252,12 +297,21 @@ func _update(unit: Unit) -> void:
 		unit.awake = _should_wake(unit)
 		if not unit.awake:
 			return
+	if unit.is_spell():
+		return
+	if unit.kind == "building":
+		# A building's health drains over its lifetime, which means damage to it also shortens how long it stays.
+		unit.hp -= unit.max_hp / maxf(float(_stats_for(unit).get("lifetime", 30.0)), 1.0) * tick
 	unit.cooldown = maxf(unit.cooldown - tick, 0.0)
 	if unit.carrier != null:
 		if unit.carrier.alive():
 			unit.pos = unit.carrier.pos
 			return
 		unit.carrier = null
+		stun(unit, unit.release_daze)
+	if unit.stun_left > 0.0:
+		unit.stun_left -= tick
+		return
 	var step_length := unit.speed * unit.move_speed * tick
 	if unit.goal_override != null:
 		unit.pos = unit.pos.move_toward(unit.goal_override, step_length)
@@ -306,9 +360,15 @@ func _hit(attacker: Unit, victim: Unit) -> void:
 
 
 ## Every bit of damage goes through here, which means abilities, shields and damage taken changes always apply.
-func deal_damage(attacker: Unit, victim: Unit, amount: float) -> void:
+## Small damage over time passes flash as false, so the white hit flash is kept for real hits.
+## A victim linked by Chain passes the same damage on to every other troop in its link.
+func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, shared := false) -> void:
 	if not victim.alive():
 		return
+	if not shared and victim.link_until > time:
+		for other in units:
+			if other != victim and other.link_group == victim.link_group and other.link_until > time:
+				deal_damage(attacker, other, amount, flash, true)
 	if attacker != null:
 		for ability in attacker.abilities:
 			amount = ability.on_hit(self, victim, amount)
@@ -318,7 +378,8 @@ func deal_damage(attacker: Unit, victim: Unit, amount: float) -> void:
 	var absorbed := minf(victim.shield, amount)
 	victim.shield -= absorbed
 	victim.hp -= amount - absorbed
-	victim.flash = 2
+	if flash:
+		victim.flash = 2
 	if attacker == null:
 		return
 	victim.last_attacker = attacker
@@ -379,7 +440,7 @@ func _find_target(unit: Unit) -> Unit:
 
 ## Flying units can only be hit by ranged attackers, other flyers and towers. Building-only troops ignore everything else.
 func can_target(unit: Unit, other: Unit) -> bool:
-	if other == null or not other.alive() or other.team == unit.team or other.carrier != null:
+	if other == null or not other.alive() or other.team == unit.team or other.carrier != null or other.is_spell():
 		return false
 	if unit.targets == "buildings":
 		return other.is_building()
@@ -450,7 +511,7 @@ func _keep_apart() -> void:
 		var a := units[i]
 		for j in range(i + 1, units.size()):
 			var b := units[j]
-			if a.flying != b.flying or (a.is_building() and b.is_building()) or a.carrier != null or b.carrier != null:
+			if a.flying != b.flying or (a.is_building() and b.is_building()) or a.carrier != null or b.carrier != null or a.is_spell() or b.is_spell():
 				continue
 			var overlap := a.radius + b.radius - a.pos.distance_to(b.pos)
 			if overlap <= 0.0:
@@ -464,7 +525,7 @@ func _keep_apart() -> void:
 				a.pos -= push * overlap / 2.0
 				b.pos += push * overlap / 2.0
 	for unit in units:
-		if unit.is_building() or unit.carrier != null:
+		if unit.is_building() or unit.is_spell() or unit.carrier != null:
 			continue
 		unit.pos = _clamp_to_arena(unit.pos)
 		if not unit.flying and _river_side(unit.pos.y) == 0:

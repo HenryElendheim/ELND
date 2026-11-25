@@ -38,8 +38,14 @@ var cooldown := 0.0
 var awake := true
 var target: Unit = null
 var last_attacker: Unit = null
-## The flying unit carrying this one, if any. A carried unit cannot do anything.
+## The unit holding this one, such as a Creeler carrying it or a Gasket it lies in. A held unit cannot do anything.
 var carrier: Unit = null
+## How long the unit stays dazed once its carrier is gone.
+var release_daze := 0.0
+var stun_left := 0.0
+## Units hit by the same Chain share a link group, and damage to one is copied to the others until link_until.
+var link_group := 0
+var link_until := -INF
 ## Extra health on top of the normal health bar that is used up first, such as Kardemosh's stolen skin.
 var shield := 0.0
 var spawn_time := 0.0
@@ -63,8 +69,14 @@ func alive() -> bool:
 	return hp > 0.0
 
 
+## Towers count as buildings, which means troops that only attack buildings go for them.
 func is_building() -> bool:
-	return kind != "troop"
+	return kind == "building" or is_tower()
+
+
+## Spells are short-lived, invisible units that nobody can attack.
+func is_spell() -> bool:
+	return kind == "spell"
 
 
 func is_tower() -> bool:
@@ -94,7 +106,7 @@ func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
 	attack_range = float(stats.get("range", battle.melee_range_tiles))
 	speed = float(battle.speeds_tiles_per_second.get(stats.get("speed", ""), 0.0))
 	flying = stats.get("movement", "ground") == "flying"
-	targets = stats.get("targets", "ground")
+	targets = stats.get("targets", "air_ground" if is_spell() else "ground")
 	area = stats.get("area", false)
-	radius = float(stats.get("size", 0)) / 2.0 if stats.has("size") else float(battle.unit_radius_tiles)
+	radius = float(stats.get("size", 0)) / 2.0 if stats.has("size") else float(stats.get("radius", battle.unit_radius_tiles))
 	radius *= 1.0 + (growth - 1.0) / 2.0

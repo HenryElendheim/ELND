@@ -39,6 +39,11 @@ func on_hurt(_sim: BattleSim, _attacker: Unit, amount: float) -> float:
 	return amount
 
 
+## Lets the ability change how long a stun on this unit lasts. Returning zero means the stun does nothing.
+func on_stunned(_sim: BattleSim, seconds: float) -> float:
+	return seconds
+
+
 ## Runs when this unit's hit finishes off an enemy.
 func on_kill(_sim: BattleSim, _victim: Unit) -> void:
 	pass
