@@ -19,6 +19,12 @@ var show_hitboxes := false
 var show_ranges := false
 var show_targets := false
 var show_fps := false
+## Short-lived effects made from battle events: damage numbers and impact rings. Each lives well under a second.
+var _effects := []
+var _shake := 0.0
+
+const EFFECT_TIME := 0.45
+const SHAKE_TIME := 0.35
 
 var _tile := 1.0
 var _origin := Vector2.ZERO
@@ -32,9 +38,34 @@ func _ready() -> void:
 	clip_contents = true
 
 
+## Turns the battle's new events into effects, sounds and buzzes. Called once per frame by the battle screen.
+func take_events(delta: float) -> void:
+	for event in sim.events:
+		match event.type:
+			"hit":
+				_effects.append({"pos": event.pos, "amount": event.amount, "age": 0.0})
+				Sfx.play("hit")
+			"tower_down":
+				Sfx.play("tower_down")
+				if not Settings.reduced_motion():
+					_shake = SHAKE_TIME
+				if Settings.get_value("vibration"):
+					Input.vibrate_handheld(250)
+	sim.events.clear()
+	for effect in _effects:
+		effect.age += delta
+	_effects = _effects.filter(func(effect: Dictionary) -> bool: return effect.age < EFFECT_TIME)
+	_shake = maxf(_shake - delta, 0.0)
+
+
 func _draw() -> void:
 	if sim == null:
 		return
+	if _shake > 0.0:
+		var strength := 10.0 * _shake / SHAKE_TIME
+		draw_set_transform(Vector2(randf_range(-strength, strength), randf_range(-strength, strength)))
+	else:
+		draw_set_transform(Vector2.ZERO)
 	var arena: Dictionary = Data.table("battle").arena
 	var width := float(arena.width_tiles)
 	var length := float(arena.length_tiles)
@@ -67,6 +98,8 @@ func _draw() -> void:
 			_draw_unit(unit)
 	for shot in sim.projectiles:
 		_draw_projectile(shot)
+	for effect in _effects:
+		_draw_effect(effect)
 	if show_fps:
 		draw_string(ThemeDB.fallback_font, Vector2(16, 48), "%d FPS" % Engine.get_frames_per_second(), HORIZONTAL_ALIGNMENT_LEFT, -1, 36)
 
@@ -127,6 +160,19 @@ func _draw_projectile(shot: Projectile) -> void:
 	draw_line(at - heading * size * 2.5, at, Color(team_colour, 0.55), maxf(size * 0.9, 3.0))
 	draw_circle(at, size, team_colour)
 	draw_circle(at, size * 0.65, colour)
+
+
+## A hit shows a small white ring that grows and fades, and the damage number floats up when damage numbers are on.
+## Reduced motion keeps the ring still and only fades it.
+func _draw_effect(effect: Dictionary) -> void:
+	var share: float = effect.age / EFFECT_TIME
+	var at := _to_screen(effect.pos)
+	var grow := 0.0 if Settings.reduced_motion() else share
+	draw_arc(at, _tile * (0.25 + 0.35 * grow), 0, TAU, 16, Color(1, 1, 1, 0.8 * (1.0 - share)), 3.0)
+	if Settings.get_value("damage_numbers"):
+		var rise := 0.0 if Settings.reduced_motion() else share * _tile
+		var text := str(roundi(effect.amount))
+		draw_string(ThemeDB.fallback_font, at + Vector2(-_tile * 0.3, -_tile * 0.6 - rise), text, HORIZONTAL_ALIGNMENT_LEFT, -1, int(_tile * 0.5), Color(1, 1, 1, 1.0 - share))
 
 
 ## Spells show as a soft circle over the area they cover, in their class colour.

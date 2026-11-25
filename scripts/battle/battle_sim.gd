@@ -18,6 +18,9 @@ var time := 0.0
 var result := ""
 ## Card levels for the player's cards, and one level for all of the bot's cards. Everything is level 1 until use_progress().
 var player_levels := {}
+## Things that just happened, such as hits and fallen towers, for the screen to show and play sounds for.
+## The screen empties this list after reading it, so the battle itself never depends on it.
+var events := []
 ## Every card the player has played this match, in order, which the stats screen counts.
 var played_cards := []
 var bot_level := 1
@@ -302,6 +305,9 @@ func _drain_towers() -> void:
 func step() -> void:
 	if result != "":
 		return
+	# Without a screen reading them, events would pile up forever, so old ones are dropped.
+	if events.size() > 256:
+		events.clear()
 	time += tick
 	bot.think(self)
 	if waves != null:
@@ -511,6 +517,9 @@ func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, sha
 	victim.hp -= amount - absorbed
 	if flash:
 		victim.flash = 2
+		events.append({"type": "hit", "pos": victim.pos, "amount": amount, "team": victim.team})
+	if victim.is_tower() and not victim.alive():
+		events.append({"type": "tower_down", "pos": victim.pos, "team": victim.team})
 	if attacker == null:
 		return
 	victim.last_attacker = attacker

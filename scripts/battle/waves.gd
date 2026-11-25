@@ -1,12 +1,14 @@
 class_name Waves
 extends RefCounted
 ## Runs Defense mode. Whenever the field is clear of attackers, a short break follows and then the next wave walks in.
+## A wave that takes too long does not hold things up: the next one comes anyway once the wave timer runs out.
 ## Each wave spends a bigger Ephrocity budget on random troops, and every few waves the attackers gain a level.
 ## All of these numbers come from defense.json.
 
 var wave := 0
 
 var _break := 0.0
+var _wave_age := 0.0
 var _rng := RandomNumberGenerator.new()
 
 
@@ -17,13 +19,17 @@ func _init(rng_seed: int) -> void:
 
 
 func tick(sim: BattleSim) -> void:
-	for unit in sim.units:
-		if unit.team == Unit.Team.ENEMY and not unit.is_tower() and unit.alive():
-			return
-	_break -= sim.tick
-	if _break > 0.0:
-		return
 	var rules := Data.table("defense")
+	_wave_age += sim.tick
+	var overdue := wave > 0 and _wave_age >= float(rules.max_wave_seconds)
+	if not overdue:
+		for unit in sim.units:
+			if unit.team == Unit.Team.ENEMY and not unit.is_tower() and unit.alive():
+				return
+		_break -= sim.tick
+		if _break > 0.0:
+			return
+	_wave_age = 0.0
 	wave += 1
 	_break = float(rules.break_seconds)
 	_spawn_wave(sim, rules)

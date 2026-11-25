@@ -107,6 +107,7 @@ func _open() -> void:
 		await shake.finished
 	_chest.rotation = 0.0
 	_chest.color = colour
+	Sfx.play("chest")
 	_title.text = "%s chest" % rarity.capitalize()
 	_buzz(400 if rarity in ["epic", "legendary"] else 120)
 	_skip.visible = rarity in ["common", "rare"]

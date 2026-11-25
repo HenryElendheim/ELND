@@ -21,6 +21,7 @@ Data="*res://scripts/autoload/data_store.gd"
 Settings="*res://scripts/autoload/settings.gd"
 Save="*res://scripts/autoload/save_game.gd"
 Nav="*res://scripts/autoload/nav.gd"
+Sfx="*res://scripts/autoload/sfx.gd"
 
 [display]
 

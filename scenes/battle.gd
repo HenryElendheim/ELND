@@ -104,6 +104,7 @@ func _process(delta: float) -> void:
 		sim.step()
 		_accumulator -= sim.tick
 	_view.blend = _accumulator / sim.tick
+	_view.take_events(delta)
 	_view.queue_redraw()
 	_meter.queue_redraw()
 	_refresh_hand()
@@ -196,8 +197,10 @@ func _refresh_evolutions() -> void:
 
 
 func _use_evolution(unit: Unit) -> void:
-	if sim.activate_evolution(unit) and Settings.get_value("vibration"):
-		Input.vibrate_handheld(60)
+	if sim.activate_evolution(unit):
+		Sfx.play("evolve")
+		if Settings.get_value("vibration"):
+			Input.vibrate_handheld(60)
 
 
 ## Tells the player when Ephrocity starts filling faster, with a short buzz if vibration is on.
@@ -228,6 +231,7 @@ func _on_tapped(tile: Vector2) -> void:
 	elif not sim.can_place(Unit.Team.PLAYER, tile):
 		Nav.toast("You can only place on your side")
 	elif sim.play(Unit.Team.PLAYER, _slot, tile):
+		Sfx.play("play")
 		_slot_buttons[_slot].button_pressed = false
 		_slot = -1
 
