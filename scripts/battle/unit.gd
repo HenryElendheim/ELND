@@ -26,13 +26,37 @@ var speed := 0.0
 var flying := false
 var targets := "ground"
 
+var area := false
+## Bigger than one when an ability makes the unit grow, which scales its health, damage and size.
+var growth := 1.0
+var abilities: Array[Ability] = []
+## Units from the same card play share a group number, so a swarm can react together.
+var group := 0
+
 var deploy_left := 0.0
 var cooldown := 0.0
 var awake := true
 var target: Unit = null
 var last_attacker: Unit = null
+## The flying unit carrying this one, if any. A carried unit cannot do anything.
+var carrier: Unit = null
+## Extra health on top of the normal health bar that is used up first, such as Kardemosh's stolen skin.
+var shield := 0.0
+var spawn_time := 0.0
+var last_attack_time := -INF
+var last_kill_time := -INF
 ## Counts down the ticks of the white hit flash.
 var flash := 0
+
+# Short effects that abilities set again every tick. They go back to normal at the start of each tick,
+# which means an effect simply stops once nothing keeps setting it.
+var attack_speed := 1.0
+var move_speed := 1.0
+var damage_taken := 1.0
+var can_attack := true
+var dread := 0.0
+var taunt_radius := 0.0
+var goal_override: Variant = null
 
 
 func alive() -> bool:
@@ -47,10 +71,20 @@ func is_tower() -> bool:
 	return kind == "side" or kind == "main"
 
 
+func reset_effects() -> void:
+	attack_speed = 1.0
+	move_speed = 1.0
+	damage_taken = 1.0
+	can_attack = true
+	dread = 0.0
+	taunt_radius = 0.0
+	goal_override = null
+
+
 ## Reads the unit's numbers from its data entry. Health keeps the same share it had,
 ## which means changing max health in Admin Mode mid-match does not heal or kill anything.
 func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
-	var scale := pow(1.0 + float(battle.level_scaling.per_level), level - 1)
+	var scale := pow(1.0 + float(battle.level_scaling.per_level), level - 1) * growth
 	var share := hp / max_hp if max_hp > 0.0 else 1.0
 	max_hp = float(stats.get("health", 1)) * scale
 	hp = max_hp * share
@@ -61,4 +95,6 @@ func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
 	speed = float(battle.speeds_tiles_per_second.get(stats.get("speed", ""), 0.0))
 	flying = stats.get("movement", "ground") == "flying"
 	targets = stats.get("targets", "ground")
+	area = stats.get("area", false)
 	radius = float(stats.get("size", 0)) / 2.0 if stats.has("size") else float(battle.unit_radius_tiles)
+	radius *= 1.0 + (growth - 1.0) / 2.0

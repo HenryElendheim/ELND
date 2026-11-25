@@ -12,6 +12,7 @@ var time := 0.0
 
 var _battle := {}
 var _arena := {}
+var _next_group := 0
 
 
 func _init() -> void:
@@ -75,19 +76,30 @@ func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1) -> void:
 	var card: Dictionary = Data.table("cards").cards[card_id]
 	var count := int(card.get("count", 1))
+	_next_group += 1
 	for i in count:
 		var offset := Vector2.ZERO
 		if count > 1:
 			offset = Vector2.from_angle(TAU * i / count) * float(_battle.swarm_spread_tiles)
 		var unit := _make(card_id, card.get("type", "troop"), card.name, team, _clamp_to_arena(at + offset), level)
 		unit.deploy_left = float(_battle.deploy_time)
+		unit.spawn_time = time + unit.deploy_left
+		unit.group = _next_group
+		for entry in card.get("abilities", []):
+			var ability := Ability.create(entry, unit)
+			if ability != null:
+				unit.abilities.append(ability)
 
 
 ## Re-reads every unit's numbers, which is how Admin Mode edits reach a match that is already running.
 func refresh_stats() -> void:
 	_battle = Data.table("battle")
 	for unit in units:
-		unit.apply_stats(_stats_for(unit), _battle)
+		refresh_unit(unit)
+
+
+func refresh_unit(unit: Unit) -> void:
+	unit.apply_stats(_stats_for(unit), _battle)
 
 
 func step() -> void:
@@ -97,6 +109,14 @@ func step() -> void:
 		hand.regenerate(bars)
 	for unit in units:
 		unit.prev_pos = unit.pos
+		unit.reset_effects()
+	# Abilities run before anyone moves, so every effect they set is in place for the whole tick.
+	for unit in units:
+		if unit.alive() and unit.deploy_left <= 0.0:
+			for ability in unit.abilities:
+				ability.tick(self)
+	for unit in units:
+		unit.attack_speed *= 1.0 - unit.dread
 	for unit in units:
 		if unit.alive():
 			_update(unit)
@@ -118,6 +138,8 @@ func clear() -> void:
 	for unit in units:
 		unit.target = null
 		unit.last_attacker = null
+		unit.carrier = null
+		unit.abilities.clear()
 	units.clear()
 
 
@@ -163,9 +185,22 @@ func _update(unit: Unit) -> void:
 		if not unit.awake:
 			return
 	unit.cooldown = maxf(unit.cooldown - tick, 0.0)
+	if unit.carrier != null:
+		if unit.carrier.alive():
+			unit.pos = unit.carrier.pos
+			return
+		unit.carrier = null
+	var step_length := unit.speed * unit.move_speed * tick
+	if unit.goal_override != null:
+		unit.pos = unit.pos.move_toward(unit.goal_override, step_length)
+		return
 
 	# A unit keeps hitting what it is already in range of, and otherwise looks for the best target again.
-	if not (_can_target(unit, unit.target) and _in_range(unit, unit.target)):
+	# A nearby lure such as The Dargalean always wins.
+	var lure := _lure_for(unit)
+	if lure != null:
+		unit.target = lure
+	elif not (can_target(unit, unit.target) and _in_range(unit, unit.target)):
 		unit.target = _find_target(unit)
 
 	var goal := unit.target
@@ -174,10 +209,10 @@ func _update(unit: Unit) -> void:
 	if goal == null:
 		return
 	if _in_range(unit, goal):
-		if goal == unit.target and unit.cooldown <= 0.0 and unit.damage > 0.0:
+		if goal == unit.target and unit.can_attack and unit.cooldown <= 0.0 and unit.damage > 0.0:
 			_hit(unit, goal)
 	elif unit.speed > 0.0:
-		unit.pos = unit.pos.move_toward(_waypoint(unit, goal.pos), unit.speed * tick)
+		unit.pos = unit.pos.move_toward(_waypoint(unit, goal.pos), step_length)
 
 
 ## The main tower sleeps until it takes damage or one of its side towers falls.
@@ -191,11 +226,70 @@ func _should_wake(tower: Unit) -> bool:
 	return side_towers < Data.table("towers").side.positions.size()
 
 
+## One attack. Area attackers also hit every enemy they could target close to the main victim.
 func _hit(attacker: Unit, victim: Unit) -> void:
-	victim.hp -= attacker.damage
+	attacker.cooldown = attacker.hit_speed / maxf(attacker.attack_speed, 0.05)
+	attacker.last_attack_time = time
+	var victims: Array[Unit] = [victim]
+	if attacker.area:
+		victims = enemies_near(attacker, victim.pos, float(_battle.area_radius_tiles) + victim.radius)
+	for each in victims:
+		deal_damage(attacker, each, attacker.damage)
+
+
+## Every bit of damage goes through here, which means abilities, shields and damage taken changes always apply.
+func deal_damage(attacker: Unit, victim: Unit, amount: float) -> void:
+	if not victim.alive():
+		return
+	if attacker != null:
+		for ability in attacker.abilities:
+			amount = ability.on_hit(self, victim, amount)
+	for ability in victim.abilities:
+		amount = ability.on_hurt(self, attacker, amount)
+	amount *= victim.damage_taken
+	var absorbed := minf(victim.shield, amount)
+	victim.shield -= absorbed
+	victim.hp -= amount - absorbed
 	victim.flash = 2
+	if attacker == null:
+		return
 	victim.last_attacker = attacker
-	attacker.cooldown = attacker.hit_speed
+	if not victim.alive():
+		if not victim.is_building():
+			attacker.last_kill_time = time
+		for ability in attacker.abilities:
+			ability.on_kill(self, victim)
+
+
+## Every living enemy of a unit that the unit could attack and that stands within a distance of a spot.
+func enemies_near(unit: Unit, at: Vector2, distance: float) -> Array[Unit]:
+	var found: Array[Unit] = []
+	for other in units:
+		if can_target(unit, other) and at.distance_to(other.pos) - other.radius <= distance:
+			found.append(other)
+	return found
+
+
+## Pushes a troop straight away from a spot. Buildings and towers stay where they are.
+func knock_back(unit: Unit, from: Vector2, distance: float) -> void:
+	if not unit.is_building():
+		unit.pos = _clamp_to_arena(unit.pos + (unit.pos - from).normalized() * distance)
+
+
+## The row at the very back of a team's own side.
+func back_line(team: Unit.Team) -> float:
+	return float(_arena.length_tiles) - 1.0 if team == Unit.Team.PLAYER else 1.0
+
+
+## The closest enemy lure whose pull reaches this unit, if the unit is a troop that could attack it.
+func _lure_for(unit: Unit) -> Unit:
+	if unit.is_building() or unit.targets == "buildings":
+		return null
+	return _nearest(unit, func(other: Unit) -> bool: return _pulls(other, unit), INF)
+
+
+func _pulls(lure: Unit, unit: Unit) -> bool:
+	return lure.taunt_radius > 0.0 and can_target(unit, lure) and _gap(unit, lure) <= lure.taunt_radius
 
 
 ## Troops pick the closest thing they can attack within sight, and fall back to the nearest building.
@@ -205,19 +299,19 @@ func _find_target(unit: Unit) -> Unit:
 		"none":
 			return null
 		"attackers_only":
-			return unit.last_attacker if _can_target(unit, unit.last_attacker) else null
-	var can := func(other: Unit) -> bool: return _can_target(unit, other)
+			return unit.last_attacker if can_target(unit, unit.last_attacker) else null
+	var can := func(other: Unit) -> bool: return can_target(unit, other)
 	if unit.is_tower():
 		return _nearest(unit, can, unit.attack_range)
 	var seen := _nearest(unit, can, float(_battle.sight_range_tiles))
 	if seen != null:
 		return seen
-	return _nearest(unit, func(other: Unit) -> bool: return other.is_building() and _can_target(unit, other), INF)
+	return _nearest(unit, func(other: Unit) -> bool: return other.is_building() and can_target(unit, other), INF)
 
 
 ## Flying units can only be hit by ranged attackers, other flyers and towers. Building-only troops ignore everything else.
-func _can_target(unit: Unit, other: Unit) -> bool:
-	if other == null or not other.alive() or other.team == unit.team:
+func can_target(unit: Unit, other: Unit) -> bool:
+	if other == null or not other.alive() or other.team == unit.team or other.carrier != null:
 		return false
 	if unit.targets == "buildings":
 		return other.is_building()
@@ -288,7 +382,7 @@ func _keep_apart() -> void:
 		var a := units[i]
 		for j in range(i + 1, units.size()):
 			var b := units[j]
-			if a.flying != b.flying or (a.is_building() and b.is_building()):
+			if a.flying != b.flying or (a.is_building() and b.is_building()) or a.carrier != null or b.carrier != null:
 				continue
 			var overlap := a.radius + b.radius - a.pos.distance_to(b.pos)
 			if overlap <= 0.0:
@@ -302,7 +396,7 @@ func _keep_apart() -> void:
 				a.pos -= push * overlap / 2.0
 				b.pos += push * overlap / 2.0
 	for unit in units:
-		if unit.is_building():
+		if unit.is_building() or unit.carrier != null:
 			continue
 		unit.pos = _clamp_to_arena(unit.pos)
 		if not unit.flying and _river_side(unit.pos.y) == 0:

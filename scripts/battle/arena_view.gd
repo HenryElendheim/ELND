@@ -94,6 +94,8 @@ func _draw_unit(unit: Unit) -> void:
 		draw_arc(at, r, 0, TAU, 32, Color.YELLOW, 2.0)
 	if unit.is_tower() or unit.hp < unit.max_hp:
 		_draw_health(at - Vector2(r, r + 14), r * 2.0, unit.hp / unit.max_hp, team_colour)
+	if unit.shield > 0.0:
+		_draw_health(at - Vector2(r, r + 26), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
 
 
 func _draw_label(at: Vector2, text: String, r: float) -> void:
