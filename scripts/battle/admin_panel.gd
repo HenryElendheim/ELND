@@ -43,7 +43,9 @@ func _ready() -> void:
 		troops.append([id, cards[id].name.trim_prefix("The ")])
 	column.add_child(Ui.choice("Spawn tool", troops, "", func(id: String) -> void: _battle.set("spawn_card", id), 4))
 	column.add_child(Ui.choice("Spawn for", SIDES, Unit.Team.PLAYER, func(team: int) -> void: _battle.set("spawn_team", team)))
-	var hands: Array = _battle.get("sim").hands
+	var sim: BattleSim = _battle.get("sim")
+	column.add_child(Ui.toggle("Bot plays", true, func(on: bool) -> void: sim.bot.enabled = on))
+	var hands: Array = sim.hands
 	for side in SIDES:
 		var hand: Hand = hands[side[0]]
 		column.add_child(Ui.toggle("Endless Ephrocity: " + side[1], false, func(on: bool) -> void: hand.infinite = on))

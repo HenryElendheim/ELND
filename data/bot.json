@@ -1,8 +1,29 @@
 {
 	"default_difficulty": "medium",
 	"presets": {
-		"easy": { "reaction_time": 2.5, "ephrocity_smarts": 0.2, "counter_play": 0.2, "deck_quality": "random" },
-		"medium": { "reaction_time": 1.5, "ephrocity_smarts": 0.5, "counter_play": 0.5, "deck_quality": "mixed" },
-		"hard": { "reaction_time": 0.7, "ephrocity_smarts": 0.85, "counter_play": 0.85, "deck_quality": "synergy" }
+		"easy": {
+			"reaction_time": 2.5,
+			"ephrocity_smarts": 0.2,
+			"counter_play": 0.2,
+			"deck_quality": "random"
+		},
+		"medium": {
+			"reaction_time": 1.5,
+			"ephrocity_smarts": 0.5,
+			"counter_play": 0.5,
+			"deck_quality": "mixed"
+		},
+		"hard": {
+			"reaction_time": 0.7,
+			"ephrocity_smarts": 0.85,
+			"counter_play": 0.85,
+			"deck_quality": "synergy"
+		}
+	},
+	"placement": {
+		"defend_offset_tiles": 2.5,
+		"push_row_from_back": 3.0,
+		"bridge_row_from_river": 1.5,
+		"push_at_bridge_chance": 0.4
 	}
 }

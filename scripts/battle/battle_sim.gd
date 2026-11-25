@@ -7,8 +7,11 @@ extends RefCounted
 var units: Array[Unit] = []
 ## One hand per team, in the same order as Unit.Team, so hands[Unit.Team.ENEMY] is the enemy's.
 var hands: Array[Hand] = []
+var bot := Bot.new(randi())
 var tick := 1.0 / 30.0
 var time := 0.0
+## Empty while the match is going. Once it ends it says which team won, or "draw".
+var result := ""
 
 var _battle := {}
 var _arena := {}
@@ -102,8 +105,42 @@ func refresh_unit(unit: Unit) -> void:
 	unit.apply_stats(_stats_for(unit), _battle)
 
 
+## How many of a team's towers have been destroyed, which is the crown count for the other team.
+func towers_lost(team: Unit.Team) -> int:
+	var standing := 0
+	for unit in units:
+		if unit.is_tower() and unit.team == team:
+			standing += 1
+	var towers := Data.table("towers")
+	return towers.side.positions.size() + towers.main.positions.size() - standing
+
+
+func seconds_left() -> float:
+	return maxf(float(_battle.match.regular_seconds) - time, 0.0)
+
+
+## Destroying the main tower wins straight away. When time runs out, whoever destroyed more towers wins.
+## Overtime and the tiebreaker come in the next milestone, so for now an even count is a draw.
+func _check_result() -> void:
+	for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
+		var main_standing := false
+		for unit in units:
+			if unit.kind == "main" and unit.team == team:
+				main_standing = true
+		if not main_standing:
+			result = "enemy" if team == Unit.Team.PLAYER else "player"
+			return
+	if seconds_left() <= 0.0:
+		var player_crowns := towers_lost(Unit.Team.ENEMY)
+		var enemy_crowns := towers_lost(Unit.Team.PLAYER)
+		result = "draw" if player_crowns == enemy_crowns else ("player" if player_crowns > enemy_crowns else "enemy")
+
+
 func step() -> void:
+	if result != "":
+		return
 	time += tick
+	bot.think(self)
 	var bars := tick * ephrocity_rate() / float(_battle.ephrocity.seconds_per_bar)
 	for hand in hands:
 		hand.regenerate(bars)
@@ -122,6 +159,7 @@ func step() -> void:
 			_update(unit)
 	_keep_apart()
 	drop_dead()
+	_check_result()
 
 
 ## Takes every unit with no health left off the field.

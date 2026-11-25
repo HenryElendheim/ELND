@@ -20,7 +20,9 @@ var _accumulator := 0.0
 var _slot := -1
 var _slot_buttons: Array[Button] = []
 var _next_label: Label
+var _clock: Label
 var _rate := 1.0
+var _result_shown := false
 
 
 func _ready() -> void:
@@ -37,6 +39,10 @@ func _ready() -> void:
 
 	var top := HBoxContainer.new()
 	top.add_child(Ui.button("Back", go_back))
+	_clock = Ui.label("", "HeadingLabel")
+	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_clock.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top.add_child(_clock)
 	if Settings.get_value("admin_mode"):
 		_admin = AdminPanel.new(self, _view)
 		top.add_child(Ui.button("Admin", func() -> void: _admin.visible = not _admin.visible))
@@ -86,6 +92,34 @@ func _process(delta: float) -> void:
 	_meter.queue_redraw()
 	_refresh_hand()
 	_announce_rate()
+	var left := ceili(sim.seconds_left())
+	_clock.text = "%d:%02d" % [left / 60, left % 60]
+	if sim.result != "" and not _result_shown:
+		_show_result()
+
+
+## Covers the arena with the outcome and the crown count, plus buttons to play again or leave.
+func _show_result() -> void:
+	_result_shown = true
+	var titles := {"player": "Victory", "enemy": "Defeat", "draw": "Draw"}
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(PRESET_CENTER)
+	panel.grow_horizontal = GROW_DIRECTION_BOTH
+	panel.grow_vertical = GROW_DIRECTION_BOTH
+	panel.custom_minimum_size.x = 800
+	var column := VBoxContainer.new()
+	panel.add_child(column)
+	var title := Ui.label(titles[sim.result], "TitleLabel")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(title)
+	var crowns := Ui.label("Crowns %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)])
+	crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(crowns)
+	column.add_child(Ui.button("Play again", get_tree().reload_current_scene))
+	column.add_child(Ui.button("Menu", func() -> void: go_back()))
+	add_child(panel)
+	if Settings.get_value("vibration"):
+		Input.vibrate_handheld(300)
 
 
 ## Shows each card's short name and cost, and dims the ones that cannot be paid for yet.
