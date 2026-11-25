@@ -25,23 +25,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Release tags go v1.0, v1.001, v1.002 and so on, so the next version is the newest tag plus one step.
-      # The Android version code is the release count, which means every release installs over the last one.
+      # Release tags go v1.0, v1.001, v1.002 and so on. The highest step among the tags is found by comparing the numbers
+      # themselves, because sorting the tag names puts v1.0 above v1.001. The next version is that step plus one.
+      # The Android version code is the build number, which only ever goes up, so every APK installs over the last one.
       - name: Work out the version
         run: |
-          last=$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)
-          count=$(git tag --list 'v1.*' | wc -l)
-          if [ -z "$last" ]; then
-            next="1.0"
-          else
-            step=${last#v1.}
-            next=$(printf '1.%03d' $((10#$step + 1)))
-          fi
+          highest=-1
+          for tag in $(git tag --list 'v1.*'); do
+            step=${tag#v1.}
+            if [ $((10#$step)) -gt $highest ]; then highest=$((10#$step)); fi
+          done
+          if [ $highest -lt 0 ]; then next="1.0"; else next=$(printf '1.%03d' $((highest + 1))); fi
           name="$next"
           if [ "$GITHUB_REF_NAME" != "main" ]; then name="$next-testing"; fi
           echo "VERSION=$next" >> "$GITHUB_ENV"
           echo "VERSION_NAME=$name" >> "$GITHUB_ENV"
-          echo "VERSION_CODE=$((count + 1))" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$((GITHUB_RUN_NUMBER + 10))" >> "$GITHUB_ENV"
 
       - name: Stamp the version into the project
         run: |
