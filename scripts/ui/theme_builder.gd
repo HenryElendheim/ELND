@@ -71,6 +71,14 @@ static func build(c: Dictionary, text_scale: float) -> Theme:
 		theme.set_icon(icon_name, "HSlider", handle)
 	theme.set_stylebox("focus", "HSlider", focus)
 
+	theme.set_stylebox("normal", "LineEdit", normal)
+	theme.set_stylebox("focus", "LineEdit", focus)
+	theme.set_color("font_color", "LineEdit", c.text)
+	theme.set_color("caret_color", "LineEdit", c.accent)
+	theme.set_stylebox("panel", "PanelContainer", _box(c.bg, c.border, 3))
+
+	theme.set_constant("h_separation", "GridContainer", roundi(size * 0.3))
+	theme.set_constant("v_separation", "GridContainer", roundi(size * 0.3))
 	theme.set_constant("separation", "VBoxContainer", roundi(size * 0.6))
 	theme.set_constant("separation", "HBoxContainer", roundi(size * 0.4))
 	return theme

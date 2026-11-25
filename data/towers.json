@@ -1,4 +1,38 @@
 {
-	"side": { "count": 2, "health": 1500, "damage": 15, "range": 7.5, "hit_speed": 0.8, "targets": "air_ground" },
-	"main": { "count": 1, "health": 3000, "damage": 15, "range": 7.0, "hit_speed": 1.0, "targets": "air_ground", "wakes_on": ["damaged", "side_tower_destroyed"] }
+	"side": {
+		"health": 1500,
+		"damage": 15,
+		"range": 7.5,
+		"hit_speed": 0.8,
+		"targets": "air_ground",
+		"size": 3,
+		"positions": [
+			[
+				3.5,
+				25.5
+			],
+			[
+				14.5,
+				25.5
+			]
+		]
+	},
+	"main": {
+		"health": 3000,
+		"damage": 15,
+		"range": 7.0,
+		"hit_speed": 1.0,
+		"targets": "air_ground",
+		"wakes_on": [
+			"damaged",
+			"side_tower_destroyed"
+		],
+		"size": 4,
+		"positions": [
+			[
+				9,
+				29
+			]
+		]
+	}
 }

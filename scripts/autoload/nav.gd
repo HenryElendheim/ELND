@@ -66,6 +66,6 @@ func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST:
 		return
 	var screen := get_tree().current_scene
-	if screen is Screen and screen.go_back():
+	if screen != null and screen.has_method("go_back") and screen.go_back():
 		return
 	get_tree().quit()

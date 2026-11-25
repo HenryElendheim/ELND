@@ -24,9 +24,41 @@ func table(file: String) -> Dictionary:
 	return _tables.get(file, {})
 
 
+## Changes one value, for example set_override("cards", ["cards", "hobb", "health"], 300).
+## Only the changed value is stored, which means the rest still follows the shipped defaults.
+func set_override(file: String, path: Array, value: Variant) -> void:
+	var node: Dictionary = overrides.get_or_add(file, {})
+	for key in path.slice(0, -1):
+		node = node.get_or_add(key, {})
+	node[path[-1]] = value
+	_store()
+
+
+## Throws away the overrides under one path, which puts that part back to the shipped defaults.
+func reset_override(file: String, path: Array) -> void:
+	var node: Variant = overrides.get(file, {})
+	for key in path.slice(0, -1):
+		node = node.get(key, {}) if node is Dictionary else {}
+	if node is Dictionary:
+		node.erase(path[-1])
+	_store()
+
+
+## Returns the shipped default for one path, so Admin Mode can show what a value was before editing.
+func default_value(file: String, path: Array) -> Variant:
+	var node: Variant = _defaults.get(file, {})
+	for key in path:
+		node = node.get(key) if node is Dictionary else null
+	return node
+
+
 ## Replaces every override at once, which is what importing a backup does.
 func replace_overrides(new_overrides: Dictionary) -> void:
 	overrides = new_overrides
+	_store()
+
+
+func _store() -> void:
 	JsonFile.write(OVERRIDES_PATH, overrides)
 	_rebuild()
 

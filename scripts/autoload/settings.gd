@@ -15,6 +15,7 @@ func _init() -> void:
 		"effects_volume": 0.8,
 		"bot_difficulty": "medium",
 		"pure_balance": false,
+		"admin_mode": false,
 	}
 
 

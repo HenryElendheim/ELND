@@ -31,18 +31,37 @@ static func toggle(text: String, value: bool, on_change: Callable) -> Control:
 	return _row(text, knob)
 
 
-## A label with a row of buttons below it, where exactly one is picked at a time.
+## A label with a grid of buttons below it, where exactly one is picked at a time.
 ## Options are pairs of a stored value and the text shown, for example ["dark", "Dark"].
-static func choice(text: String, options: Array, current: Variant, on_change: Callable) -> Control:
-	var buttons := HBoxContainer.new()
+## Long lists wrap onto more rows instead of squeezing the buttons.
+static func choice(text: String, options: Array, current: Variant, on_change: Callable, columns := 3) -> Control:
+	var buttons := GridContainer.new()
+	buttons.columns = mini(options.size(), columns)
+	_fill_choices(buttons, options, current, on_change, true)
+	return _stack(text, buttons)
+
+
+## The same kind of pick-one buttons in a single row that scrolls sideways, which suits long lists on small screens.
+static func strip(options: Array, current: Variant, on_change: Callable) -> Control:
+	var scroll := ScrollContainer.new()
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var row := HBoxContainer.new()
+	scroll.add_child(row)
+	_fill_choices(row, options, current, on_change, false)
+	return scroll
+
+
+static func _fill_choices(box: Container, options: Array, current: Variant, on_change: Callable, expand: bool) -> void:
 	var group := ButtonGroup.new()
 	for option in options:
 		var node := button(option[1], func() -> void: on_change.call(option[0]))
 		node.toggle_mode = true
 		node.button_group = group
 		node.button_pressed = option[0] == current
-		buttons.add_child(node)
-	return _stack(text, buttons)
+		if not expand:
+			node.size_flags_horizontal = Control.SIZE_FILL
+		box.add_child(node)
 
 
 ## A label with the current value shown as a percentage, and a slider below it.
@@ -58,6 +77,18 @@ static func slider(text: String, min_value: float, max_value: float, step: float
 	_show_percent(title, text, value)
 	node.value_changed.connect(func(v: float) -> void: _slid(title, text, v, on_change))
 	return box
+
+
+## A row with a label and a number box. The value is only used once it is confirmed and is a real number.
+static func number(text: String, value: float, on_change: Callable) -> Control:
+	var field := LineEdit.new()
+	field.text = str(value)
+	field.custom_minimum_size.x = 260
+	field.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL
+	field.select_all_on_focus = true
+	field.text_submitted.connect(func(entered: String) -> void: _number_entered(field, entered, on_change))
+	field.focus_exited.connect(func() -> void: _number_entered(field, field.text, on_change))
+	return _row(text, field)
 
 
 static func spacer(height: float) -> Control:
@@ -95,6 +126,12 @@ static func _slid(title: Label, text: String, value: float, on_change: Callable)
 
 static func _show_percent(title: Label, text: String, value: float) -> void:
 	title.text = "%s: %d%%" % [text, roundi(value * 100)]
+
+
+static func _number_entered(field: LineEdit, entered: String, on_change: Callable) -> void:
+	if entered.is_valid_float():
+		on_change.call(entered.to_float())
+	field.release_focus()
 
 
 static func _on_off(value: bool) -> String:

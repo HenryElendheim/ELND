@@ -97,12 +97,15 @@ jobs:
             echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=5Nl7eMmVR8b5yzAr6naKHHFn"
           } >> "$GITHUB_ENV"
 
-      # The game is run headless for a few seconds first, which means any script error fails the build here instead of on the phone.
+      # The game is run headless for a few seconds, then the battle smoke test runs,
+      # which means script errors and broken battles fail the build here instead of on the phone.
       - name: Import and check scripts
         run: |
           ~/godot/godot --headless --import
-          ~/godot/godot --headless --quit-after 300 2>&1 | tee run.log
+          timeout 120 ~/godot/godot --headless --quit-after 300 2>&1 | tee run.log
+          timeout 300 ~/godot/godot --headless res://tests/smoke.tscn 2>&1 | tee -a run.log
           if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Compile Error" run.log; then exit 1; fi
+          grep -q "Smoke test passed" run.log
 
       - name: Build the APK
         run: |

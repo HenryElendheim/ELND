@@ -4,6 +4,11 @@ extends Screen
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const THEMES := [["dark", "Dark"], ["light", "Light"]]
 const DIFFICULTIES := [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]]
+const ADMIN_TAPS := 7
+const TAP_GAP_MS := 2000
+
+var _taps := 0
+var _last_tap := 0
 
 
 func build() -> void:
@@ -34,6 +39,24 @@ func build() -> void:
 	add(Ui.spacer(24))
 	var version: Label = add(Ui.label("v%s" % ProjectSettings.get_setting("application/config/version"), "MutedLabel"))
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	version.mouse_filter = MOUSE_FILTER_STOP
+	version.gui_input.connect(_on_version_input)
+
+
+## Tapping the version number seven times in a row turns Admin Mode on or off.
+## A pause of more than two seconds starts the count again.
+func _on_version_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton and event.pressed):
+		return
+	var now := Time.get_ticks_msec()
+	_taps = _taps + 1 if now - _last_tap < TAP_GAP_MS else 1
+	_last_tap = now
+	if _taps < ADMIN_TAPS:
+		return
+	_taps = 0
+	var on := not Settings.get_value("admin_mode")
+	Settings.set_value("admin_mode", on)
+	Nav.toast("Admin Mode on" if on else "Admin Mode off")
 
 
 func go_back() -> bool:

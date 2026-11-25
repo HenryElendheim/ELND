@@ -1,25 +1,67 @@
 {
 	"tick_rate": 30,
-	"arena": { "width_tiles": 18, "length_tiles": 32, "bridges": 2 },
+	"arena": {
+		"width_tiles": 18,
+		"length_tiles": 32,
+		"bridges": 2,
+		"river_top": 15,
+		"river_bottom": 17,
+		"bridge_x": [
+			3.5,
+			14.5
+		],
+		"bridge_width": 2
+	},
 	"deploy_time": 1.0,
-	"deck": { "size": 8, "hand": 4 },
-	"match": { "regular_seconds": 180, "overtime_seconds": 120 },
+	"deck": {
+		"size": 8,
+		"hand": 4
+	},
+	"match": {
+		"regular_seconds": 180,
+		"overtime_seconds": 120
+	},
 	"ephrocity": {
 		"max": 10,
 		"start": 5,
 		"seconds_per_bar": 2.8,
 		"phases": [
-			{ "from_second": 0, "rate": 1 },
-			{ "from_second": 120, "rate": 2 },
-			{ "from_second": 240, "rate": 3 }
+			{
+				"from_second": 0,
+				"rate": 1
+			},
+			{
+				"from_second": 120,
+				"rate": 2
+			},
+			{
+				"from_second": 240,
+				"rate": 3
+			}
 		]
 	},
-	"level_scaling": { "per_level": 0.1, "max_level": 20 },
-	"speeds_tiles_per_second": { "slow": 0.75, "medium": 1.0, "fast": 1.5 },
+	"level_scaling": {
+		"per_level": 0.1,
+		"max_level": 20
+	},
+	"speeds_tiles_per_second": {
+		"slow": 0.75,
+		"medium": 1.0,
+		"fast": 1.5
+	},
 	"melee_range_tiles": 1.0,
 	"evolution": {
 		"max_per_deck": 2,
 		"cooldown": 20.0,
-		"ability_cost": { "base": 1, "health_per_point": 500, "min": 1, "max": 4 }
-	}
+		"ability_cost": {
+			"base": 1,
+			"health_per_point": 500,
+			"min": 1,
+			"max": 4
+		}
+	},
+	"sight_range_tiles": 5.5,
+	"unit_radius_tiles": 0.45,
+	"default_hit_speed": 1.0,
+	"swarm_spread_tiles": 0.6
 }
