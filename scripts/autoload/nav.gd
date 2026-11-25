@@ -4,6 +4,9 @@ extends CanvasLayer
 const FADE_TIME := 0.35
 const TOAST_TIME := 2.5
 
+## Settings handed to the next screen, such as which mode the battle screen should run.
+var params := {}
+
 var _fade := ColorRect.new()
 var _toast := Label.new()
 
@@ -31,7 +34,8 @@ func _ready() -> void:
 
 
 ## Opens a screen. With reduced motion turned on the switch is instant, otherwise it fades out and back in.
-func go(scene_path: String) -> void:
+func go(scene_path: String, next_params := {}) -> void:
+	params = next_params
 	if Settings.reduced_motion():
 		get_tree().change_scene_to_file(scene_path)
 		return

@@ -57,6 +57,7 @@ func _ready() -> void:
 	broken += _check_win_rules()
 	broken += _check_bot_counters()
 	broken += _check_evolutions()
+	broken += _check_defense()
 
 	var hurt := 0
 	for unit in sim.units:
@@ -108,7 +109,7 @@ func _check_progress() -> int:
 	var opened := Progress.open_next_chest()
 	var got := 0
 	for drop in opened.get("cards", []):
-		got += int(drop.count)
+		got += int(drop.get("count", 0))
 	Progress.add_copies("hobb", 40)
 	var ok := Progress.trophies() > before and got > 0 and int(Progress.card("hobb").level) > 1
 	print("Progress: %d trophies, %d cards from a %s chest, Hobb level %d" % [Progress.trophies(), got, opened.get("rarity", "?"), Progress.card("hobb").level])
@@ -160,6 +161,20 @@ func _check_evolutions() -> int:
 		broken += 1
 	sim.clear()
 	return broken
+
+
+## Runs Defense mode for a while and checks that waves come in and there are no enemy towers.
+func _check_defense() -> int:
+	var sim := BattleSim.new("defense")
+	for i in 30 * 40:
+		sim.step()
+	var enemy_towers := sim.units.filter(func(u: Unit) -> bool: return u.is_tower() and u.team == Unit.Team.ENEMY).size()
+	print("Defense: wave %d, result '%s'" % [sim.waves.wave, sim.result])
+	sim.clear()
+	if sim.waves.wave < 2 or enemy_towers > 0:
+		print("Broken file: defense waves did not run properly")
+		return 1
+	return 0
 
 
 ## Checks that the bot never thinks a ground melee card answers a flying troop, and prefers an anti-air card.

@@ -1,0 +1,13 @@
+{
+	"break_seconds": 4.0,
+	"first_wave_budget": 4,
+	"budget_per_wave": 2,
+	"waves_per_level": 3,
+	"spawn_row_from_back": 3.0,
+	"chest_by_wave": [
+		{ "from_wave": 0, "chest": "common" },
+		{ "from_wave": 6, "chest": "rare" },
+		{ "from_wave": 12, "chest": "epic" },
+		{ "from_wave": 20, "chest": "legendary" }
+	]
+}

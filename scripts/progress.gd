@@ -89,6 +89,13 @@ static func buy_chest(rarity: String) -> bool:
 	return true
 
 
+## Records a finished Defense run: no trophies, a chest that gets better the further the run got, and the best wave.
+static func record_defense(reached: int) -> void:
+	_write("games", int(_read("games", 0)) + 1)
+	queue_chest(Waves.chest_for(reached))
+	Stats.record_wave(reached)
+
+
 ## Records a finished match. A win gives trophies, XP and gold, and a loss takes trophies away.
 ## Pure Balance gives the chest but no trophies, which keeps the trophy road meaningful. Every match ends with a chest.
 static func record_match(result: String) -> void:

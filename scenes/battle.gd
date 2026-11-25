@@ -9,7 +9,7 @@ const MAX_STEPS_PER_FRAME := 8
 const RATE_NAMES := {2.0: "Double Ephrocity", 3.0: "Triple Ephrocity"}
 const PHASE_NAMES := {"overtime": "Overtime", "tiebreaker": "Tiebreaker"}
 
-var sim := BattleSim.new()
+var sim := BattleSim.new(Nav.params.get("mode", "battle"))
 var speed := 1.0
 ## When Admin Mode picks a card here, taps drop that card for free on the chosen side instead of playing from the hand.
 var spawn_card := ""
@@ -110,8 +110,12 @@ func _process(delta: float) -> void:
 	_refresh_evolutions()
 	_announce_rate()
 	var left := ceili(sim.seconds_left())
-	_clock.text = "Tiebreaker" if sim.phase() == "tiebreaker" else "%d:%02d" % [left / 60, left % 60]
-	_crowns.text = "%d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	if sim.mode == "defense":
+		_clock.text = "Wave %d" % sim.waves.wave
+		_crowns.text = ""
+	else:
+		_clock.text = "Tiebreaker" if sim.phase() == "tiebreaker" else "%d:%02d" % [left / 60, left % 60]
+		_crowns.text = "%d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
 	if sim.phase() != _phase:
 		_phase = sim.phase()
 		Nav.toast(PHASE_NAMES.get(_phase, ""))
@@ -122,9 +126,14 @@ func _process(delta: float) -> void:
 ## Covers the arena with the outcome and the crown count, plus buttons to play again or leave.
 func _show_result() -> void:
 	_result_shown = true
-	Progress.record_match(sim.result)
-	Stats.record_match("battle", sim.result, sim.towers_lost(Unit.Team.ENEMY), sim.played_cards, BattleSim.starting_deck(), sim.time)
-	var titles := {"player": "Victory", "enemy": "Defeat", "draw": "Draw"}
+	var defense := sim.mode == "defense"
+	var reached := sim.waves.wave - 1 if defense else 0
+	if defense:
+		Progress.record_defense(reached)
+	else:
+		Progress.record_match(sim.result)
+	Stats.record_match(sim.mode, sim.result, sim.towers_lost(Unit.Team.ENEMY), sim.played_cards, BattleSim.starting_deck(), sim.time)
+	var titles := {"player": "Victory", "enemy": "Run over" if defense else "Defeat", "draw": "Draw"}
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(PRESET_CENTER)
 	panel.grow_horizontal = GROW_DIRECTION_BOTH
@@ -135,7 +144,8 @@ func _show_result() -> void:
 	var title := Ui.label(titles[sim.result], "TitleLabel")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var crowns := Ui.label("Crowns %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)])
+	var summary := "Waves survived: %d" % reached if defense else "Crowns %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	var crowns := Ui.label(summary)
 	crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(crowns)
 	column.add_child(Ui.button("Open chest", func() -> void: Nav.go(CHEST_SCENE)))

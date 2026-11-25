@@ -16,7 +16,8 @@ func build() -> void:
 	var stats: Label = add(Ui.label("Arena %d   %d trophies\nLevel %d   %d gold" % [Progress.arena(), Progress.trophies(), Progress.player_level(), Progress.gold()]))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add(Ui.spacer(60))
-	add(Ui.button("Battle", func() -> void: Nav.go(BATTLE_SCENE)))
+	add(Ui.button("Battle", func() -> void: Nav.go(BATTLE_SCENE, {"mode": "battle"})))
+	add(Ui.button("Defense", func() -> void: Nav.go(BATTLE_SCENE, {"mode": "defense"})))
 	var waiting := Progress.chests_waiting().size()
 	if waiting > 0:
 		add(Ui.button("Open chests (%d)" % waiting, func() -> void: Nav.go(CHEST_SCENE)))

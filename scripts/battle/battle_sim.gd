@@ -9,6 +9,9 @@ var projectiles: Array[Projectile] = []
 ## One hand per team, in the same order as Unit.Team, so hands[Unit.Team.ENEMY] is the enemy's.
 var hands: Array[Hand] = []
 var bot := Bot.new(randi())
+## "battle" is the normal match against the bot. "defense" has no enemy towers and sends waves instead.
+var mode := "battle"
+var waves: Waves = null
 var tick := 1.0 / 30.0
 var time := 0.0
 ## Empty while the match is going. Once it ends it says which team won, or "draw".
@@ -24,7 +27,11 @@ var _arena := {}
 var _next_group := 0
 
 
-func _init() -> void:
+func _init(match_mode := "battle") -> void:
+	mode = match_mode
+	if mode == "defense":
+		waves = Waves.new(randi())
+		bot.enabled = false
 	_battle = Data.table("battle")
 	_arena = _battle.arena
 	tick = 1.0 / float(_battle.tick_rate)
@@ -92,6 +99,8 @@ func can_place(team: Unit.Team, at: Vector2, spell := false) -> bool:
 		return true
 	if y > float(_arena.river_bottom):
 		return true
+	if mode == "defense":
+		return false
 	if y < float(_arena.river_top) - float(_battle.pocket_depth_tiles) or y > float(_arena.river_top):
 		return false
 	var left_lane := at.x < float(_arena.width_tiles) / 2.0
@@ -235,6 +244,8 @@ func towers_lost(team: Unit.Team) -> int:
 
 ## Which part of the match is running: "regular", "overtime" or "tiebreaker".
 func phase() -> String:
+	if mode == "defense":
+		return "regular"
 	var regular := float(_battle.match.regular_seconds)
 	if time < regular:
 		return "regular"
@@ -243,6 +254,8 @@ func phase() -> String:
 
 ## Time left in the current part of the match. The tiebreaker has no clock.
 func seconds_left() -> float:
+	if mode == "defense":
+		return 0.0
 	var end := float(_battle.match.regular_seconds)
 	if phase() != "regular":
 		end += float(_battle.match.overtime_seconds)
@@ -261,6 +274,10 @@ func _main_standing(team: Unit.Team) -> bool:
 ## and during overtime that means the first tower to fall decides it. In the tiebreaker every tower drains,
 ## so the first tower to fall loses. If both sides lose their main tower at the same moment, it is a draw.
 func _check_result() -> void:
+	if mode == "defense":
+		if not _main_standing(Unit.Team.PLAYER):
+			result = "enemy"
+		return
 	var player_main := _main_standing(Unit.Team.PLAYER)
 	var enemy_main := _main_standing(Unit.Team.ENEMY)
 	if not player_main or not enemy_main:
@@ -287,6 +304,8 @@ func step() -> void:
 		return
 	time += tick
 	bot.think(self)
+	if waves != null:
+		waves.tick(self)
 	if phase() == "tiebreaker":
 		_drain_towers()
 	var bars := tick * ephrocity_rate() / float(_battle.ephrocity.seconds_per_bar)
@@ -341,6 +360,8 @@ func _place_towers() -> void:
 	for kind in ["side", "main"]:
 		for spot in towers[kind].positions:
 			for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
+				if team == Unit.Team.ENEMY and mode == "defense":
+					continue
 				var at := Vector2(spot[0], spot[1])
 				if team == Unit.Team.ENEMY:
 					at.y = float(_arena.length_tiles) - at.y
