@@ -25,6 +25,13 @@ func _ready() -> void:
 		add_child(detail)
 		await get_tree().process_frame
 		detail.close()
+	# The advanced stats view is opened too, with some recorded results so every section has rows.
+	var stats_screen: Node = load("res://scenes/stats.tscn").instantiate()
+	add_child(stats_screen)
+	await get_tree().process_frame
+	stats_screen.call("_switch")
+	await get_tree().process_frame
+	stats_screen.queue_free()
 	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
