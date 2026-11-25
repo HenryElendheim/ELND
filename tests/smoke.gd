@@ -141,11 +141,14 @@ func _check_evolutions() -> int:
 	var hand := Hand.new(["hobb", "editor", "chain", "gasket", "dargalean"], Data.table("battle"), ["hobb"])
 	hand.infinite = true
 	var evolved_plays := 0
-	for i in 12:
+	# Hobb is played whenever it is in the hand, and otherwise the first card is played to cycle the deck.
+	for i in 20:
 		var slot := hand.cards.find("hobb")
-		if slot >= 0 and slot < 4:
-			hand.play(slot)
-			evolved_plays += 1 if hand.played_evolved else 0
+		if slot < 0 or slot >= 4:
+			slot = 0
+		var played := hand.play(slot)
+		if played == "hobb" and hand.played_evolved:
+			evolved_plays += 1
 	print("Evolutions pressed: %d, Hobb evolved plays: %d" % [pressed, evolved_plays])
 	if evolved_plays == 0:
 		print("Broken file: an evolution card never came out evolved")
