@@ -1,5 +1,7 @@
 extends Node
-## A quick automatic check run by the build. It opens the battle with Admin Mode tools, puts every troop on both sides,
+## A quick automatic check run by the build. It first loads every script and opens every screen,
+## which means a broken file fails the build even if the battle never touches it.
+## Then it opens the battle with Admin Mode tools, puts every troop on both sides,
 ## runs one minute of battle, and makes sure towers took damage. It prints a pass line that the build looks for.
 
 const TICKS := 30 * 60
@@ -7,6 +9,13 @@ const TICKS := 30 * 60
 
 func _ready() -> void:
 	Settings.set_value("admin_mode", true)
+	var broken := _load_everything("res://scenes") + _load_everything("res://scripts")
+	for scene in ["splash", "main_menu", "settings_menu"]:
+		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
+		add_child(screen)
+		await get_tree().process_frame
+		screen.queue_free()
+
 	var battle: Node = load("res://scenes/battle.tscn").instantiate()
 	add_child(battle)
 	var sim: BattleSim = battle.sim
@@ -29,7 +38,23 @@ func _ready() -> void:
 			hurt += 1
 	var towers_left := sim.units.filter(func(u: Unit) -> bool: return u.is_tower()).size()
 	print("Towers damaged: %d, towers standing: %d, units left: %d" % [hurt, towers_left, sim.units.size()])
-	if hurt > 0 or towers_left < 6:
+	if broken == 0 and (hurt > 0 or towers_left < 6):
 		print("Smoke test passed")
 	Settings.set_value("admin_mode", false)
 	get_tree().quit()
+
+
+## Loads every script and scene in a folder and its subfolders, and counts the ones that fail.
+func _load_everything(folder: String) -> int:
+	var broken := 0
+	for file in DirAccess.get_files_at(folder):
+		if file.ends_with(".gd") or file.ends_with(".tscn"):
+			var path := folder.path_join(file)
+			var loaded: Resource = load(path)
+			var ok := loaded != null and (not loaded is GDScript or (loaded as GDScript).can_instantiate())
+			if not ok:
+				print("Broken file: " + path)
+				broken += 1
+	for sub in DirAccess.get_directories_at(folder):
+		broken += _load_everything(folder.path_join(sub))
+	return broken

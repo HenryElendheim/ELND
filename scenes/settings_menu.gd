@@ -54,7 +54,7 @@ func _on_version_input(event: InputEvent) -> void:
 	if _taps < ADMIN_TAPS:
 		return
 	_taps = 0
-	var on := not Settings.get_value("admin_mode")
+	var on: bool = not Settings.get_value("admin_mode")
 	Settings.set_value("admin_mode", on)
 	Nav.toast("Admin Mode on" if on else "Admin Mode off")
 

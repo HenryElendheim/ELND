@@ -110,7 +110,8 @@ jobs:
       - name: Build the APK
         run: |
           mkdir -p build
-          ~/godot/godot --headless --export-release Android "build/$APP_NAME.apk"
+          ~/godot/godot --headless --export-release Android "build/$APP_NAME.apk" 2>&1 | tee export.log
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script" export.log; then exit 1; fi
           test -f "build/$APP_NAME.apk"
 
       - name: Keep the testing APK
