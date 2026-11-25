@@ -10,6 +10,12 @@ const GAP := 6.0
 
 var hand: Hand
 var bars := 10
+var _flash_until := 0
+
+
+## A quick bright flash over the whole meter, used when Double or Triple Ephrocity starts.
+func flash() -> void:
+	_flash_until = Time.get_ticks_msec() + 600
 
 
 func _ready() -> void:
@@ -30,3 +36,12 @@ func _draw() -> void:
 		var fill := clampf(amount - i, 0.0, 1.0)
 		if fill > 0.0:
 			draw_rect(Rect2(box.position, Vector2(width * fill, size.y)), FULL if fill >= 1.0 else FILLING)
+	var motion := not Settings.reduced_motion()
+	var now := Time.get_ticks_msec()
+	# A full meter glows and gently pulses, a hint to spend some Ephrocity.
+	if amount >= bars:
+		var pulse := 0.5 + 0.5 * sin(now / 200.0) if motion else 0.6
+		draw_rect(Rect2(Vector2(number_width, 0), Vector2(size.x - number_width, size.y)), Color(1, 0.75, 0.8, 0.15 + 0.2 * pulse), false, 5.0)
+	if now < _flash_until:
+		var left := float(_flash_until - now) / 600.0
+		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, 0.5 * left))

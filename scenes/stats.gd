@@ -34,12 +34,12 @@ func _build_overview(s: Dictionary) -> void:
 	grid.columns = 2
 	add(grid)
 	var all_games := float(s.get("games", 0))
-	grid.add_child(_tile(str(int(all_games)), "Games"))
-	grid.add_child(_tile("%d%%" % _rate(s), "Win rate"))
-	grid.add_child(_tile(str(int(s.get("best_streak", 0))), "Best win streak"))
-	grid.add_child(_tile(str(int(s.get("highest_trophies", Progress.trophies()))), "Highest trophies"))
-	grid.add_child(_tile(str(int(s.get("three_cores", 0))), "Three core wins"))
-	grid.add_child(_tile(str(int(s.get("best_wave", 0))), "Best Defense wave"))
+	grid.add_child(_counting_tile(all_games, "%d", "Games"))
+	grid.add_child(_counting_tile(_rate(s), "%d%%", "Win rate"))
+	grid.add_child(_counting_tile(float(s.get("best_streak", 0)), "%d", "Best win streak"))
+	grid.add_child(_counting_tile(float(s.get("highest_trophies", Progress.trophies())), "%d", "Highest trophies"))
+	grid.add_child(_counting_tile(float(s.get("three_cores", 0)), "%d", "Three core wins"))
+	grid.add_child(_counting_tile(float(s.get("best_wave", 0)), "%d", "Best Defense wave"))
 
 	var plays: Dictionary = s.get("card_plays", {})
 	var favourite := Stats.top(plays)
@@ -104,6 +104,18 @@ func _build_advanced(s: Dictionary) -> void:
 	var count := float(s.get("games", 0))
 	var average := float(s.get("seconds", 0)) / count if count > 0.0 else 0.0
 	_row(rows, "Average match", "%d:%02d" % [int(average) / 60, int(average) % 60])
+
+
+## A tile whose number counts up from zero when the screen opens, unless reduced motion is on.
+func _counting_tile(value: float, format: String, caption: String) -> Control:
+	var tile := _tile(format % roundi(value), caption)
+	if Settings.reduced_motion() or value <= 0.0:
+		return tile
+	var big: Label = tile.get_child(0).get_child(0)
+	big.text = format % 0
+	var tween := create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_method(func(v: float) -> void: big.text = format % roundi(v), 0.0, value, 0.8)
+	return tile
 
 
 ## A big number with a small caption under it, on a raised tile.

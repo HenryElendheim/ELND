@@ -206,6 +206,7 @@ func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved :=
 	var card: Dictionary = Data.table("cards").cards[card_id]
 	var count := int(card.get("count", 1))
 	_next_group += 1
+	events.append({"type": "placed", "pos": at, "team": team})
 	for i in count:
 		var offset := Vector2.ZERO
 		if count > 1:

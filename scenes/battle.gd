@@ -154,6 +154,14 @@ func _show_result() -> void:
 	column.add_child(Ui.button("Open chest", func() -> void: Nav.go(CHEST_SCENE)))
 	column.add_child(Ui.button("Menu", func() -> void: go_back()))
 	add_child(panel)
+	# The result pops in with a small overshoot, unless reduced motion is on.
+	if not Settings.reduced_motion():
+		panel.resized.connect(func() -> void: panel.pivot_offset = panel.size / 2.0)
+		panel.scale = Vector2.ONE * 0.6
+		panel.modulate.a = 0.0
+		var pop := create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		pop.tween_property(panel, "scale", Vector2.ONE, 0.35)
+		pop.tween_property(panel, "modulate:a", 1.0, 0.2)
 	if Settings.get_value("vibration"):
 		Input.vibrate_handheld(300)
 
@@ -215,7 +223,8 @@ func _announce_rate() -> void:
 		return
 	_rate = rate
 	if RATE_NAMES.has(rate):
-		Nav.toast(RATE_NAMES[rate])
+		Nav.banner(RATE_NAMES[rate])
+		_meter.flash()
 		if Settings.get_value("vibration"):
 			Input.vibrate_handheld(200)
 

@@ -23,6 +23,7 @@ func _ready() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
+	DragScroll.attach(scroll)
 	var column := VBoxContainer.new()
 	column.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(column)

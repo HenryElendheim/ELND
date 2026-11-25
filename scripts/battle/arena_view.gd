@@ -33,7 +33,7 @@ const BLOCKED := Color(0.9, 0.1, 0.1, 0.28)
 var _effects := []
 var _shake := 0.0
 
-const EFFECT_TIME := 0.45
+const EFFECT_TIME := 0.6
 const SHAKE_TIME := 0.35
 
 var _tile := 1.0
@@ -55,9 +55,12 @@ func take_events(delta: float) -> void:
 			"hit":
 				_effects.append({"pos": event.pos, "amount": event.amount, "age": 0.0})
 				Sfx.play("hit")
+			"placed":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "burst": true, "team": event.team})
 			"death":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
 			"tower_down":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "debris": true, "seed": randi()})
 				Sfx.play("tower_down")
 				if not Settings.reduced_motion():
 					_shake = SHAKE_TIME
@@ -186,6 +189,25 @@ func _draw_projectile(shot: Projectile) -> void:
 func _draw_effect(effect: Dictionary) -> void:
 	var share: float = effect.age / EFFECT_TIME
 	var at := _to_screen(effect.pos)
+	var motion := not Settings.reduced_motion()
+	# Placing a card sends a ring in its team colour out from the spot.
+	if effect.get("burst", false):
+		var team_colour := PLAYER_COLOUR if effect.team == Unit.Team.PLAYER else ENEMY_COLOUR
+		var reach := share if motion else 0.6
+		draw_arc(at, _tile * (0.3 + 1.2 * reach), 0, TAU, 32, Color(team_colour, 0.9 * (1.0 - share)), 5.0)
+		return
+	# A fallen tower flashes and throws stone chunks that fly out and fall.
+	if effect.get("debris", false):
+		draw_circle(at, _tile * 1.6 * (1.0 - share), Color(1, 1, 0.85, 0.6 * (1.0 - share)))
+		var rng := RandomNumberGenerator.new()
+		rng.seed = effect.seed
+		for i in 14:
+			var direction := Vector2.from_angle(rng.randf() * TAU)
+			var distance := rng.randf_range(0.8, 2.4) * _tile * (share if motion else 0.5)
+			var fall := Vector2(0, share * share * _tile * 1.5) if motion else Vector2.ZERO
+			var chunk := rng.randf_range(0.12, 0.28) * _tile
+			draw_rect(Rect2(at + direction * distance + fall - Vector2.ONE * chunk / 2.0, Vector2.ONE * chunk), Color(0.55, 0.55, 0.6, 1.0 - share))
+		return
 	# A troop that dies leaves a soft grey puff that spreads and fades.
 	if effect.get("puff", false):
 		var spread := share if not Settings.reduced_motion() else 0.5

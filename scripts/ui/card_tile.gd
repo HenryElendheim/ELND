@@ -51,7 +51,11 @@ func _draw() -> void:
 	var class_colour := Color(cards.classes.get(card.get("class", ""), "#8A8A8A"))
 
 	if evolution:
-		draw_rect(tile, EVOLUTION_GLOW)
+		# In the hand the evolution glow pulses, since the hand is redrawn every frame.
+		var glow := EVOLUTION_GLOW
+		if not show_progress and not Settings.reduced_motion():
+			glow = glow.lerp(Color.WHITE, 0.3 + 0.3 * sin(Time.get_ticks_msec() / 180.0))
+		draw_rect(tile, glow)
 	var body := tile.grow(-6.0 if evolution else 0.0)
 	draw_rect(body, frame)
 	var inner := body.grow(-7.0)

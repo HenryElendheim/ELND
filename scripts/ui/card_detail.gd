@@ -94,6 +94,7 @@ func _run(action: Callable) -> void:
 func _page(entries: Array) -> ScrollContainer:
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	DragScroll.attach(scroll)
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 20)

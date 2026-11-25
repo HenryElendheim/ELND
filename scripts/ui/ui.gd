@@ -16,7 +16,23 @@ static func button(text: String, on_press: Callable) -> Button:
 	node.text = text
 	node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	node.pressed.connect(on_press)
+	squishy(node)
 	return node
+
+
+## Makes a control shrink a little while pressed and spring back when let go, unless reduced motion is on.
+static func squishy(node: BaseButton) -> void:
+	node.resized.connect(func() -> void: node.pivot_offset = node.size / 2.0)
+	node.button_down.connect(func() -> void: _squish(node, 0.94))
+	node.button_up.connect(func() -> void: _squish(node, 1.0))
+
+
+static func _squish(node: Control, amount: float) -> void:
+	if Settings.reduced_motion() or not node.is_inside_tree():
+		node.scale = Vector2.ONE
+		return
+	var tween := node.create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(node, "scale", Vector2.ONE * amount, 0.12)
 
 
 ## A row with a label on the left and an On/Off button on the right.
