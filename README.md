@@ -16,8 +16,7 @@ Built with Godot 4 for Android phones in portrait.
 Every push to `testing` builds an APK you can download from the Actions run.
 Every push to `main` builds `ELND.apk` and publishes it as a release.
 
-Release builds are signed with the key stored in the repository secrets
-`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD` and `ANDROID_KEY_ALIAS`.
+Every build is signed with `android/release.keystore`, so new versions install over old ones.
 
 ## License
 

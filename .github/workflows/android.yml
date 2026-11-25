@@ -88,28 +88,14 @@ jobs:
               "$ANDROID_HOME" "$JAVA_HOME" > ~/.config/godot/$file
           done
 
-      # Main builds must use the release key so installs on the phone update cleanly.
-      # Testing builds fall back to a debug key when the release key has not been added yet.
+      # Every build is signed with the same key from android/, which means each new APK installs over the last one.
       - name: Set up signing
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
-            {
-              echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$RUNNER_TEMP/release.keystore"
-              echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$KEY_ALIAS"
-              echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$KEYSTORE_PASSWORD"
-              echo "EXPORT_MODE=release"
-            } >> "$GITHUB_ENV"
-          elif [ "$GITHUB_REF_NAME" = "main" ]; then
-            echo "::error::The release signing key is missing. Add the ANDROID_KEYSTORE secrets before pushing to main."
-            exit 1
-          else
-            echo "EXPORT_MODE=debug" >> "$GITHUB_ENV"
-          fi
+          {
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$GITHUB_WORKSPACE/android/release.keystore"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=elnd"
+            echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=5Nl7eMmVR8b5yzAr6naKHHFn"
+          } >> "$GITHUB_ENV"
 
       # The game is run headless for a few seconds first, which means any script error fails the build here instead of on the phone.
       - name: Import and check scripts
@@ -121,7 +107,7 @@ jobs:
       - name: Build the APK
         run: |
           mkdir -p build
-          ~/godot/godot --headless --export-$EXPORT_MODE Android "build/$APP_NAME.apk"
+          ~/godot/godot --headless --export-release Android "build/$APP_NAME.apk"
           test -f "build/$APP_NAME.apk"
 
       - name: Keep the testing APK
