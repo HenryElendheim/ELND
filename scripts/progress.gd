@@ -8,7 +8,7 @@ static func _table(name: String) -> Dictionary:
 
 
 static func trophies() -> int:
-	return int(_get("trophies", 0))
+	return int(_read("trophies", 0))
 
 
 ## Arena 1 starts at zero trophies, and a new arena opens every few hundred trophies.
@@ -17,19 +17,19 @@ static func arena() -> int:
 
 
 static func player_level() -> int:
-	return int(_get("player_level", 1))
+	return int(_read("player_level", 1))
 
 
 static func xp() -> int:
-	return int(_get("xp", 0))
+	return int(_read("xp", 0))
 
 
 static func gold() -> int:
-	return int(_get("gold", 0))
+	return int(_read("gold", 0))
 
 
 static func wild_cards() -> int:
-	return int(_get("wild_cards", 0))
+	return int(_read("wild_cards", 0))
 
 
 ## XP needed to go from the current level to the next one.
@@ -46,7 +46,7 @@ static func tower_level() -> int:
 
 ## A card's level and spare copies. Every unlocked card starts at level 1. A locked card has level 0.
 static func card(id: String) -> Dictionary:
-	var cards: Dictionary = _get("cards", {})
+	var cards: Dictionary = _read("cards", {})
 	if cards.has(id):
 		return {"level": int(cards[id].level), "copies": int(cards[id].copies)}
 	var unlocked := int(Data.table("cards").cards[id].get("unlock_arena", 1)) <= arena()
@@ -86,16 +86,16 @@ static func record_match(result: String) -> void:
 	var won := result == "player"
 	if not Settings.get_value("pure_balance") and result != "draw":
 		var change := int(progression.trophies.win) if won else int(progression.trophies.loss)
-		_set("trophies", maxi(trophies() + change, 0))
+		_write("trophies", maxi(trophies() + change, 0))
 	if won:
 		add_xp(int(progression.xp.per_win))
 		add_gold(int(_table("economy").gold.per_win))
-	_set("games", int(_get("games", 0)) + 1)
+	_write("games", int(_read("games", 0)) + 1)
 	queue_chest(roll_chest())
 
 
 static func add_gold(amount: int) -> void:
-	_set("gold", gold() + amount)
+	_write("gold", gold() + amount)
 
 
 ## Adds XP and handles every level up it causes. Each level gives gold, and every other level gives a rank up chest.
@@ -104,31 +104,31 @@ static func add_xp(amount: int) -> void:
 	var current := xp() + amount
 	while current >= xp_to_next():
 		current -= xp_to_next()
-		_set("player_level", player_level() + 1)
+		_write("player_level", player_level() + 1)
 		add_gold(int(economy.gold.per_player_level))
 		if player_level() % int(economy.rank_up_chest.every_player_levels) == 0:
 			queue_chest(economy.rank_up_chest.chest)
 			add_gold(int(economy.rank_up_chest.gold))
-	_set("xp", current)
+	_write("xp", current)
 
 
 ## Picks the chest rarity from the odds, with a guaranteed Legendary if none came in the last stretch of games.
 static func roll_chest() -> String:
 	var chests: Dictionary = _table("chests")
-	var dry := int(_get("games_since_legendary", 0)) + 1
+	var dry := int(_read("games_since_legendary", 0)) + 1
 	var rarity := "legendary" if dry >= int(chests.legendary_pity_games) else _weighted(chests.odds)
-	_set("games_since_legendary", 0 if rarity == "legendary" else dry)
+	_write("games_since_legendary", 0 if rarity == "legendary" else dry)
 	return rarity
 
 
 static func queue_chest(rarity: String) -> void:
-	var waiting: Array = _get("chests_waiting", []).duplicate()
+	var waiting: Array = _read("chests_waiting", []).duplicate()
 	waiting.append(rarity)
-	_set("chests_waiting", waiting)
+	_write("chests_waiting", waiting)
 
 
 static func chests_waiting() -> Array:
-	return _get("chests_waiting", [])
+	return _read("chests_waiting", [])
 
 
 ## Opens the first waiting chest and returns what came out, as a list of {"id", "count"} entries plus any extras.
@@ -138,7 +138,7 @@ static func open_next_chest() -> Dictionary:
 	if waiting.is_empty():
 		return {}
 	var rarity: String = waiting.pop_front()
-	_set("chests_waiting", waiting)
+	_write("chests_waiting", waiting)
 	var chests: Dictionary = _table("chests")
 	var contents: Dictionary = chests.contents[rarity]
 	var count := roundi(float(contents.cards) * (1.0 + float(chests.arena_scaling) * (arena() - 1)))
@@ -169,13 +169,13 @@ static func open_next_chest() -> Dictionary:
 
 ## Adds copies of a card and levels it up as far as they allow. Copies of a maxed card become wild cards.
 static func add_copies(id: String, amount: int) -> void:
-	var cards: Dictionary = _get("cards", {}).duplicate(true)
+	var cards: Dictionary = _read("cards", {}).duplicate(true)
 	var entry: Dictionary = card(id)
 	entry.level = maxi(int(entry.level), 1)
 	entry.copies = int(entry.copies) + amount
 	_level_up(id, entry)
 	cards[id] = entry
-	_set("cards", cards)
+	_write("cards", cards)
 
 
 ## Spends wild cards on one card, as many as it needs for its next level or as many as there are.
@@ -185,7 +185,7 @@ static func use_wild_cards(id: String) -> void:
 		return
 	var needed := maxi(copies_for_next(int(entry.level)) - int(entry.copies), 0)
 	var spent := mini(needed, wild_cards())
-	_set("wild_cards", wild_cards() - spent)
+	_write("wild_cards", wild_cards() - spent)
 	add_copies(id, spent)
 
 
@@ -197,7 +197,7 @@ static func _level_up(id: String, entry: Dictionary) -> void:
 		add_xp(int(progression.xp.per_card_level_up))
 		add_gold(int(_table("economy").gold.per_card_upgrade_times_level) * int(entry.level))
 	if int(entry.level) >= max_card_level() and int(entry.copies) > 0:
-		_set("wild_cards", wild_cards() + int(entry.copies))
+		_write("wild_cards", wild_cards() + int(entry.copies))
 		entry.copies = 0
 
 
@@ -215,15 +215,15 @@ static func _unlocked_by_rarity() -> Dictionary:
 
 
 static func _never_seen(id: String) -> bool:
-	return not id in _get("seen_cards", [])
+	return not id in _read("seen_cards", [])
 
 
 static func _mark_seen(ids: Array) -> void:
-	var seen: Array = _get("seen_cards", []).duplicate()
+	var seen: Array = _read("seen_cards", []).duplicate()
 	for id in ids:
 		if not id in seen:
 			seen.append(id)
-	_set("seen_cards", seen)
+	_write("seen_cards", seen)
 
 
 static func _weighted(weights: Dictionary) -> String:
@@ -238,10 +238,10 @@ static func _weighted(weights: Dictionary) -> String:
 	return weights.keys()[-1]
 
 
-static func _get(key: String, fallback: Variant) -> Variant:
+static func _read(key: String, fallback: Variant) -> Variant:
 	var value: Variant = Save.get_value(key)
 	return fallback if value == null else value
 
 
-static func _set(key: String, value: Variant) -> void:
+static func _write(key: String, value: Variant) -> void:
 	Save.set_value(key, value)
