@@ -37,8 +37,7 @@ func build() -> void:
 		add(Ui.spacer(12))
 		add(Ui.label("Collection", "HeadingLabel"))
 		add(_grid(rest))
-	add(Ui.spacer(24))
-	add(Ui.button("Back", go_back))
+	add_back_button()
 
 
 func _grid(ids: Array) -> GridContainer:

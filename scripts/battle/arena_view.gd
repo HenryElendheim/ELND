@@ -3,7 +3,10 @@ extends Control
 ## Draws the battle with placeholder shapes until real pixel art exists.
 ## It only reads the simulation and never changes it, apart from reporting taps.
 
-signal tapped(tile: Vector2)
+## A finger going down, moving and lifting on the arena, in tiles.
+signal touch_started(tile: Vector2)
+signal touch_moved(tile: Vector2)
+signal touch_ended(tile: Vector2)
 
 const PLAYER_COLOUR := Color("#3D7BFF")
 const ENEMY_COLOUR := Color("#FF4D4D")
@@ -19,6 +22,13 @@ var show_hitboxes := false
 var show_ranges := false
 var show_targets := false
 var show_fps := false
+## While a card is picked, the tiles it cannot go on are covered in red. While a finger is down, a preview of the card
+## and a ring showing how far its effect reaches follow the finger.
+var placing_card := ""
+var placing_team := Unit.Team.PLAYER
+var preview_at: Variant = null
+
+const BLOCKED := Color(0.9, 0.1, 0.1, 0.28)
 ## Short-lived effects made from battle events: damage numbers and impact rings. Each lives well under a second.
 var _effects := []
 var _shake := 0.0
@@ -84,6 +94,8 @@ func _draw() -> void:
 		var half := float(arena.bridge_width) / 2.0
 		draw_rect(Rect2(_to_screen(Vector2(bridge - half, river_top)), Vector2(half * 2.0, river_height) * _tile), BRIDGE)
 
+	if placing_card != "" and not BattleSim.is_spell_card(placing_card):
+		_draw_blocked(width, length)
 	for unit in sim.units:
 		if unit.is_spell():
 			_draw_spell(unit)
@@ -100,6 +112,8 @@ func _draw() -> void:
 		_draw_projectile(shot)
 	for effect in _effects:
 		_draw_effect(effect)
+	if placing_card != "" and preview_at != null:
+		_draw_preview(preview_at)
 	if show_fps:
 		draw_string(ThemeDB.fallback_font, Vector2(16, 48), "%d FPS" % Engine.get_frames_per_second(), HORIZONTAL_ALIGNMENT_LEFT, -1, 36)
 
@@ -175,6 +189,28 @@ func _draw_effect(effect: Dictionary) -> void:
 		draw_string(ThemeDB.fallback_font, at + Vector2(-_tile * 0.3, -_tile * 0.6 - rise), text, HORIZONTAL_ALIGNMENT_LEFT, -1, int(_tile * 0.5), Color(1, 1, 1, 1.0 - share))
 
 
+func _draw_blocked(width: float, length: float) -> void:
+	for y in int(length):
+		for x in int(width):
+			var spot := Vector2(x + 0.5, y + 0.5)
+			if not sim.can_place(placing_team, spot):
+				draw_rect(Rect2(_to_screen(Vector2(x, y)), Vector2.ONE * _tile), BLOCKED)
+
+
+## The tile the card would land on, outlined, with the reach of its effect around it.
+## The ring is white where the card can go and red where it cannot.
+func _draw_preview(at: Vector2) -> void:
+	var allowed := sim.can_place(placing_team, at, BattleSim.is_spell_card(placing_card))
+	var colour := Color.WHITE if allowed else Color(1, 0.3, 0.3)
+	var corner := _to_screen(at - Vector2(0.5, 0.5))
+	draw_rect(Rect2(corner, Vector2.ONE * _tile), Color(colour, 0.35))
+	draw_rect(Rect2(corner, Vector2.ONE * _tile), colour, false, 3.0)
+	var reach := BattleSim.effect_radius(placing_card)
+	if reach > 0.0:
+		draw_circle(_to_screen(at), reach * _tile, Color(colour, 0.12))
+		draw_arc(_to_screen(at), reach * _tile, 0, TAU, 64, Color(colour, 0.85), 3.0)
+
+
 ## Spells show as a soft circle over the area they cover, in their class colour.
 func _draw_spell(spell: Unit) -> void:
 	var at := _to_screen(spell.pos)
@@ -216,6 +252,15 @@ func _to_screen(tile: Vector2) -> Vector2:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and _tile > 0.0:
-		tapped.emit((event.position - _origin) / _tile)
+	if _tile <= 0.0:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var tile: Vector2 = (event.position - _origin) / _tile
+		if event.pressed:
+			touch_started.emit(tile)
+		else:
+			touch_ended.emit(tile)
+		accept_event()
+	elif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		touch_moved.emit((event.position - _origin) / _tile)
 		accept_event()

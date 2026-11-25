@@ -9,6 +9,10 @@ var params := {}
 
 var _fade := ColorRect.new()
 var _toast := Label.new()
+var _banner := Label.new()
+var _banner_tween: Tween
+
+const BANNER_TIME := 1.2
 
 
 func _ready() -> void:
@@ -31,6 +35,32 @@ func _ready() -> void:
 	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_toast.visible = false
 	add_child(_toast)
+
+	_banner.theme_type_variation = "BannerLabel"
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_banner.visible = false
+	add_child(_banner)
+
+
+## Shows a big message in the middle of the screen that fades away, such as "Not enough Ephrocity".
+## With reduced motion it simply disappears after the same time instead of fading.
+func banner(text: String) -> void:
+	_banner.text = text
+	_banner.visible = true
+	_banner.modulate.a = 1.0
+	if _banner_tween != null:
+		_banner_tween.kill()
+	_banner_tween = create_tween()
+	if Settings.reduced_motion():
+		_banner_tween.tween_interval(BANNER_TIME)
+	else:
+		_banner_tween.tween_interval(BANNER_TIME * 0.4)
+		_banner_tween.tween_property(_banner, "modulate:a", 0.0, BANNER_TIME * 0.6)
+	_banner_tween.tween_callback(_banner.hide)
 
 
 ## Opens a screen. With reduced motion turned on the switch is instant, otherwise it fades out and back in.

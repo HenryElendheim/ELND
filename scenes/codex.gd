@@ -25,8 +25,7 @@ func build() -> void:
 		tag.add_theme_color_override("font_color", Color(classes.get(card["class"], "#8A8A8A")))
 		add(tag)
 		add(Ui.label(entries.get(id, "")))
-	add(Ui.spacer(24))
-	add(Ui.button("Back", go_back))
+	add_back_button()
 
 
 func go_back() -> bool:

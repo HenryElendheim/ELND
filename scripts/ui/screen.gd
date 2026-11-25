@@ -7,6 +7,8 @@ const SIDE_MARGIN := 56
 const TOP_MARGIN := 120
 
 var content := VBoxContainer.new()
+## True when the screen sits inside a page of the main menu, which has its own tabs, so it needs no Back button.
+var embedded := false
 
 
 func _ready() -> void:
@@ -31,6 +33,14 @@ func _ready() -> void:
 
 func build() -> void:
 	pass
+
+
+## Adds a Back button at the end of the screen, unless the screen is a page of the main menu.
+func add_back_button() -> void:
+	if embedded:
+		return
+	add(Ui.spacer(24))
+	add(Ui.button("Back", go_back))
 
 
 ## Adds a control to the bottom of the column and hands it back, so it can be adjusted further.

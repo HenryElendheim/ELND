@@ -37,6 +37,9 @@ static func build(c: Dictionary, text_scale: float) -> Theme:
 	_variation(theme, "HeadingLabel", "Label", roundi(size * 1.25), c.accent)
 	_variation(theme, "MutedLabel", "Label", roundi(size * 0.8), c.muted)
 	_variation(theme, "SplashLabel", "Label", roundi(BASE_FONT_SIZE * 2.2), c.text)
+	_variation(theme, "BannerLabel", "Label", roundi(size * 1.6), c.text)
+	theme.set_color("font_outline_color", "BannerLabel", Color.BLACK)
+	theme.set_constant("outline_size", "BannerLabel", roundi(size * 0.25))
 	theme.set_stylebox("normal", "ToastLabel", _box(c.surface, c.border, 3))
 	theme.set_type_variation("ToastLabel", "Label")
 

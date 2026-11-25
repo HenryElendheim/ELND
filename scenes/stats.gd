@@ -17,7 +17,7 @@ func build() -> void:
 	for difficulty in s.get("by_difficulty", {}):
 		_results("Bot " + String(difficulty), s.by_difficulty[difficulty])
 	_line("Longest win streak", s.get("best_streak", 0))
-	_line("Three crown wins", s.get("three_crowns", 0))
+	_line("Three core wins", s.get("three_cores", 0))
 	_line("Highest trophies", s.get("highest_trophies", Progress.trophies()))
 	var minutes := int(float(s.get("seconds", 0)) / 60.0)
 	add(Ui.label("Play time: %d h %d min" % [minutes / 60, minutes % 60]))
@@ -48,8 +48,7 @@ func build() -> void:
 	_section("Defense")
 	_line("Best wave", s.get("best_wave", 0))
 
-	add(Ui.spacer(24))
-	add(Ui.button("Back", go_back))
+	add_back_button()
 
 
 func _section(title: String) -> void:

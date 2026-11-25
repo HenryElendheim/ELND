@@ -21,7 +21,7 @@ static func bump(stats: Dictionary, path: Array, amount := 1.0) -> void:
 
 
 ## Records one finished match with everything the stats screen shows.
-static func record_match(mode: String, result: String, crowns: int, played: Array, deck: Array, seconds: float) -> void:
+static func record_match(mode: String, result: String, cores: int, played: Array, deck: Array, seconds: float) -> void:
 	var stats := all()
 	var outcome: String = {"player": "wins", "enemy": "losses"}.get(result, "draws")
 	bump(stats, ["games"])
@@ -32,8 +32,8 @@ static func record_match(mode: String, result: String, crowns: int, played: Arra
 	if result == "player":
 		bump(stats, ["streak"])
 		stats.best_streak = maxf(float(stats.get("best_streak", 0)), float(stats.streak))
-		if crowns >= 3:
-			bump(stats, ["three_crowns"])
+		if cores >= 3:
+			bump(stats, ["three_cores"])
 	else:
 		stats.streak = 0.0
 	stats.highest_trophies = maxf(float(stats.get("highest_trophies", 0)), float(Progress.trophies()))

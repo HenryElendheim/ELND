@@ -25,7 +25,7 @@ var _next_tile: CardTile
 var _clock: Label
 var _rate := 1.0
 var _phase := "regular"
-var _crowns: Label
+var _cores: Label
 var _result_shown := false
 ## The row of evolution ability buttons sits between the arena and the hand, on the right,
 ## which means it never covers the cards, the Ephrocity meter or the towers.
@@ -51,17 +51,19 @@ func _ready() -> void:
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_clock.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	top.add_child(_clock)
-	_crowns = Ui.label("", "HeadingLabel")
-	_crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_crowns.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	top.add_child(_crowns)
+	_cores = Ui.label("", "HeadingLabel")
+	_cores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cores.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top.add_child(_cores)
 	if Settings.get_value("admin_mode"):
 		_admin = AdminPanel.new(self, _view)
 		top.add_child(Ui.button("Admin", func() -> void: _admin.visible = not _admin.visible))
 	column.add_child(top)
 
 	_view.sim = sim
-	_view.tapped.connect(_on_tapped)
+	_view.touch_started.connect(_on_touch)
+	_view.touch_moved.connect(_on_touch)
+	_view.touch_ended.connect(_on_release)
 	column.add_child(_view)
 	_evo_row.alignment = BoxContainer.ALIGNMENT_END
 	_evo_row.custom_minimum_size.y = 110
@@ -113,10 +115,10 @@ func _process(delta: float) -> void:
 	var left := ceili(sim.seconds_left())
 	if sim.mode == "defense":
 		_clock.text = "Wave %d" % sim.waves.wave
-		_crowns.text = ""
+		_cores.text = ""
 	else:
 		_clock.text = "Tiebreaker" if sim.phase() == "tiebreaker" else "%d:%02d" % [left / 60, left % 60]
-		_crowns.text = "%d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+		_cores.text = "%d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
 	if sim.phase() != _phase:
 		_phase = sim.phase()
 		Nav.toast(PHASE_NAMES.get(_phase, ""))
@@ -124,7 +126,7 @@ func _process(delta: float) -> void:
 		_show_result()
 
 
-## Covers the arena with the outcome and the crown count, plus buttons to play again or leave.
+## Covers the arena with the outcome and the core count, plus buttons to play again or leave.
 func _show_result() -> void:
 	_result_shown = true
 	var defense := sim.mode == "defense"
@@ -145,10 +147,10 @@ func _show_result() -> void:
 	var title := Ui.label(titles[sim.result], "TitleLabel")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var summary := "Waves survived: %d" % reached if defense else "Crowns %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
-	var crowns := Ui.label(summary)
-	crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(crowns)
+	var summary := "Waves survived: %d" % reached if defense else "Cores %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	var cores := Ui.label(summary)
+	cores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(cores)
 	column.add_child(Ui.button("Open chest", func() -> void: Nav.go(CHEST_SCENE)))
 	column.add_child(Ui.button("Menu", func() -> void: go_back()))
 	add_child(panel)
@@ -220,23 +222,40 @@ func _announce_rate() -> void:
 
 func _select(slot: int) -> void:
 	_slot = slot if _slot_buttons[slot].button_pressed else -1
+	_show_placing()
 
 
-func _on_tapped(tile: Vector2) -> void:
+## Tells the arena which card is being placed, so it can cover the tiles that are not allowed in red.
+func _show_placing() -> void:
+	_view.placing_card = spawn_card if spawn_card != "" else (sim.hands[Unit.Team.PLAYER].cards[_slot] if _slot >= 0 else "")
+	_view.placing_team = spawn_team if spawn_card != "" else Unit.Team.PLAYER
+
+
+## While a finger is down, the preview follows it from tile to tile.
+func _on_touch(tile: Vector2) -> void:
+	_show_placing()
+	_view.preview_at = BattleSim.snap(tile) if _view.placing_card != "" else null
+
+
+## Lifting the finger places the card on the tile under it, or explains in the middle of the screen why it cannot go there.
+func _on_release(tile: Vector2) -> void:
+	_view.preview_at = null
+	var at := BattleSim.snap(tile)
 	if spawn_card != "":
-		sim.spawn(spawn_card, spawn_team, tile)
+		sim.spawn(spawn_card, spawn_team, at)
 		return
 	if _slot == -1:
 		return
 	var hand := sim.hands[Unit.Team.PLAYER]
 	if not hand.can_afford(_slot):
-		Nav.toast("Not enough Ephrocity")
-	elif not sim.can_place(Unit.Team.PLAYER, tile):
-		Nav.toast("You can only place on your side")
-	elif sim.play(Unit.Team.PLAYER, _slot, tile):
+		Nav.banner("Not enough Ephrocity")
+	elif not sim.can_place(Unit.Team.PLAYER, at, BattleSim.is_spell_card(hand.cards[_slot])):
+		Nav.banner("You can't place that here")
+	elif sim.play(Unit.Team.PLAYER, _slot, at):
 		Sfx.play("play")
 		_slot_buttons[_slot].button_pressed = false
 		_slot = -1
+		_show_placing()
 
 
 

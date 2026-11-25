@@ -95,6 +95,29 @@ func ephrocity_rate() -> float:
 	return rate
 
 
+## Moves a spot to the centre of the tile it is on, which means everything is placed neatly on the tiles.
+static func snap(at: Vector2) -> Vector2:
+	return at.floor() + Vector2(0.5, 0.5)
+
+
+## How far a card's effect reaches from where it is placed, for the range preview while placing.
+## A troop shows its attack range, a spell the area it hits, and a building the reach of its ability.
+static func effect_radius(card_id: String) -> float:
+	var battle := Data.table("battle")
+	var card: Dictionary = Data.table("cards").cards[card_id]
+	match card.get("type"):
+		"spell":
+			return float(card.get("radius", 1.0))
+		"building":
+			var reach := 0.0
+			for ability in card.get("abilities", []):
+				for key in ["lure_radius", "watch_radius", "radius"]:
+					reach = maxf(reach, float(ability.get(key, 0.0)))
+			return reach
+	var range_tiles := float(card.get("range", battle.melee_range_tiles)) if card.get("attack") == "ranged" else float(battle.melee_range_tiles)
+	return range_tiles + float(battle.unit_radius_tiles)
+
+
 ## Checks whether a team may put a troop at a spot. Each side has its own half, and once an enemy
 ## side tower falls, that lane on the enemy's half opens up too, as deep as the pocket setting allows.
 func can_place(team: Unit.Team, at: Vector2, spell := false) -> bool:
@@ -105,6 +128,10 @@ func can_place(team: Unit.Team, at: Vector2, spell := false) -> bool:
 	var y := at.y if team == Unit.Team.PLAYER else length - at.y
 	if spell:
 		return true
+	# Nothing can be placed on the tiles a tower stands on.
+	for unit in units:
+		if unit.is_tower() and absf(at.x - unit.pos.x) < unit.radius and absf(at.y - unit.pos.y) < unit.radius:
+			return false
 	if y > float(_arena.river_bottom):
 		return true
 	if mode == "defense":
@@ -125,6 +152,7 @@ static func is_spell_card(card_id: String) -> bool:
 ## Plays the card in a hand slot at a spot, paying its Ephrocity cost. It returns false when the spot or the cost is not allowed.
 func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 	var hand := hands[team]
+	at = snap(at)
 	if not can_place(team, at, is_spell_card(hand.cards[slot])) or not hand.can_afford(slot):
 		return false
 	var card_id := hand.play(slot)
@@ -240,7 +268,7 @@ func refresh_unit(unit: Unit) -> void:
 	unit.apply_stats(_stats_for(unit), _battle)
 
 
-## How many of a team's towers have been destroyed, which is the crown count for the other team.
+## How many of a team's towers have been destroyed, which is the core count for the other team.
 func towers_lost(team: Unit.Team) -> int:
 	var standing := 0
 	for unit in units:
@@ -293,10 +321,10 @@ func _check_result() -> void:
 		return
 	if phase() == "regular":
 		return
-	var player_crowns := towers_lost(Unit.Team.ENEMY)
-	var enemy_crowns := towers_lost(Unit.Team.PLAYER)
-	if player_crowns != enemy_crowns:
-		result = "player" if player_crowns > enemy_crowns else "enemy"
+	var player_cores := towers_lost(Unit.Team.ENEMY)
+	var enemy_cores := towers_lost(Unit.Team.PLAYER)
+	if player_cores != enemy_cores:
+		result = "player" if player_cores > enemy_cores else "enemy"
 
 
 ## Every tower loses the same amount, which means the most damaged tower is the first to fall.
@@ -525,6 +553,12 @@ func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, sha
 		events.append({"type": "hit", "pos": victim.pos, "amount": amount, "team": victim.team})
 	if victim.is_tower() and not victim.alive():
 		events.append({"type": "tower_down", "pos": victim.pos, "team": victim.team})
+		# When a main tower falls, the other towers on its side fall with it, which means it is worth every core.
+		if victim.kind == "main":
+			for other in units:
+				if other.is_tower() and other.team == victim.team and other.alive():
+					other.hp = 0.0
+					events.append({"type": "tower_down", "pos": other.pos, "team": other.team})
 	if attacker == null:
 		return
 	victim.last_attacker = attacker

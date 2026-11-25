@@ -15,7 +15,7 @@ func build() -> void:
 		add(Ui.button("%s chest   %d gold" % [String(rarity).capitalize(), int(prices[rarity])], func() -> void: _buy(rarity)))
 	add(Ui.spacer(24))
 	add(Ui.button("Open chests", func() -> void: Nav.go(CHEST_SCENE)))
-	add(Ui.button("Back", go_back))
+	add_back_button()
 	_show_gold()
 
 

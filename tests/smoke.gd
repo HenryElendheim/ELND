@@ -18,7 +18,8 @@ func _ready() -> void:
 	if not Progress.buy_chest("common"):
 		print("Broken file: buying a chest with enough gold failed")
 		broken += 1
-	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest", "shop", "stats", "codex", "admin"]:
+	broken += _check_placement()
+	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "codex", "admin"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
@@ -72,7 +73,7 @@ func _ready() -> void:
 	get_tree().quit()
 
 
-## Checks that more crowns win once time is up, and that the tiebreaker always ends the match.
+## Checks that more cores win once time is up, and that the tiebreaker always ends the match.
 func _check_win_rules() -> int:
 	var broken := 0
 	var regular := float(Data.table("battle").match.regular_seconds)
@@ -86,7 +87,7 @@ func _check_win_rules() -> int:
 	lead.time = regular
 	lead.step()
 	if lead.result != "player":
-		print("Broken file: one crown up at full time did not win, result was '%s'" % lead.result)
+		print("Broken file: one core up at full time did not win, result was '%s'" % lead.result)
 		broken += 1
 	var tied := BattleSim.new()
 	tied.bot.enabled = false
@@ -175,6 +176,32 @@ func _check_defense() -> int:
 		print("Broken file: defense waves did not run properly")
 		return 1
 	return 0
+
+
+## Checks the placement rules: spots snap to tile centres, tower tiles are blocked, the enemy half is blocked,
+## and destroying a main tower takes the side towers with it for three cores.
+func _check_placement() -> int:
+	var broken := 0
+	var sim := BattleSim.new()
+	sim.bot.enabled = false
+	if BattleSim.snap(Vector2(4.2, 24.9)) != Vector2(4.5, 24.5):
+		print("Broken file: snapping to tiles is off")
+		broken += 1
+	if sim.can_place(Unit.Team.PLAYER, Vector2(3.5, 25.5)) or sim.can_place(Unit.Team.PLAYER, Vector2(9.5, 29.5)):
+		print("Broken file: placing inside a tower was allowed")
+		broken += 1
+	if not sim.can_place(Unit.Team.PLAYER, Vector2(9.5, 21.5)) or sim.can_place(Unit.Team.PLAYER, Vector2(9.5, 8.5)):
+		print("Broken file: the halves are not right for placing")
+		broken += 1
+	for unit in sim.units:
+		if unit.kind == "main" and unit.team == Unit.Team.ENEMY:
+			sim.deal_damage(null, unit, unit.hp + 1.0)
+	sim.drop_dead()
+	if sim.towers_lost(Unit.Team.ENEMY) != 3:
+		print("Broken file: a fallen main tower gave %d cores" % sim.towers_lost(Unit.Team.ENEMY))
+		broken += 1
+	sim.clear()
+	return broken
 
 
 ## Checks that the bot never thinks a ground melee card answers a flying troop, and prefers an anti-air card.
