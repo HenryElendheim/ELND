@@ -79,6 +79,16 @@ static func bot_level() -> int:
 	return maxi(roundi(lerpf(1.0, average, share)), 1)
 
 
+## Buys a chest from the Shop with gold. It returns false when there is not enough gold.
+static func buy_chest(rarity: String) -> bool:
+	var price := int(_table("economy").shop_prices[rarity])
+	if gold() < price:
+		return false
+	add_gold(-price)
+	queue_chest(rarity)
+	return true
+
+
 ## Records a finished match. A win gives trophies, XP and gold, and a loss takes trophies away.
 ## Pure Balance gives the chest but no trophies, which keeps the trophy road meaningful. Every match ends with a chest.
 static func record_match(result: String) -> void:
@@ -139,6 +149,7 @@ static func open_next_chest() -> Dictionary:
 		return {}
 	var rarity: String = waiting.pop_front()
 	_write("chests_waiting", waiting)
+	var legendaries := 0
 	var chests: Dictionary = _table("chests")
 	var contents: Dictionary = chests.contents[rarity]
 	var count := roundi(float(contents.cards) * (1.0 + float(chests.arena_scaling) * (arena() - 1)))
@@ -151,6 +162,7 @@ static func open_next_chest() -> Dictionary:
 			options = pool.get("common", [])
 		var id: String = options[randi() % options.size()]
 		drops[id] = int(drops.get(id, 0)) + 1
+		legendaries += 1 if pool.get("legendary", []).has(id) else 0
 	var extras := []
 	for extra in contents.guaranteed:
 		for i in int(contents.guaranteed[extra]):
@@ -174,6 +186,7 @@ static func open_next_chest() -> Dictionary:
 	for line in extras:
 		if line != "":
 			opened.append({"text": line})
+	Stats.record_chest(rarity, legendaries)
 	return {"rarity": rarity, "cards": opened}
 
 

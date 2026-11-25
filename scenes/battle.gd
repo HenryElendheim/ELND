@@ -123,6 +123,7 @@ func _process(delta: float) -> void:
 func _show_result() -> void:
 	_result_shown = true
 	Progress.record_match(sim.result)
+	Stats.record_match("battle", sim.result, sim.towers_lost(Unit.Team.ENEMY), sim.played_cards, BattleSim.starting_deck(), sim.time)
 	var titles := {"player": "Victory", "enemy": "Defeat", "draw": "Draw"}
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(PRESET_CENTER)

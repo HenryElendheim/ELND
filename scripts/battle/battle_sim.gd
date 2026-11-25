@@ -15,6 +15,8 @@ var time := 0.0
 var result := ""
 ## Card levels for the player's cards, and one level for all of the bot's cards. Everything is level 1 until use_progress().
 var player_levels := {}
+## Every card the player has played this match, in order, which the stats screen counts.
+var played_cards := []
 var bot_level := 1
 
 var _battle := {}
@@ -109,6 +111,8 @@ func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 	if not can_place(team, at, is_spell_card(hand.cards[slot])) or not hand.can_afford(slot):
 		return false
 	var card_id := hand.play(slot)
+	if team == Unit.Team.PLAYER:
+		played_cards.append(card_id)
 	spawn(card_id, team, at, level_for(team, card_id), hand.played_evolved)
 	return true
 

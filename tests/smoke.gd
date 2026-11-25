@@ -13,7 +13,12 @@ func _ready() -> void:
 	broken += _check_progress()
 	# A waiting chest keeps the chest screen open instead of sending it back to the menu.
 	Progress.queue_chest("common")
-	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest"]:
+	Stats.record_match("battle", "player", 3, ["hobb", "chain"], BattleSim.starting_deck(), 120.0)
+	Progress.add_gold(1000)
+	if not Progress.buy_chest("common"):
+		print("Broken file: buying a chest with enough gold failed")
+		broken += 1
+	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest", "shop", "stats"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
