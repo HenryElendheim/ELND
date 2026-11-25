@@ -7,6 +7,7 @@ const DIFFICULTIES := [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"],
 const ADMIN_TAPS := 7
 const TAP_GAP_MS := 2000
 
+var _custom := VBoxContainer.new()
 var _taps := 0
 var _last_tap := 0
 
@@ -29,14 +30,14 @@ func build() -> void:
 	_section("Battle")
 	_choice("Bot difficulty", "bot_difficulty", DIFFICULTIES, 4)
 	# The custom sliders only show while Custom is picked, which keeps the screen short for everyone else.
-	var custom := VBoxContainer.new()
-	add(custom)
+	add(_custom)
 	var ranges: Dictionary = Data.table("bot").custom_ranges
-	_slider("Reaction time", "bot_reaction_time", ranges.reaction_time[0], ranges.reaction_time[1], 0.1, true, custom)
-	_slider("Saving up", "bot_ephrocity_smarts", ranges.ephrocity_smarts[0], ranges.ephrocity_smarts[1], 0.05, false, custom)
-	_slider("Counter-play", "bot_counter_play", ranges.counter_play[0], ranges.counter_play[1], 0.05, false, custom)
-	custom.visible = Settings.get_value("bot_difficulty") == "custom"
-	Settings.changed.connect(func() -> void: custom.visible = Settings.get_value("bot_difficulty") == "custom")
+	_slider("Reaction time", "bot_reaction_time", ranges.reaction_time[0], ranges.reaction_time[1], 0.1, true, _custom)
+	_slider("Saving up", "bot_ephrocity_smarts", ranges.ephrocity_smarts[0], ranges.ephrocity_smarts[1], 0.05, false, _custom)
+	_slider("Counter-play", "bot_counter_play", ranges.counter_play[0], ranges.counter_play[1], 0.05, false, _custom)
+	_show_custom()
+	# Connecting a method of this screen, not a lambda, means Godot drops the connection when the screen closes.
+	Settings.changed.connect(_show_custom)
 	_toggle("Pure Balance", "pure_balance")
 
 	_section("Your data")
@@ -66,6 +67,10 @@ func _on_version_input(event: InputEvent) -> void:
 	var on: bool = not Settings.get_value("admin_mode")
 	Settings.set_value("admin_mode", on)
 	Nav.toast("Admin Mode on" if on else "Admin Mode off")
+
+
+func _show_custom() -> void:
+	_custom.visible = Settings.get_value("bot_difficulty") == "custom"
 
 
 func go_back() -> bool:
