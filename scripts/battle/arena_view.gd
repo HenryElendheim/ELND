@@ -94,6 +94,10 @@ func _draw_unit(unit: Unit) -> void:
 		if unit.flying:
 			draw_circle(at + Vector2(0, r * 0.6), r * 0.8, SHADOW)
 			at.y -= r * 0.6
+		if unit.evolved:
+			draw_circle(at, r * 1.35, Color("#A33B4C", 0.45))
+		if unit.hidden_left > 0.0:
+			fill.a = 0.3
 		draw_circle(at, r, fill)
 		draw_arc(at, r, 0, TAU, 32, team_colour, 4.0)
 		_draw_label(at, unit.label, r)

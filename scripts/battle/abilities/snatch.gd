@@ -18,13 +18,20 @@ func tick(sim: BattleSim) -> void:
 	unit.damage_taken *= number("carry_damage_taken")
 	var drop := Vector2(carrying.pos.x, sim.back_line(carrying.team))
 	if unit.pos.distance_to(drop) < 0.2:
-		carrying.carrier = null
-		carrying.target = null
-		carrying = null
-		_cooldown = number("cooldown")
+		release(sim)
 		return
 	unit.goal_override = drop
 	unit.move_speed = number("carry_speed") / maxf(unit.speed, 0.01)
+
+
+## Lets go of the carried troop where it is and starts the cooldown. It returns the troop that was let go.
+func release(_sim: BattleSim) -> Unit:
+	var dropped := carrying
+	dropped.carrier = null
+	dropped.target = null
+	carrying = null
+	_cooldown = number("cooldown")
+	return dropped
 
 
 func _grab(sim: BattleSim) -> void:

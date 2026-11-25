@@ -24,6 +24,24 @@ func number(key: String) -> float:
 	return float(params.get(key, 0.0))
 
 
+## Runs once when the unit enters the field, after all its abilities exist.
+func on_spawn(_sim: BattleSim) -> void:
+	pass
+
+
+## Runs when the player presses this evolution's ability button.
+func on_activate(_sim: BattleSim) -> void:
+	pass
+
+
+## Finds another ability on the same unit by its id, so an evolution can build on the card's normal ability.
+func sibling(id: String) -> Ability:
+	for ability in unit.abilities:
+		if ability.params.get("id") == id:
+			return ability
+	return null
+
+
 ## Runs every tick before anyone moves, which is where abilities set speed changes and other short effects.
 func tick(_sim: BattleSim) -> void:
 	pass

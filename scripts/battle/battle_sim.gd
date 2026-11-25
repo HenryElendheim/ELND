@@ -27,7 +27,7 @@ func _init() -> void:
 	_arena = _battle.arena
 	tick = 1.0 / float(_battle.tick_rate)
 	_place_towers()
-	hands.append(Hand.new(starting_deck(), _battle))
+	hands.append(Hand.new(starting_deck(), _battle, Progress.deck_evolutions()))
 	hands.append(Hand.new(bot.pick_deck_for(available_cards(), int(_battle.deck.size), Bot.knobs()), _battle))
 
 
@@ -109,12 +109,51 @@ func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 	if not can_place(team, at, is_spell_card(hand.cards[slot])) or not hand.can_afford(slot):
 		return false
 	var card_id := hand.play(slot)
-	spawn(card_id, team, at, level_for(team, card_id))
+	spawn(card_id, team, at, level_for(team, card_id), hand.played_evolved)
+	return true
+
+
+## One button per evolved group of a team, such as all four evolved Individuals from one play.
+## Each entry is the first living unit of that group, which stands for the whole group.
+func evolution_buttons(team: Unit.Team) -> Array[Unit]:
+	var seen := {}
+	var found: Array[Unit] = []
+	for unit in units:
+		if unit.team == team and unit.evolved and unit.evolution != null and unit.alive() and not seen.has(unit.group):
+			seen[unit.group] = true
+			found.append(unit)
+	return found
+
+
+## What an evolution ability costs: 1 plus 1 for every 500 max health, rounded and kept between 1 and 4.
+## Tankier evolutions pay more.
+func evolution_cost(unit: Unit) -> int:
+	var rule: Dictionary = _battle.evolution.ability_cost
+	var cost := roundi(float(rule.base) + unit.max_hp / float(rule.health_per_point))
+	return clampi(cost, int(rule.min), int(rule.max))
+
+
+func evolution_ready(unit: Unit) -> bool:
+	return unit.deploy_left <= 0.0 and time >= unit.evolution_ready_at
+
+
+## Uses an evolved group's ability if it is off cooldown and the team can pay for it. It returns true when it fired.
+func activate_evolution(unit: Unit) -> bool:
+	var hand := hands[unit.team]
+	var cost := float(evolution_cost(unit))
+	if not evolution_ready(unit) or (not hand.infinite and hand.ephrocity < cost):
+		return false
+	if not hand.infinite:
+		hand.ephrocity -= cost
+	for member in units:
+		if member.group == unit.group and member.alive() and member.evolution != null:
+			member.evolution.on_activate(self)
+			member.evolution_ready_at = time + float(_battle.evolution.cooldown)
 	return true
 
 
 ## Puts a card on the field. Swarm cards spawn several copies spread around the spot.
-func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1) -> void:
+func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved := false) -> void:
 	var card: Dictionary = Data.table("cards").cards[card_id]
 	var count := int(card.get("count", 1))
 	_next_group += 1
@@ -130,6 +169,14 @@ func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1) -> void:
 			var ability := Ability.create(entry, unit)
 			if ability != null:
 				unit.abilities.append(ability)
+		if evolved and card.has("evolution"):
+			unit.evolved = true
+			var entry: Dictionary = card.evolution.merged({"id": card.evolution.ability})
+			unit.evolution = Ability.create(entry, unit)
+			if unit.evolution != null:
+				unit.abilities.append(unit.evolution)
+		for ability in unit.abilities:
+			ability.on_spawn(self)
 		if unit.is_spell():
 			_cast(unit, card)
 
@@ -244,6 +291,10 @@ func step() -> void:
 	for unit in units:
 		unit.prev_pos = unit.pos
 		unit.reset_effects()
+		unit.calm_left = maxf(unit.calm_left - tick, 0.0)
+		unit.hidden_left = maxf(unit.hidden_left - tick, 0.0)
+		if unit.calm_left > 0.0:
+			unit.can_attack = false
 	# Abilities run before anyone moves, so every effect they set is in place for the whole tick.
 	for unit in units:
 		if unit.alive() and unit.deploy_left <= 0.0:
@@ -276,6 +327,7 @@ func clear() -> void:
 		unit.last_attacker = null
 		unit.carrier = null
 		unit.abilities.clear()
+		unit.evolution = null
 	units.clear()
 	projectiles.clear()
 
@@ -494,7 +546,7 @@ func _find_target(unit: Unit) -> Unit:
 
 ## Flying units can only be hit by ranged attackers, other flyers and towers. Building-only troops ignore everything else.
 func can_target(unit: Unit, other: Unit) -> bool:
-	if other == null or not other.alive() or other.team == unit.team or other.carrier != null or other.is_spell():
+	if other == null or not other.alive() or other.team == unit.team or other.carrier != null or other.is_spell() or other.hidden_left > 0.0:
 		return false
 	if unit.targets == "buildings":
 		return other.is_building()

@@ -27,6 +27,10 @@ var _rate := 1.0
 var _phase := "regular"
 var _crowns: Label
 var _result_shown := false
+## The row of evolution ability buttons sits between the arena and the hand, on the right,
+## which means it never covers the cards, the Ephrocity meter or the towers.
+var _evo_row := HBoxContainer.new()
+var _evo_units: Array[Unit] = []
 
 
 func _ready() -> void:
@@ -59,6 +63,9 @@ func _ready() -> void:
 	_view.sim = sim
 	_view.tapped.connect(_on_tapped)
 	column.add_child(_view)
+	_evo_row.alignment = BoxContainer.ALIGNMENT_END
+	_evo_row.custom_minimum_size.y = 110
+	column.add_child(_evo_row)
 	column.add_child(_build_hand())
 	_meter.hand = sim.hands[Unit.Team.PLAYER]
 	column.add_child(_meter)
@@ -100,6 +107,7 @@ func _process(delta: float) -> void:
 	_view.queue_redraw()
 	_meter.queue_redraw()
 	_refresh_hand()
+	_refresh_evolutions()
 	_announce_rate()
 	var left := ceili(sim.seconds_left())
 	_clock.text = "Tiebreaker" if sim.phase() == "tiebreaker" else "%d:%02d" % [left / 60, left % 60]
@@ -145,10 +153,40 @@ func _refresh_hand() -> void:
 		card.visible = slot < cards.size()
 		if not card.visible:
 			continue
-		card.text = "%s\n%d" % [_short_name(cards[slot]), Hand.cost_of(cards[slot])]
+		var evo := "  EVO" if hand.evolution_ready(slot) else ""
+		card.text = "%s\n%d%s" % [_short_name(cards[slot]), Hand.cost_of(cards[slot]), evo]
 		card.modulate.a = 1.0 if hand.can_afford(slot) else 0.5
 	var next := hand.next_card()
 	_next_label.text = "Next\n" + _short_name(next) if next != "" else ""
+
+
+## Keeps one button per evolved group of yours on the field. Each shows the troop, the cost, or the seconds of cooldown left,
+## and is dimmed while it cannot be used.
+func _refresh_evolutions() -> void:
+	var current := sim.evolution_buttons(Unit.Team.PLAYER)
+	if current != _evo_units:
+		_evo_units = current
+		for child in _evo_row.get_children():
+			child.queue_free()
+		for unit in _evo_units:
+			var button := Ui.button("", func() -> void: _use_evolution(unit))
+			button.size_flags_horizontal = SIZE_FILL
+			button.custom_minimum_size.x = 220
+			_evo_row.add_child(button)
+	var buttons := _evo_row.get_children().filter(func(node: Node) -> bool: return not node.is_queued_for_deletion())
+	for i in mini(buttons.size(), _evo_units.size()):
+		var unit := _evo_units[i]
+		var button: Button = buttons[i]
+		var wait := ceili(unit.evolution_ready_at - sim.time)
+		var cost := sim.evolution_cost(unit)
+		button.text = "%s\n%s" % [_short_name(unit.id), "%ds" % wait if wait > 0 else "%d" % cost]
+		var hand := sim.hands[Unit.Team.PLAYER]
+		button.modulate.a = 1.0 if sim.evolution_ready(unit) and (hand.infinite or hand.ephrocity >= cost) else 0.5
+
+
+func _use_evolution(unit: Unit) -> void:
+	if sim.activate_evolution(unit) and Settings.get_value("vibration"):
+		Input.vibrate_handheld(60)
 
 
 ## Tells the player when Ephrocity starts filling faster, with a short buzz if vibration is on.

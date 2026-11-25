@@ -151,7 +151,14 @@ static func open_next_chest() -> Dictionary:
 			options = pool.get("common", [])
 		var id: String = options[randi() % options.size()]
 		drops[id] = int(drops.get(id, 0)) + 1
+	var extras := []
 	for extra in contents.guaranteed:
+		for i in int(contents.guaranteed[extra]):
+			if extra == "evolution":
+				extras.append(grant_random_evolution())
+			elif extra == "injection":
+				add_injection()
+				extras.append("Evolution Injection")
 		if extra.ends_with("_card"):
 			var options: Array = pool.get(extra.trim_suffix("_card"), [])
 			if not options.is_empty():
@@ -164,7 +171,92 @@ static func open_next_chest() -> Dictionary:
 		add_copies(id, drops[id])
 		opened.append({"id": id, "count": drops[id], "new": is_new, "level": card(id).level, "levelled": card(id).level > before})
 	_mark_seen(drops.keys())
+	for line in extras:
+		if line != "":
+			opened.append({"text": line})
 	return {"rarity": rarity, "cards": opened}
+
+
+## Every card that has an evolved form in cards.json.
+static func evolvable_cards() -> Array:
+	var cards: Dictionary = Data.table("cards").cards
+	return cards.keys().filter(func(id: String) -> bool: return cards[id].has("evolution"))
+
+
+static func has_evolution(id: String) -> bool:
+	return id in _read("evolutions", [])
+
+
+static func injections() -> int:
+	return int(_read("injections", 0))
+
+
+static func shards() -> int:
+	return int(_read("shards", 0))
+
+
+## Unlocks a random evolution. Rolling one the player already has turns it into an Injection Shard instead,
+## which means no evolution is ever wasted. It returns a short line for the chest screen.
+static func grant_random_evolution() -> String:
+	var options := evolvable_cards()
+	if options.is_empty():
+		return ""
+	var id: String = options[randi() % options.size()]
+	var card_name: String = Data.table("cards").cards[id].name
+	if has_evolution(id):
+		add_shard()
+		return "Injection Shard (%s already evolved)" % card_name
+	_unlock_evolution(id)
+	return "Evolution unlocked: %s" % card_name
+
+
+## Three shards make one Evolution Injection.
+static func add_shard() -> void:
+	var total := shards() + 1
+	var per := int(_table("chests").injection_shards_per_injection)
+	_write("injections", injections() + total / per)
+	_write("shards", total % per)
+
+
+static func add_injection() -> void:
+	_write("injections", injections() + 1)
+
+
+## Spends an Evolution Injection to unlock the evolution of any card that has one.
+static func use_injection(id: String) -> void:
+	if injections() > 0 and not has_evolution(id) and id in evolvable_cards():
+		_write("injections", injections() - 1)
+		_unlock_evolution(id)
+
+
+static func _unlock_evolution(id: String) -> void:
+	var unlocked: Array = _read("evolutions", []).duplicate()
+	unlocked.append(id)
+	_write("evolutions", unlocked)
+
+
+## The evolutions switched on for the current deck: only unlocked ones, only cards in the deck, and never more than the limit.
+static func deck_evolutions() -> Array:
+	var limit := int(Data.table("battle").evolution.max_per_deck)
+	var deck := BattleSim.starting_deck()
+	var picked := []
+	for id in _read("deck_evolutions", []):
+		if id in deck and has_evolution(id) and picked.size() < limit:
+			picked.append(id)
+	return picked
+
+
+## Switches a card's evolution on or off for the deck. Switching on when the deck is already full of evolutions does nothing.
+static func set_deck_evolution(id: String, on: bool) -> bool:
+	var picked := deck_evolutions()
+	if on and not id in picked:
+		if picked.size() >= int(Data.table("battle").evolution.max_per_deck):
+			return false
+		picked.append(id)
+	elif not on:
+		picked.erase(id)
+	_write("deck_evolutions", picked)
+	return true
 
 
 ## Adds copies of a card and levels it up as far as they allow. Copies of a maxed card become wild cards.

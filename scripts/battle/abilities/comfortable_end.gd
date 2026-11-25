@@ -29,6 +29,19 @@ func tick(sim: BattleSim) -> void:
 		_guest.goal_override = unit.pos
 
 
+## The evolved Gasket's button: a burst of damage to the troop inside, and the lid opens again with no waiting.
+func close_lid(sim: BattleSim, damage: float) -> void:
+	if _guest == null or not _trapped:
+		return
+	sim.deal_damage(unit, _guest, damage)
+	if _guest.alive():
+		_guest.carrier = null
+		sim.stun(_guest, number("freed_daze"))
+	_guest = null
+	_trapped = false
+	_wait = 0.0
+
+
 func _find_guest(sim: BattleSim) -> Unit:
 	var best: Unit = null
 	for other in sim.units:

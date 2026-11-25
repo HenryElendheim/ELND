@@ -51,6 +51,7 @@ func _ready() -> void:
 
 	broken += _check_win_rules()
 	broken += _check_bot_counters()
+	broken += _check_evolutions()
 
 	var hurt := 0
 	for unit in sim.units:
@@ -110,6 +111,47 @@ func _check_progress() -> int:
 	if not ok:
 		print("Broken file: progression did not pay out")
 	return 0 if ok else 1
+
+
+## Spawns every evolvable card evolved for both sides, runs a few seconds, presses every evolution button,
+## and checks the cycle rule: a card costing 5 or more needs 2 cycles, cheaper cards need 1.
+func _check_evolutions() -> int:
+	var broken := 0
+	var sim := BattleSim.new()
+	sim.bot.enabled = false
+	for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
+		sim.hands[team].infinite = true
+		for id in Progress.evolvable_cards():
+			sim.spawn(id, team, Vector2(9, 20 if team == Unit.Team.PLAYER else 12), 1, true)
+	for i in 30 * 3:
+		sim.step()
+	var pressed := 0
+	for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
+		for unit in sim.evolution_buttons(team):
+			if sim.activate_evolution(unit):
+				pressed += 1
+	for i in 30 * 3:
+		sim.step()
+	if pressed == 0:
+		print("Broken file: no evolution button could be pressed")
+		broken += 1
+	if Hand.cycles_needed("john_arms") != 2 or Hand.cycles_needed("hobb") != 1:
+		print("Broken file: evolution cycles do not follow the cost rule")
+		broken += 1
+	var hand := Hand.new(["hobb", "editor", "chain", "gasket", "dargalean"], Data.table("battle"), ["hobb"])
+	hand.infinite = true
+	var evolved_plays := 0
+	for i in 12:
+		var slot := hand.cards.find("hobb")
+		if slot >= 0 and slot < 4:
+			hand.play(slot)
+			evolved_plays += 1 if hand.played_evolved else 0
+	print("Evolutions pressed: %d, Hobb evolved plays: %d" % [pressed, evolved_plays])
+	if evolved_plays == 0:
+		print("Broken file: an evolution card never came out evolved")
+		broken += 1
+	sim.clear()
+	return broken
 
 
 ## Checks that the bot never thinks a ground melee card answers a flying troop, and prefers an anti-air card.

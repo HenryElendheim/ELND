@@ -59,6 +59,11 @@
 			"health_per_point": 500,
 			"min": 1,
 			"max": 4
+		},
+		"cycles_by_cost": {
+			"from_cost": 5,
+			"high": 2,
+			"low": 1
 		}
 	},
 	"sight_range_tiles": 5.5,

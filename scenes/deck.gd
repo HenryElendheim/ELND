@@ -39,6 +39,17 @@ func _row(id: String) -> Control:
 	info.custom_minimum_size.x = 260
 	info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(info)
+	if Progress.has_evolution(id):
+		var evo := Ui.button("Evo", func() -> void: pass)
+		evo.toggle_mode = true
+		evo.button_pressed = id in Progress.deck_evolutions()
+		evo.size_flags_horizontal = SIZE_FILL
+		evo.toggled.connect(func(on: bool) -> void: _toggle_evolution(evo, id, on))
+		row.add_child(evo)
+	elif Progress.injections() > 0 and id in Progress.evolvable_cards():
+		var inject := Ui.button("Inject", func() -> void: _inject(id))
+		inject.size_flags_horizontal = SIZE_FILL
+		row.add_child(inject)
 	if Progress.wild_cards() > 0 and level < Progress.max_card_level():
 		var wild := Ui.button("Wild", func() -> void: _use_wild(id))
 		wild.size_flags_horizontal = SIZE_FILL
@@ -56,6 +67,18 @@ func _toggle(id: String, on: bool) -> void:
 		Save.set_value("deck", _picked.duplicate())
 
 
+## Up to two cards in the deck can play their evolution. A third one is refused and the button pops back up.
+func _toggle_evolution(button: Button, id: String, on: bool) -> void:
+	if not Progress.set_deck_evolution(id, on):
+		button.set_pressed_no_signal(false)
+		Nav.toast("Only %d evolutions per deck" % int(Data.table("battle").evolution.max_per_deck))
+
+
+func _inject(id: String) -> void:
+	Progress.use_injection(id)
+	get_tree().reload_current_scene()
+
+
 func _use_wild(id: String) -> void:
 	Progress.use_wild_cards(id)
 	get_tree().reload_current_scene()
@@ -63,7 +86,7 @@ func _use_wild(id: String) -> void:
 
 func _show_counts() -> void:
 	_count.text = "%d of %d cards in your deck" % [_picked.size(), _size]
-	_wild.text = "%d wild cards" % Progress.wild_cards()
+	_wild.text = "%d wild cards   %d injections   %d of 3 shards" % [Progress.wild_cards(), Progress.injections(), Progress.shards()]
 
 
 func go_back() -> bool:

@@ -12,11 +12,18 @@ var _last_hurt := -INF
 
 func on_hurt(sim: BattleSim, _attacker: Unit, amount: float) -> float:
 	if state == State.CALM and sim.time - _last_hurt >= number("calm_after"):
-		state = State.SPINNING
-		_left = number("spin_time")
-		_next_spin_hit = 0.0
+		start(sim)
 	_last_hurt = sim.time
 	return amount
+
+
+## Starts a Flurry right now. Being provoked calls this, and so does the evolved form's button.
+func start(_sim: BattleSim) -> void:
+	if state != State.CALM:
+		return
+	state = State.SPINNING
+	_left = number("spin_time")
+	_next_spin_hit = 0.0
 
 
 func tick(sim: BattleSim) -> void:

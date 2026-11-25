@@ -32,6 +32,14 @@ var projectile := {}
 ## Bigger than one when an ability makes the unit grow, which scales its health, damage and size.
 var growth := 1.0
 var abilities: Array[Ability] = []
+## True for a unit played in its evolved form. Its evolution ability is also in abilities, and it has an ability button.
+var evolved := false
+var evolution: Ability = null
+## The battle time when the evolution button can be used again.
+var evolution_ready_at := 0.0
+## Seconds left of Cuddle, which stops all attacks, and of Flatten, which stops anything targeting the unit.
+var calm_left := 0.0
+var hidden_left := 0.0
 ## Units from the same card play share a group number, so a swarm can react together.
 var group := 0
 

@@ -47,7 +47,8 @@
 			"evolution": {
 				"name": "Insatiable",
 				"ability": "gorge",
-				"cycles": null
+				"gorge_max_health": 300,
+				"gorge_range": 1.5
 			}
 		},
 		"editor": {
@@ -71,7 +72,7 @@
 			"evolution": {
 				"name": "Rewrite",
 				"ability": "rewrite",
-				"cycles": null
+				"push_back_tiles": 2.5
 			}
 		},
 		"john_arms": {
@@ -108,8 +109,7 @@
 			"evolution": {
 				"name": "No Hard Feelings",
 				"ability": "flurry_on_demand",
-				"exhausted_time": 2.0,
-				"cycles": null
+				"exhausted_time": 2.0
 			}
 		},
 		"kardemosh": {
@@ -146,7 +146,9 @@
 			"evolution": {
 				"name": "God of Flesh",
 				"ability": "flay",
-				"cycles": null
+				"starting_skin": 150,
+				"flay_damage": 150,
+				"flay_range": 3.0
 			}
 		},
 		"gasket": {
@@ -171,7 +173,7 @@
 			"evolution": {
 				"name": "Do Not Enter",
 				"ability": "close_the_lid",
-				"cycles": null
+				"lid_damage": 300
 			}
 		},
 		"creeler": {
@@ -200,7 +202,8 @@
 			"evolution": {
 				"name": "Empty Basket",
 				"ability": "drop",
-				"cycles": null
+				"drop_damage": 200,
+				"drop_radius": 1.5
 			}
 		},
 		"spiker": {
@@ -248,7 +251,7 @@
 				"name": "Lost Hours",
 				"ability": "cuddle",
 				"duration": 2.0,
-				"cycles": null
+				"radius": 3.0
 			}
 		},
 		"spacefarer": {
@@ -278,8 +281,7 @@
 			"evolution": {
 				"name": "From the Future",
 				"ability": "time_skip",
-				"blink_tiles": 3.0,
-				"cycles": null
+				"blink_tiles": 3.0
 			},
 			"projectile": {
 				"style": "bolt",
@@ -318,8 +320,7 @@
 			"evolution": {
 				"name": "Seen Through a Screen",
 				"ability": "flatten",
-				"duration": 2.0,
-				"cycles": null
+				"duration": 2.0
 			}
 		},
 		"chain": {

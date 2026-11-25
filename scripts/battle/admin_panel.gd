@@ -52,6 +52,7 @@ func _ready() -> void:
 	for overlay in OVERLAYS:
 		column.add_child(Ui.toggle(overlay[0], _view.get(overlay[1]), func(on: bool) -> void: _view.set(overlay[1], on)))
 	column.add_child(Ui.button("Clear troops", Callable(_battle, "clear_troops")))
+	column.add_child(Ui.button("Give an Evolution Injection", _give_injection))
 
 	var subjects := [["towers/side", "Side tower"], ["towers/main", "Main tower"]]
 	for id in cards:
@@ -74,6 +75,11 @@ func _show_fields(subject: String) -> void:
 		if value is float or value is int:
 			_fields.add_child(Ui.number(key.capitalize(), value, func(v: float) -> void: Data.set_override(file, path + [key], v)))
 	_fields.add_child(Ui.button("Reset to default", func() -> void: _reset(file, path, subject)))
+
+
+func _give_injection() -> void:
+	Progress.add_injection()
+	Nav.toast("Injection added")
 
 
 func _reset(file: String, path: Array, subject: String) -> void:

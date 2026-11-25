@@ -122,6 +122,11 @@ func _next_card() -> void:
 		_show_waiting()
 		return
 	var drop: Dictionary = cards[_reveal]
+	if drop.has("text"):
+		_detail.text = drop.text
+		_stamp.text = ""
+		_buzz(250)
+		return
 	var card: Dictionary = Data.table("cards").cards[drop.id]
 	_detail.text = "%s  x%d\nLevel %d" % [card.name, drop.count, drop.level]
 	_stamp.text = "NEW ANOMALY ACQUIRED" if drop.new else ("Level up" if drop.levelled else "")
