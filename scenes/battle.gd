@@ -3,6 +3,7 @@ extends Control
 ## The simulation runs on fixed ticks, and the screen only redraws between them.
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
+const CHEST_SCENE := "res://scenes/chest.tscn"
 ## Caps how many ticks can run in one frame, which stops a slow frame from snowballing into a freeze.
 const MAX_STEPS_PER_FRAME := 8
 const RATE_NAMES := {2.0: "Double Ephrocity", 3.0: "Triple Ephrocity"}
@@ -66,6 +67,7 @@ func _ready() -> void:
 		_admin.visible = false
 		add_child(_admin)
 	Data.changed.connect(sim.refresh_stats)
+	sim.use_progress()
 
 
 ## Four card buttons and a small label for the card that comes in next.
@@ -112,6 +114,7 @@ func _process(delta: float) -> void:
 ## Covers the arena with the outcome and the crown count, plus buttons to play again or leave.
 func _show_result() -> void:
 	_result_shown = true
+	Progress.record_match(sim.result)
 	var titles := {"player": "Victory", "enemy": "Defeat", "draw": "Draw"}
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(PRESET_CENTER)
@@ -126,7 +129,7 @@ func _show_result() -> void:
 	var crowns := Ui.label("Crowns %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)])
 	crowns.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(crowns)
-	column.add_child(Ui.button("Play again", get_tree().reload_current_scene))
+	column.add_child(Ui.button("Open chest", func() -> void: Nav.go(CHEST_SCENE)))
 	column.add_child(Ui.button("Menu", func() -> void: go_back()))
 	add_child(panel)
 	if Settings.get_value("vibration"):

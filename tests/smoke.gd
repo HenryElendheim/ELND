@@ -10,7 +10,10 @@ const TICKS := 30 * 60
 func _ready() -> void:
 	Settings.set_value("admin_mode", true)
 	var broken := _load_everything("res://scenes") + _load_everything("res://scripts")
-	for scene in ["splash", "main_menu", "settings_menu", "deck"]:
+	broken += _check_progress()
+	# A waiting chest keeps the chest screen open instead of sending it back to the menu.
+	Progress.queue_chest("common")
+	for scene in ["splash", "main_menu", "settings_menu", "deck", "chest"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
@@ -53,6 +56,7 @@ func _ready() -> void:
 	if broken == 0 and (hurt > 0 or towers_left < 6):
 		print("Smoke test passed")
 	Settings.set_value("admin_mode", false)
+	Save.replace_all({})
 	get_tree().quit()
 
 
@@ -84,6 +88,23 @@ func _check_win_rules() -> int:
 	lead.clear()
 	tied.clear()
 	return broken
+
+
+## Plays out a win and opens the chest, then checks trophies went up, cards arrived, and level ups paid out.
+func _check_progress() -> int:
+	var before := Progress.trophies()
+	Progress.record_match("player")
+	var opened := Progress.open_next_chest()
+	var got := 0
+	for drop in opened.get("cards", []):
+		got += int(drop.count)
+	Progress.add_copies("hobb", 40)
+	var ok := Progress.trophies() > before and got > 0 and int(Progress.card("hobb").level) > 1
+	print("Progress: %d trophies, %d cards from a %s chest, Hobb level %d" % [Progress.trophies(), got, opened.get("rarity", "?"), Progress.card("hobb").level])
+	Save.replace_all({})
+	if not ok:
+		print("Broken file: progression did not pay out")
+	return 0 if ok else 1
 
 
 ## Checks that the bot never thinks a ground melee card answers a flying troop, and prefers an anti-air card.

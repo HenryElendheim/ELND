@@ -12,6 +12,9 @@ var tick := 1.0 / 30.0
 var time := 0.0
 ## Empty while the match is going. Once it ends it says which team won, or "draw".
 var result := ""
+## Card levels for the player's cards, and one level for all of the bot's cards. Everything is level 1 until use_progress().
+var player_levels := {}
+var bot_level := 1
 
 var _battle := {}
 var _arena := {}
@@ -27,13 +30,30 @@ func _init() -> void:
 	hands.append(Hand.new(bot.pick_deck_for(available_cards(), int(_battle.deck.size), Bot.knobs()), _battle))
 
 
+## Switches the match to real levels from the player's progress: the player's own card levels and tower level,
+## and the bot's level from how far along the trophy road the player is.
+func use_progress() -> void:
+	for id in available_cards():
+		player_levels[id] = Progress.battle_level(id)
+	bot_level = Progress.bot_level()
+	var pure := bool(Settings.get_value("pure_balance"))
+	for unit in units:
+		if unit.is_tower():
+			unit.level = 1 if pure else (Progress.tower_level() if unit.team == Unit.Team.PLAYER else mini(bot_level, Progress.tower_level()))
+			refresh_unit(unit)
+
+
+func level_for(team: Unit.Team, card_id: String) -> int:
+	return int(player_levels.get(card_id, 1)) if team == Unit.Team.PLAYER else bot_level
+
+
 ## Every card the player has unlocked that can be played, in the order cards.json lists them.
 static func available_cards() -> Array:
 	var battle := Data.table("battle")
 	var cards: Dictionary = Data.table("cards").cards
 	var found := []
 	for id in cards:
-		if cards[id].get("type") in battle.playable_types and int(cards[id].get("unlock_arena", 1)) <= 1:
+		if cards[id].get("type") in battle.playable_types and int(cards[id].get("unlock_arena", 1)) <= Progress.arena():
 			found.append(id)
 	return found
 
@@ -87,7 +107,8 @@ func play(team: Unit.Team, slot: int, at: Vector2) -> bool:
 	var hand := hands[team]
 	if not can_place(team, at, is_spell_card(hand.cards[slot])) or not hand.can_afford(slot):
 		return false
-	spawn(hand.play(slot), team, at)
+	var card_id := hand.play(slot)
+	spawn(card_id, team, at, level_for(team, card_id))
 	return true
 
 
