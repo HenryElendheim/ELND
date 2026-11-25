@@ -264,8 +264,18 @@ func refresh_stats() -> void:
 		refresh_unit(unit)
 
 
+## Re-reads a unit's numbers, including the settings of every ability it has,
+## which means an ability number changed in Admin Mode takes effect on troops already on the field.
 func refresh_unit(unit: Unit) -> void:
-	unit.apply_stats(_stats_for(unit), _battle)
+	var stats := _stats_for(unit)
+	unit.apply_stats(stats, _battle)
+	for ability in unit.abilities:
+		if ability == unit.evolution:
+			ability.params = stats.get("evolution", {}).merged({"id": ability.params.get("id")})
+			continue
+		for entry in stats.get("abilities", []):
+			if entry.get("id") == ability.params.get("id"):
+				ability.params = entry
 
 
 ## How many of a team's towers have been destroyed, which is the core count for the other team.

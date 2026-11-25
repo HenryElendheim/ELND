@@ -70,11 +70,32 @@ func _show_fields(subject: String) -> void:
 	var file := parts[0]
 	var path := [parts[1]] if file == "towers" else ["cards", parts[1]]
 	var stats: Dictionary = Data.table(file)[path[0]] if file == "towers" else Data.table(file).cards[parts[1]]
-	for key in stats:
-		var value: Variant = stats[key]
-		if value is float or value is int:
-			_fields.add_child(Ui.number(key.capitalize(), value, func(v: float) -> void: Data.set_override(file, path + [key], v)))
+	_number_fields(stats, func(key: String, v: float) -> void: Data.set_override(file, path + [key], v))
+	# Each ability gets its own block of numbers. Abilities are a list in cards.json, so a change stores
+	# the card's whole ability list with that one number changed, and Reset to default puts it all back.
+	var abilities: Array = stats.get("abilities", [])
+	for i in abilities.size():
+		_fields.add_child(Ui.label(String(abilities[i].id).capitalize(), "HeadingLabel"))
+		_number_fields(abilities[i], func(key: String, v: float) -> void: _set_ability(path, abilities, i, key, v))
+	if stats.has("evolution"):
+		_fields.add_child(Ui.label("Evolution: %s" % stats.evolution.get("name", ""), "HeadingLabel"))
+		_number_fields(stats.evolution, func(key: String, v: float) -> void: Data.set_override(file, path + ["evolution", key], v))
 	_fields.add_child(Ui.button("Reset to default", func() -> void: _reset(file, path, subject)))
+
+
+## Adds an editable box for every number in a dictionary. The change callback gets the key and the new value.
+func _number_fields(values: Dictionary, on_change: Callable) -> void:
+	for key in values:
+		var value: Variant = values[key]
+		if value is float or value is int:
+			_fields.add_child(Ui.number(String(key).capitalize(), value, func(v: float) -> void: on_change.call(key, v)))
+
+
+func _set_ability(path: Array, abilities: Array, index: int, key: String, value: float) -> void:
+	var changed := abilities.duplicate(true)
+	changed[index][key] = value
+	abilities[index][key] = value
+	Data.set_override("cards", path + ["abilities"], changed)
 
 
 func _give_injection() -> void:

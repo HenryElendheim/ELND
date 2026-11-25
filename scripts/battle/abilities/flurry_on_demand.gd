@@ -6,7 +6,7 @@ extends Ability
 func on_spawn(_sim: BattleSim) -> void:
 	var flurry := sibling("flurry")
 	if flurry != null:
-		flurry.params = flurry.params.merged({"exhausted_time": number("exhausted_time")}, true)
+		flurry.param_overrides["exhausted_time"] = number("exhausted_time")
 
 
 func on_activate(sim: BattleSim) -> void:

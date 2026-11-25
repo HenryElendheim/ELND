@@ -5,6 +5,9 @@ extends RefCounted
 ## which means every number can be tuned in the data file instead of in code.
 
 var params := {}
+## Changes made by another ability on the same unit, such as an evolution shortening an exhaustion.
+## They win over params and survive a refresh of params from the data files.
+var param_overrides := {}
 var unit: Unit
 
 
@@ -21,7 +24,7 @@ static func create(entry: Dictionary, owner: Unit) -> Ability:
 
 
 func number(key: String) -> float:
-	return float(params.get(key, 0.0))
+	return float(param_overrides.get(key, params.get(key, 0.0)))
 
 
 ## Runs once when the unit enters the field, after all its abilities exist.

@@ -57,6 +57,15 @@ func _ready() -> void:
 		broken += 1
 
 	Data.set_override("cards", ["cards", "hobb", "health"], 400.0)
+	# Changing an ability number in the middle of a battle has to reach the ability straight away.
+	var stomachs: Array = Data.table("cards").cards.hobb.abilities.duplicate(true)
+	stomachs[0]["heal_share"] = 0.9
+	Data.set_override("cards", ["cards", "hobb", "abilities"], stomachs)
+	for unit in sim.units:
+		for ability in unit.abilities:
+			if ability.params.get("id") == "three_stomachs" and not is_equal_approx(ability.number("heal_share"), 0.9):
+				print("Broken file: an ability number change did not reach a live unit")
+				broken += 1
 	Data.reset_override("cards", ["cards", "hobb"])
 	var shots_seen := false
 	for i in TICKS:
