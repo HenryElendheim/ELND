@@ -103,7 +103,7 @@ jobs:
           ~/godot/godot --headless --import
           timeout 120 ~/godot/godot --headless --quit-after 300 2>&1 | tee run.log
           timeout 120 ~/godot/godot --headless res://tests/smoke.tscn 2>&1 | tee -a run.log
-          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Compile Error" run.log; then exit 1; fi
+          if grep -E "SCRIPT ERROR|Parse Error|Failed to load script|Compile Error|Lambda capture" run.log; then exit 1; fi
           grep -q "Smoke test passed" run.log
 
       - name: Build the APK

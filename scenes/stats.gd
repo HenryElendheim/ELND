@@ -5,6 +5,8 @@ extends Screen
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 
 var _advanced := false
+## The count-up animations currently running, stopped whenever the view is rebuilt.
+var _counts: Array[Tween] = []
 
 
 func build() -> void:
@@ -22,6 +24,9 @@ func build() -> void:
 
 
 func _switch() -> void:
+	for tween in _counts:
+		tween.kill()
+	_counts.clear()
 	_advanced = not _advanced
 	for child in content.get_children():
 		child.queue_free()
@@ -114,8 +119,16 @@ func _counting_tile(value: float, format: String, caption: String) -> Control:
 	var big: Label = tile.get_child(0).get_child(0)
 	big.text = format % 0
 	var tween := create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_method(func(v: float) -> void: big.text = format % roundi(v), 0.0, value, 0.8)
+	tween.tween_method(_show_count.bind(weakref(big), format), 0.0, value, 0.8)
+	_counts.append(tween)
 	return tile
+
+
+## Writes one step of a count-up. The label is held loosely, so a label that is already gone is simply skipped.
+func _show_count(value: float, label_ref: WeakRef, format: String) -> void:
+	var label: Label = label_ref.get_ref()
+	if label != null:
+		label.text = format % roundi(value)
 
 
 ## A big number with a small caption under it, on a raised tile.
