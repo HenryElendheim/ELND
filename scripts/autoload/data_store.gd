@@ -15,7 +15,7 @@ var overrides := {}
 func _ready() -> void:
 	for file in FILES:
 		_defaults[file] = JsonFile.read("res://data/%s.json" % file, {})
-	overrides = JsonFile.read(OVERRIDES_PATH, {})
+	overrides = _upgrade(JsonFile.read(OVERRIDES_PATH, {}))
 	_rebuild()
 
 
@@ -54,8 +54,17 @@ func default_value(file: String, path: Array) -> Variant:
 
 ## Replaces every override at once, which is what importing a backup does.
 func replace_overrides(new_overrides: Dictionary) -> void:
-	overrides = new_overrides
+	overrides = _upgrade(new_overrides)
 	_store()
+
+
+## Balance edits saved before trophies were renamed to reputation are moved to the new names.
+static func _upgrade(loaded: Dictionary) -> Dictionary:
+	var progression: Variant = loaded.get("progression")
+	if progression is Dictionary:
+		JsonFile.rename_key(progression, "trophies", "reputation")
+		JsonFile.rename_key(progression, "road_top_trophies", "road_top_reputation")
+	return loaded
 
 
 func _store() -> void:

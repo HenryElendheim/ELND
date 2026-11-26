@@ -280,7 +280,7 @@ func clear_troops() -> void:
 
 
 ## Back during a match pauses it and asks first. A match that is left counts as cancelled: no win, no loss,
-## no trophies and no chest. Once the match is over, Back simply goes to the menu.
+## no reputation and no chest. Once the match is over, Back simply goes to the menu.
 func go_back() -> bool:
 	if sim.result != "" or _leaving:
 		Nav.go(MENU_SCENE)

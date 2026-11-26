@@ -1,5 +1,5 @@
 class_name Stats
-## Keeps the player's statistics in the save game: results per mode and per difficulty, trophies, streaks,
+## Keeps the player's statistics in the save game: results per mode and per difficulty, reputation, streaks,
 ## the cards that get played and how often they win, decks, chests, play time and the best Defense wave.
 
 
@@ -36,7 +36,7 @@ static func record_match(mode: String, result: String, cores: int, played: Array
 			bump(stats, ["three_cores"])
 	else:
 		stats.streak = 0.0
-	stats.highest_trophies = maxf(float(stats.get("highest_trophies", 0)), float(Progress.trophies()))
+	stats.highest_reputation = maxf(float(stats.get("highest_reputation", 0)), float(Progress.reputation()))
 	var counted := {}
 	for id in played:
 		bump(stats, ["card_plays", id])

@@ -19,6 +19,7 @@ func _ready() -> void:
 		print("Broken file: buying a chest with enough gold failed")
 		broken += 1
 	broken += _check_placement()
+	broken += _check_card_search()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -133,17 +134,17 @@ func _check_win_rules() -> int:
 	return broken
 
 
-## Plays out a win and opens the chest, then checks trophies went up, cards arrived, and level ups paid out.
+## Plays out a win and opens the chest, then checks reputation went up, cards arrived, and level ups paid out.
 func _check_progress() -> int:
-	var before := Progress.trophies()
+	var before := Progress.reputation()
 	Progress.record_match("player")
 	var opened := Progress.open_next_chest()
 	var got := 0
 	for drop in opened.get("cards", []):
 		got += int(drop.get("count", 0))
 	Progress.add_copies("hobb", 40)
-	var ok := Progress.trophies() > before and got > 0 and int(Progress.card("hobb").level) > 1
-	print("Progress: %d trophies, %d cards from a %s chest, Hobb level %d" % [Progress.trophies(), got, opened.get("rarity", "?"), Progress.card("hobb").level])
+	var ok := Progress.reputation() > before and got > 0 and int(Progress.card("hobb").level) > 1
+	print("Progress: %d reputation, %d cards from a %s chest, Hobb level %d" % [Progress.reputation(), got, opened.get("rarity", "?"), Progress.card("hobb").level])
 	Save.replace_all({})
 	if not ok:
 		print("Broken file: progression did not pay out")
@@ -210,6 +211,33 @@ func _check_defense() -> int:
 
 ## Checks the placement rules: spots snap to tile centres, tower tiles are blocked, the enemy half is blocked,
 ## and destroying a main tower takes the side towers with it for three cores.
+## The Admin Mode card search finds cards by name, by tag, and by a picked category.
+func _check_card_search() -> int:
+	var cases := [
+		[CardSearch.find("", "flying"), ["creeler"]],
+		[CardSearch.find("the chain", "spell"), ["chain"]],
+		[CardSearch.find("ranged troop", ""), ["spacefarer"]],
+		[CardSearch.find("air", ""), ["spacefarer"]],
+		[CardSearch.find("legendary", "spell"), ["spiker"]],
+	]
+	for entry in cases:
+		if entry[0] != entry[1]:
+			print("Broken file: card search found %s instead of %s" % [entry[0], entry[1]])
+			return 1
+	# Neutralizing every card at once has to stop while enough playable cards are left for a hand.
+	var admin: Node = load("res://scenes/admin.tscn").instantiate()
+	add_child(admin)
+	admin.call("_neutralize_shown", true)
+	var left := BattleSim.available_cards().size()
+	admin.call("_neutralize_shown", false)
+	admin.queue_free()
+	if left < int(Data.table("battle").deck.hand) or BattleSim.available_cards().size() <= left:
+		print("Broken file: neutralizing everything left %d playable cards" % left)
+		return 1
+	print("Card search passed")
+	return 0
+
+
 func _check_placement() -> int:
 	var broken := 0
 	var sim := BattleSim.new()

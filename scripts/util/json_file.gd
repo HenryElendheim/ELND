@@ -31,3 +31,11 @@ static func read(path: String, fallback: Variant) -> Variant:
 
 static func write(path: String, data: Variant) -> bool:
 	return write_text(path, JSON.stringify(data, "\t"))
+
+
+## Moves a value to a new key when only the old key is there. Saved files from before a rename are upgraded this way,
+## which means nobody loses progress or balance edits when something gets a new name.
+static func rename_key(data: Dictionary, old_key: String, new_key: String) -> void:
+	if data.has(old_key) and not data.has(new_key):
+		data[new_key] = data[old_key]
+	data.erase(old_key)

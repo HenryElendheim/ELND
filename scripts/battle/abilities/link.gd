@@ -1,5 +1,5 @@
 extends Ability
-## Chain links up to a few enemy troops in the target area. For a while, damage dealt to any one of them
+## The Chain links up to a few enemy troops in the target area. For a while, damage dealt to any one of them
 ## is dealt in full to every other linked troop as well.
 
 

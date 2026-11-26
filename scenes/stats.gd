@@ -42,7 +42,7 @@ func _build_overview(s: Dictionary) -> void:
 	grid.add_child(_counting_tile(all_games, "%d", "Games"))
 	grid.add_child(_counting_tile(_rate(s), "%d%%", "Win rate"))
 	grid.add_child(_counting_tile(float(s.get("best_streak", 0)), "%d", "Best win streak"))
-	grid.add_child(_counting_tile(float(s.get("highest_trophies", Progress.trophies())), "%d", "Highest trophies"))
+	grid.add_child(_counting_tile(float(s.get("highest_reputation", Progress.reputation())), "%d", "Highest reputation"))
 	grid.add_child(_counting_tile(float(s.get("three_cores", 0)), "%d", "Three core wins"))
 	grid.add_child(_counting_tile(float(s.get("best_wave", 0)), "%d", "Best Defense wave"))
 
@@ -102,7 +102,7 @@ func _build_advanced(s: Dictionary) -> void:
 	rows = _section("Records")
 	_row(rows, "Best win streak", str(int(s.get("best_streak", 0))))
 	_row(rows, "Current streak", str(int(s.get("streak", 0))))
-	_row(rows, "Highest trophies", str(int(s.get("highest_trophies", Progress.trophies()))))
+	_row(rows, "Highest reputation", str(int(s.get("highest_reputation", Progress.reputation()))))
 	_row(rows, "Three core wins", str(int(s.get("three_cores", 0))))
 	_row(rows, "Best Defense wave", str(int(s.get("best_wave", 0))))
 	_row(rows, "Time played", _play_time(s))

@@ -1,5 +1,5 @@
 class_name Progress
-## Everything about the player's progress: trophies, arenas, player level, card levels, wild cards and chests.
+## Everything about the player's progress: reputation, arenas, player level, card levels, wild cards and chests.
 ## It all lives in the save game, and every number comes from progression.json, chests.json and economy.json.
 
 
@@ -7,13 +7,13 @@ static func _table(name: String) -> Dictionary:
 	return Data.table(name)
 
 
-static func trophies() -> int:
-	return int(_read("trophies", 0))
+static func reputation() -> int:
+	return int(_read("reputation", 0))
 
 
-## Arena 1 starts at zero trophies, and a new arena opens every few hundred trophies.
+## Arena 1 starts at zero reputation, and a new arena opens every few hundred reputation.
 static func arena() -> int:
-	return 1 + trophies() / int(_table("progression").trophies.per_arena)
+	return 1 + reputation() / int(_table("progression").reputation.per_arena)
 
 
 static func player_level() -> int:
@@ -72,7 +72,7 @@ static func battle_level(id: String) -> int:
 	return 1 if Settings.get_value("pure_balance") else maxi(int(card(id).level), 1)
 
 
-## The bot's cards scale with how far along the trophy road the player is, and match the player at the top.
+## The bot's cards scale with how far along the reputation road the player is, and match the player at the top.
 static func bot_level() -> int:
 	if Settings.get_value("pure_balance"):
 		return 1
@@ -81,7 +81,7 @@ static func bot_level() -> int:
 	for id in cards:
 		total += maxi(int(card(id).level), 1)
 	var average := float(total) / maxf(cards.size(), 1)
-	var share := clampf(float(trophies()) / float(_table("progression").road_top_trophies), 0.0, 1.0)
+	var share := clampf(float(reputation()) / float(_table("progression").road_top_reputation), 0.0, 1.0)
 	return maxi(roundi(lerpf(1.0, average, share)), 1)
 
 
@@ -95,21 +95,21 @@ static func buy_chest(rarity: String) -> bool:
 	return true
 
 
-## Records a finished Defense run: no trophies, a chest that gets better the further the run got, and the best wave.
+## Records a finished Defense run: no reputation, a chest that gets better the further the run got, and the best wave.
 static func record_defense(reached: int) -> void:
 	_write("games", int(_read("games", 0)) + 1)
 	queue_chest(Waves.chest_for(reached))
 	Stats.record_wave(reached)
 
 
-## Records a finished match. A win gives trophies, XP and gold, and a loss takes trophies away.
-## Pure Balance gives the chest but no trophies, which keeps the trophy road meaningful. Every match ends with a chest.
+## Records a finished match. A win gives reputation, XP and gold, and a loss takes reputation away.
+## Pure Balance gives the chest but no reputation, which keeps the reputation road meaningful. Every match ends with a chest.
 static func record_match(result: String) -> void:
 	var progression: Dictionary = _table("progression")
 	var won := result == "player"
 	if not Settings.get_value("pure_balance") and result != "draw":
-		var change := int(progression.trophies.win) if won else int(progression.trophies.loss)
-		_write("trophies", maxi(trophies() + change, 0))
+		var change := int(progression.reputation.win) if won else int(progression.reputation.loss)
+		_write("reputation", maxi(reputation() + change, 0))
 	if won:
 		add_xp(int(progression.xp.per_win))
 		add_gold(int(_table("economy").gold.per_win))

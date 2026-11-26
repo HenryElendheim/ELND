@@ -13,7 +13,7 @@ var values := {}
 
 
 func _ready() -> void:
-	values = defaults.merged(JsonFile.read(path, {}), true)
+	values = defaults.merged(upgrade(JsonFile.read(path, {})), true)
 	_on_values_changed()
 
 
@@ -28,7 +28,7 @@ func set_value(key: String, value: Variant) -> void:
 
 ## Swaps everything at once, which is what importing a backup does.
 func replace_all(new_values: Dictionary) -> void:
-	values = defaults.merged(new_values, true)
+	values = defaults.merged(upgrade(new_values), true)
 	_commit()
 
 
@@ -36,6 +36,11 @@ func _commit() -> void:
 	JsonFile.write(path, values)
 	_on_values_changed()
 	changed.emit()
+
+
+## Children override this to bring files saved by older versions up to date before they are used.
+func upgrade(loaded: Dictionary) -> Dictionary:
+	return loaded
 
 
 ## Children override this when they need to react, for example by rebuilding the theme.

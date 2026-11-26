@@ -1,5 +1,5 @@
 {
-	"trophies": {
+	"reputation": {
 		"win": 30,
 		"loss": -15,
 		"per_arena": 400
@@ -19,5 +19,5 @@
 		"copies_per_level_step": 3,
 		"starting_copies": 1
 	},
-	"road_top_trophies": 4000
+	"road_top_reputation": 4000
 }

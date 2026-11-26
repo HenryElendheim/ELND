@@ -107,6 +107,17 @@ static func number(text: String, value: float, on_change: Callable) -> Control:
 	return _row(text, field)
 
 
+## A text box for searching. The callback gets the text after every change, and a clear button empties it in one tap.
+static func search(hint: String, on_change: Callable) -> LineEdit:
+	var field := LineEdit.new()
+	field.placeholder_text = hint
+	field.clear_button_enabled = true
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	field.text_changed.connect(on_change)
+	field.text_submitted.connect(func(_entered: String) -> void: field.release_focus())
+	return field
+
+
 static func spacer(height: float) -> Control:
 	var node := Control.new()
 	node.custom_minimum_size.y = height

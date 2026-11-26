@@ -53,7 +53,7 @@ var carrier: Unit = null
 ## How long the unit stays dazed once its carrier is gone.
 var release_daze := 0.0
 var stun_left := 0.0
-## Units hit by the same Chain share a link group, and damage to one is copied to the others until link_until.
+## Units hit by the same casting of The Chain share a link group, and damage to one is copied to the others until link_until.
 var link_group := 0
 var link_until := -INF
 ## Extra health on top of the normal health bar that is used up first, such as Kardemosh's stolen skin.

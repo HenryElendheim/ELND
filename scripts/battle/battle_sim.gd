@@ -47,7 +47,7 @@ func _init(match_mode := "battle") -> void:
 
 
 ## Switches the match to real levels from the player's progress: the player's own card levels and tower level,
-## and the bot's level from how far along the trophy road the player is.
+## and the bot's level from how far along the reputation road the player is.
 func use_progress() -> void:
 	for id in available_cards():
 		player_levels[id] = Progress.battle_level(id)
@@ -542,7 +542,7 @@ func _move_projectiles() -> void:
 
 ## Every bit of damage goes through here, which means abilities, shields and damage taken changes always apply.
 ## Small damage over time passes flash as false, so the white hit flash is kept for real hits.
-## A victim linked by Chain passes the same damage on to every other troop in its link.
+## A victim linked by The Chain passes the same damage on to every other troop in its link.
 func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, shared := false) -> void:
 	if not victim.alive():
 		return

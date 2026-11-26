@@ -5,18 +5,24 @@ extends Screen
 const SETTINGS_SCENE := "res://scenes/settings_menu.tscn"
 const CHEST_SCENE := "res://scenes/chest.tscn"
 const CONFIRM_MS := 3000
+const KEEP_PLAYABLE := "At least %d playable cards, one of them a troop, have to stay."
 
 var _reset_asked_at := -CONFIRM_MS
+var _query := ""
+var _category := ""
+var _found := Ui.label("", "MutedLabel")
+var _results := VBoxContainer.new()
 
 
 func build() -> void:
 	add(Ui.label("Admin tools", "TitleLabel"))
+	_show_results()
 
 	_section("Give")
 	_give("1000 gold", func() -> void: Progress.add_gold(1000))
 	_give("1000 XP", func() -> void: Progress.add_xp(1000))
-	_give("100 trophies", func() -> void: Save.set_value("trophies", Progress.trophies() + 100))
-	_give("Take 100 trophies", func() -> void: Save.set_value("trophies", maxi(Progress.trophies() - 100, 0)))
+	_give("100 reputation", func() -> void: Save.set_value("reputation", Progress.reputation() + 100))
+	_give("Take 100 reputation", func() -> void: Save.set_value("reputation", maxi(Progress.reputation() - 100, 0)))
 	_give("10 wild cards", func() -> void: Save.set_value("wild_cards", Progress.wild_cards() + 10))
 	_give("1 Evolution Injection", func() -> void: Progress.add_injection())
 	_give("Every card one level up", _level_all)
@@ -27,10 +33,15 @@ func build() -> void:
 		add(Ui.button("%s chest" % String(rarity).capitalize(), func() -> void: _open(rarity)))
 
 	_section("Neutralize")
-	add(Ui.label("Neutralized cards leave every deck, the bot's included, until switched back.", "MutedLabel"))
-	var cards: Dictionary = Data.table("cards").cards
-	for id in cards:
-		add(Ui.toggle(cards[id].name, cards[id].get("neutralized", false), func(on: bool) -> void: _neutralize(id, on)))
+	add(Ui.label("Neutralized cards leave every deck, the bot's included, until switched back. Search by name or by kind, such as flying, ranged or spell, or pick a category.", "MutedLabel"))
+	add(Ui.search("Search cards", _on_search))
+	add(Ui.strip(CardSearch.CATEGORIES, _category, _on_category))
+	var bulk := HBoxContainer.new()
+	bulk.add_child(Ui.button("Neutralize shown", func() -> void: _neutralize_shown(true)))
+	bulk.add_child(Ui.button("Restore shown", func() -> void: _neutralize_shown(false)))
+	add(bulk)
+	add(_found)
+	add(_results)
 
 	_section("Balance")
 	add(Ui.button("Export balance", func() -> void: Backup.export_balance(Nav.toast)))
@@ -63,13 +74,13 @@ func _level_all() -> void:
 		Progress.add_copies(id, maxi(Progress.copies_for_next(maxi(int(card.level), 1)) - int(card.copies), 0))
 
 
-## Unlocks every evolution and raises trophies to the arena that unlocks the last card.
+## Unlocks every evolution and raises reputation to the arena that unlocks the last card.
 func _unlock_everything() -> void:
 	var top_arena := 1
 	for id in Data.table("cards").cards:
 		top_arena = maxi(top_arena, int(Data.table("cards").cards[id].get("unlock_arena", 1)))
-	var needed := (top_arena - 1) * int(Data.table("progression").trophies.per_arena)
-	Save.set_value("trophies", maxi(Progress.trophies(), needed))
+	var needed := (top_arena - 1) * int(Data.table("progression").reputation.per_arena)
+	Save.set_value("reputation", maxi(Progress.reputation(), needed))
 	var all_evolutions := Progress.evolvable_cards()
 	Save.set_value("evolutions", all_evolutions)
 
@@ -83,11 +94,74 @@ func _open(rarity: String) -> void:
 	Nav.go(CHEST_SCENE)
 
 
-func _neutralize(id: String, on: bool) -> void:
-	if on:
-		Data.set_override("cards", ["cards", id, "neutralized"], true)
-	else:
+func _on_search(text: String) -> void:
+	_query = text
+	_show_results()
+
+
+func _on_category(tag: String) -> void:
+	_category = tag
+	_show_results()
+
+
+## Lists every card that fits the search, each with its tags and its own switch.
+func _show_results() -> void:
+	for child in _results.get_children():
+		child.queue_free()
+	var ids := CardSearch.find(_query, _category)
+	var off := ids.filter(func(id: String) -> bool: return _is_neutralized(id)).size()
+	_found.text = "Showing %d of %d cards, %d of them neutralized." % [ids.size(), Data.table("cards").cards.size(), off]
+	for id in ids:
+		var text := "%s\n%s" % [Data.table("cards").cards[id].name, CardSearch.describe(id)]
+		_results.add_child(Ui.toggle(text, _is_neutralized(id), func(on: bool) -> void: _switch(id, on)))
+
+
+func _switch(id: String, on: bool) -> void:
+	if not _neutralize(id, on):
+		Nav.toast(KEEP_PLAYABLE % _min_playable())
+	_show_results()
+
+
+func _neutralize_shown(on: bool) -> void:
+	var count := 0
+	var refused := false
+	for id in CardSearch.find(_query, _category):
+		if _is_neutralized(id) == on:
+			continue
+		if _neutralize(id, on):
+			count += 1
+		else:
+			refused = true
+	var done := "%s %d cards." % ["Neutralized" if on else "Restored", count]
+	if refused:
+		done += " " + KEEP_PLAYABLE % _min_playable()
+	Nav.toast(done)
+	_show_results()
+
+
+static func _is_neutralized(id: String) -> bool:
+	return bool(Data.table("cards").cards[id].get("neutralized", false))
+
+
+## A hand needs this many cards, so battles always have something to play.
+static func _min_playable() -> int:
+	return int(Data.table("battle").deck.hand)
+
+
+## Switches one card and returns true, unless taking it out would leave too few playable cards or no troops,
+## which would leave battles and Defense waves with nothing to use.
+static func _neutralize(id: String, on: bool) -> bool:
+	if not on:
 		Data.reset_override("cards", ["cards", id, "neutralized"])
+		return true
+	var rest := BattleSim.available_cards()
+	rest.erase(id)
+	var cards: Dictionary = Data.table("cards").cards
+	var has_troop := rest.any(func(other: String) -> bool: return cards[other].type == "troop")
+	if rest.size() < _min_playable() or not has_troop:
+		return false
+	Data.set_override("cards", ["cards", id, "neutralized"], true)
+	return true
 
 
 func _reset_balance() -> void:

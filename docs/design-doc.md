@@ -3,7 +3,7 @@
 > Title: **ELND** (Henry says it "Elend"; players can say E-L-N-D too)
 > Platform: Android (personal, not for sale)
 > Engine: Godot 4 (latest stable), GDScript
-> Last updated: 25 Nov 2026
+> Last updated: 26 Nov 2026
 
 ---
 
@@ -212,7 +212,7 @@ An **Evolution** is an empowered version of a card.
 > Stats are **draft** numbers, balanced around 15 tower damage at level 1.
 
 **Starting set: 10 cards**
-- **Common (5):** The Editor, The Spacefarer, The Individuals, The Dargalean, Chain
+- **Common (5):** The Editor, The Spacefarer, The Individuals, The Dargalean, The Chain
 - **Rare (2):** John Arms, The Gasket
 - **Epic (2):** The Hobb, Kardemosh
 - **Legendary (1):** The Creeler
@@ -484,7 +484,7 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 
 ---
 
-### ELND-011 — Chain
+### ELND-011 — The Chain
 **Codex (draft):** Class CLAM · Threat 1/5. An ordinary-looking steel chain. Anything it touches becomes linked: what happens to one happens to the other.
 
 | Stat | Draft |
@@ -505,9 +505,10 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 
 ## 6. Progression
 
-### 6.1 Trophy Road & Arenas
-- **+30 trophies** per win, **−15** per loss
-- Trophies move you along the **road**; a **new arena every 400 trophies**
+### 6.1 Reputation Road & Arenas
+- **Reputation** is your standing around the ELND Foundation
+- **+30 reputation** per win, **−15** per loss
+- Reputation moves you along the **road**; a **new arena every 400 reputation**
 - New arenas unlock new cards for chests
 
 ### 6.2 Player Level
@@ -531,7 +532,7 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 - **Same level = same interaction.** Two cards at level 1 fight exactly the same as at level 10 or 20
 - How: every level multiplies **health and damage** by the **same factor for every card and every tower** (default **+10% per level**, compounding: level 20 ≈ 6.1× level 1)
 - **Never scales:** speed, hit speed, range, Ephrocity cost, ability timings
-- Only *different* levels change outcomes, which is exactly what the trophy-road bot scaling and Pure Balance mode rely on
+- Only *different* levels change outcomes, which is exactly what the reputation road bot scaling and Pure Balance mode rely on
 
 ### 6.3c Copies Needed
 - Level 2: **3** copies · Level 3: **6** · Level 4: **9** · … each level needs **3 more** than the last
@@ -615,7 +616,7 @@ Goal: **really satisfying and addicting**, escalating hard with rarity.
 
 | Mode | Description |
 |---|---|
-| **Battle** | Classic 1v1 vs a bot. Earns trophies + chests. |
+| **Battle** | Classic 1v1 vs a bot. Earns reputation + chests. |
 | **Defense (PvE)** | Tower defense: waves of anomalies attack your towers, you defend with your deck. A chest after every run; the further you get, the better the chest tier. Best wave saved as a record. |
 | **Challenges** *(later)* | Special rule sets, e.g. "spells only", boss fights, survival. |
 
@@ -635,13 +636,13 @@ Knobs:
 - **Deck quality:** random decks vs. synergy decks
 
 ### 9.2 Bot Card Levels
-- Bot card levels scale with **how far you've progressed on the trophy road**
+- Bot card levels scale with **how far you've progressed on the reputation road**
 - At the top of the road, the bot is **fully equal** to you
 - Difficulty comes from *how smart the bot plays*
 
 ### 9.3 Pure Balance Mode (Setting)
 - Removes levels from battles entirely: both sides equal from the start
-- Gives **chests but no trophies**, so the trophy road stays meaningful
+- Gives **chests but no reputation**, so the reputation road stays meaningful
 
 ---
 
@@ -656,10 +657,10 @@ Knobs:
 
 Saved locally. Ideas:
 - Wins / losses / win rate (overall + per mode + per difficulty)
-- Highest trophies reached
+- Highest reputation reached
 - Most-played cards, win rate per card, favourite deck
 - Chests opened (by rarity), legendaries pulled
-- Longest win streak, three-crown wins
+- Longest win streak, three-core wins
 - Total games / total playtime
 - PvE: highest wave reached
 
@@ -676,7 +677,7 @@ Saved locally. Ideas:
 - Edit any stat of any card, tower or evolution (health, damage, speed, range, cost, ability values, cooldowns)
 - Changes apply **live**, even mid-match
 - Save to the data files, reset a card to defaults, or **export/import** a whole balance setup
-- **Neutralize** a card (pulls it from bots and decks)
+- **Neutralize** a card (pulls it from bots and decks). Find cards with a search field by name or by category (troop, building, spell, ground, flying, melee, ranged, rarity, class) and neutralize or restore everything shown at once
 
 **Battle testing**
 - Spawn any troop on **either side**, anywhere
@@ -686,7 +687,7 @@ Saved locally. Ideas:
 - Show hitboxes, attack ranges, targeting lines, FPS
 
 **Progression & economy**
-- Give cards, gold, XP, trophies, wild cards, injections
+- Give cards, gold, XP, reputation, wild cards, injections
 - Set player level, arena, card levels; unlock everything
 - Edit chest odds, chest contents, arena scaling, copies curve, XP curve
 - Open **any chest type** and **force its rarity** (to test animations)
@@ -709,10 +710,10 @@ Saved locally. Ideas:
 1. **Arena prototype:** 18×32 arena, river, bridges, towers, units walk and fight + basic Admin Mode
 2. **Cards & Ephrocity:** the starting cards (troops first), deck of 8, hand of 4, meter, placing units (1 s deploy), targeting rules
 3. **Dumb bot** → **first full match playable**
-4. **Win rules:** crowns, overtime, tiebreaker
+4. **Win rules:** cores, overtime, tiebreaker
 5. **Smarter bot:** difficulty knobs + presets
 6. **Spells & buildings**
-7. **Progression:** trophies, road, arenas, chests, card levels, wild cards
+7. **Progression:** reputation, road, arenas, chests, card levels, wild cards
 8. **Evolutions:** cycle tracking, evolved forms, ability button, injections
 9. **Save system + stats screen + gold & shop**
 10. **Defense (PvE) mode**
@@ -725,7 +726,7 @@ Saved locally. Ideas:
 
 ## 14. Open Questions
 
-- [ ] Write the full Codex entries for The Creeler, The Spiker, The Dargalean and Chain (drafts in section 5b)
+- [ ] Write the full Codex entries for The Creeler, The Spiker, The Dargalean and The Chain (drafts in section 5b)
 - [ ] Can spells evolve? (suggested: no)
 - [ ] Cards for Arena 3+
 - [ ] Which cards can evolve, and each one's cycle requirement
