@@ -49,10 +49,10 @@
 				"ability": "gorge",
 				"gorge_max_health": 300,
 				"gorge_range": 1.5,
-				"how_it_works": "Insatiable: eats buildings outright. Its button, Gorge, instantly devours a small enemy troop in front of it."
+				"how_it_works": "Insatiable: eats buildings outright. Its button, Gorge, instantly devours an enemy troop with up to {evolution.gorge_max_health} health within {evolution.gorge_range} tiles in front of it."
 			},
 			"short_name": "Hobb",
-			"how_it_works": "Three Stomachs: every enemy troop it kills is devoured. One full stomach heals it, two also add damage, and with all three full it grows bigger with more health and damage. Munchies: if it goes 8 seconds without devouring, it gets hungry and bites faster, with bonus damage against buildings and towers."
+			"how_it_works": "Three Stomachs: every enemy troop it kills is devoured, up to {three_stomachs.stomachs}. One full stomach heals it by {three_stomachs.heal_share|pct}% of its health, two also add {three_stomachs.damage_bonus|pct}% damage, and with all three full it grows {three_stomachs.full_growth|more}% bigger with more health and damage. Munchies: if it goes {munchies.hungry_after} seconds without devouring, it gets hungry: it bites {munchies.hungry_haste|more}% faster and does {munchies.building_bonus} times the damage to buildings and towers."
 		},
 		"editor": {
 			"number": 2,
@@ -76,10 +76,10 @@
 				"name": "Rewrite",
 				"ability": "rewrite",
 				"push_back_tiles": 2.5,
-				"how_it_works": "Rewrite: its button pushes back every enemy troop in its lane at once."
+				"how_it_works": "Rewrite: its button pushes back every enemy troop in its lane by {evolution.push_back_tiles} tiles at once."
 			},
 			"short_name": "Editor",
-			"how_it_works": "Quiet Revision: every 5 seconds it pushes the enemy troop that has come furthest back by 1.5 tiles. It only works while no enemy troop is within 3 tiles of it."
+			"how_it_works": "Quiet Revision: every {quiet_revision.interval} seconds it pushes the enemy troop that has come furthest back by {quiet_revision.push_back_tiles} tiles. It only works while no enemy troop is within {quiet_revision.watch_radius} tiles of it."
 		},
 		"john_arms": {
 			"number": 3,
@@ -116,10 +116,10 @@
 				"name": "No Hard Feelings",
 				"ability": "flurry_on_demand",
 				"exhausted_time": 2.0,
-				"how_it_works": "No Hard Feelings: its button starts a Flurry whenever you like, and the exhaustion only lasts 2 seconds."
+				"how_it_works": "No Hard Feelings: its button starts a Flurry whenever you like, and the exhaustion only lasts {evolution.exhausted_time} seconds."
 			},
 			"short_name": "John Arms",
-			"how_it_works": "Respect: it never attacks first and only goes for whatever damages it. Flurry: once provoked it spins for 4 seconds, hitting everything around it and knocking enemies back, then it is exhausted for 3 seconds, slow and unable to attack."
+			"how_it_works": "Respect: it never attacks first and only goes for whatever damages it. Flurry: once provoked it spins for {flurry.spin_time} seconds, hitting everything within {flurry.radius} tiles every {flurry.hit_interval} seconds and knocking enemies back {flurry.knockback_tiles} tile, then it is exhausted for {flurry.exhausted_time} seconds, slow and unable to attack. It calms down after {flurry.calm_after} seconds without being hit."
 		},
 		"kardemosh": {
 			"number": 4,
@@ -158,10 +158,10 @@
 				"starting_skin": 150,
 				"flay_damage": 150,
 				"flay_range": 3.0,
-				"how_it_works": "God of Flesh: starts with some skin on. Its button, Flay, rips the skin off the nearest enemy troop for big damage and wears it."
+				"how_it_works": "God of Flesh: starts with {evolution.starting_skin} skin on. Its button, Flay, rips the skin off the nearest enemy troop within {evolution.flay_range} tiles for {evolution.flay_damage} damage and wears it."
 			},
 			"short_name": "Kardemosh",
-			"how_it_works": "Skin Stealer: every troop it kills gives it skin, a shield that slowly rots away. With little skin it hunts troops and moves faster. With plenty of skin it calms down and walks for buildings. Halt: a stun freezes it far longer than normal, but it adapts and a third stun does nothing."
+			"how_it_works": "Skin Stealer: every troop it kills gives it {skin_stealer.skin_per_kill} skin, a shield of up to {skin_stealer.max_skin} that rots away at {skin_stealer.decay_per_second} a second. With little skin it hunts troops and moves {skin_stealer.hunting_speed|more}% faster. With more than {skin_stealer.calm_above} skin it calms down and walks for buildings. Halt: a stun freezes it for {halt.stun_time} seconds, but it adapts: each Halt lasts {halt.repeat_factor|pct}% as long as the last, and after {halt.max_halts} stuns do nothing."
 		},
 		"gasket": {
 			"number": 5,
@@ -186,10 +186,10 @@
 				"name": "Do Not Enter",
 				"ability": "close_the_lid",
 				"lid_damage": 300,
-				"how_it_works": "Do Not Enter: its button, Close the Lid, hits the troop inside with a big burst of damage and opens the lid again straight away."
+				"how_it_works": "Do Not Enter: its button, Close the Lid, hits the troop inside for {evolution.lid_damage} damage and opens the lid again straight away."
 			},
 			"short_name": "Gasket",
-			"how_it_works": "Comfortable End: while empty it lures the nearest enemy ground troop within 4 tiles inside, where the troop cannot act and slowly loses health. One troop at a time. Flying troops and troops that only attack buildings are never lured. Destroying it frees the troop, dazed."
+			"how_it_works": "Comfortable End: while empty it lures the nearest enemy ground troop within {comfortable_end.lure_radius} tiles inside, where the troop cannot act and loses {comfortable_end.drain_percent_per_second|pct}% of its health a second. One troop at a time, with {comfortable_end.relure_delay} seconds between them. Flying troops, lifeless troops and troops that only attack buildings are never lured. Destroying it frees the troop, dazed for {comfortable_end.freed_daze} second."
 		},
 		"creeler": {
 			"number": 6,
@@ -219,10 +219,10 @@
 				"ability": "drop",
 				"drop_damage": 200,
 				"drop_radius": 1.5,
-				"how_it_works": "Empty Basket: its button, Drop, lets go of the carried troop early from height, hurting it and everything around it."
+				"how_it_works": "Empty Basket: its button, Drop, lets go of the carried troop early from height, dealing {evolution.drop_damage} damage to it and everything within {evolution.drop_radius} tiles."
 			},
 			"short_name": "Creeler",
-			"how_it_works": "Snatch: it grabs an enemy ground troop that comes within reach and flies it all the way back to that troop's own back line, then returns to the towers. While carrying it cannot attack and takes extra damage. One troop at a time, every 10 seconds."
+			"how_it_works": "Snatch: it grabs an enemy ground troop that comes within reach and flies it all the way back to that troop's own back line, then returns to the towers. While carrying it cannot attack and takes {snatch.carry_damage_taken|more}% more damage. One troop at a time, every {snatch.cooldown} seconds."
 		},
 		"spiker": {
 			"number": 7,
@@ -245,7 +245,7 @@
 			],
 			"tower_damage_share": 0.35,
 			"short_name": "Spiker",
-			"how_it_works": "Spike Field: black spikes erupt in the area, then stay for 4 seconds, hurting and slowing anything inside. The damage grows the longer something stays. Towers take less damage."
+			"how_it_works": "Spike Field: black spikes erupt over {radius} tiles for {damage|lvl} damage, then stay for {spike_field.duration} seconds, dealing {spike_field.damage_per_second} damage a second and slowing anything inside by {spike_field.slow|pct}%. The damage grows {spike_field.growth_per_second|pct}% for every second something stays. Towers take only {tower_damage_share|pct}% of the eruption."
 		},
 		"dargalean": {
 			"number": 8,
@@ -272,10 +272,10 @@
 				"ability": "cuddle",
 				"duration": 2.0,
 				"radius": 3.0,
-				"how_it_works": "Lost Hours: its button, Cuddle, makes nearby enemies stop attacking for 2 seconds."
+				"how_it_works": "Lost Hours: its button, Cuddle, makes enemies within {evolution.radius} tiles stop attacking for {evolution.duration} seconds."
 			},
 			"short_name": "Dargalean",
-			"how_it_works": "Irresistible: every enemy troop within 3 tiles has to target it for as long as it lives. A cheap decoy to pull troops away."
+			"how_it_works": "Irresistible: every enemy troop within {irresistible.radius} tiles has to target it for as long as it lives. A cheap decoy to pull troops away."
 		},
 		"spacefarer": {
 			"number": 9,
@@ -305,7 +305,7 @@
 				"name": "From the Future",
 				"ability": "time_skip",
 				"blink_tiles": 3.0,
-				"how_it_works": "From the Future: its button, Time Skip, blinks it 3 tiles back toward your side and it keeps its attack speed."
+				"how_it_works": "From the Future: its button, Time Skip, blinks it {evolution.blink_tiles} tiles back toward your side and it keeps its attack speed."
 			},
 			"projectile": {
 				"style": "bolt",
@@ -314,7 +314,7 @@
 				"colour": "#6FF2FF"
 			},
 			"short_name": "Spacefarer",
-			"how_it_works": "Three Hours: it never tires. Every 3 seconds of non-stop attacking makes it attack 10% faster, up to 50%, until it stops for a moment."
+			"how_it_works": "Three Hours: it never tires. Every {three_hours.every} seconds of non-stop attacking makes it attack {three_hours.step|pct}% faster, up to {three_hours.max_bonus|pct}%, until it stops for a moment."
 		},
 		"individuals": {
 			"number": 10,
@@ -347,10 +347,10 @@
 				"name": "Seen Through a Screen",
 				"ability": "flatten",
 				"duration": 2.0,
-				"how_it_works": "Seen Through a Screen: their button, Flatten, makes them impossible to target for 2 seconds."
+				"how_it_works": "Seen Through a Screen: their button, Flatten, makes them impossible to target for {evolution.duration} seconds."
 			},
 			"short_name": "Individuals",
-			"how_it_works": "Gaze: the troop they are fighting is filled with dread and attacks 30% slower. Every 4 seconds they blink for a second and the dread pauses. Distract: hit one and they all turn toward the attacker."
+			"how_it_works": "Gaze: the troop they are fighting is filled with dread and attacks {gaze.attack_speed_penalty|pct}% slower. Every {gaze.blink_every} seconds they blink for {gaze.blink_time} second and the dread pauses. Distract: hit one and they all turn toward the attacker."
 		},
 		"chain": {
 			"number": 11,
@@ -370,7 +370,7 @@
 			],
 			"radius": 2.5,
 			"short_name": "Chain",
-			"how_it_works": "Link: up to 3 enemy troops in the area are chained for 6 seconds. Damage dealt to one is dealt in full to all of them."
+			"how_it_works": "Link: up to {link.max_targets} enemy troops within {radius} tiles take {damage|lvl} damage and are chained for {link.duration} seconds. Damage dealt to one is dealt in full to all of them."
 		},
 		"devil": {
 			"number": 12,
@@ -404,10 +404,10 @@
 				"ability": "deeper_into_the_woods",
 				"boost": 3.0,
 				"boost_time": 3.0,
-				"how_it_works": "Deeper Into the Woods: its button switches the drain to a new troop straight away and drains three times as fast for 3 seconds."
+				"how_it_works": "Deeper Into the Woods: its button switches the drain to a new troop straight away and drains {evolution.boost} times as fast for {evolution.boost_time} seconds."
 			},
 			"short_name": "Devil",
-			"how_it_works": "Smile: the two closest enemy ranged troops walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within 1.5 tiles at a time, 20 a second, and heals itself by the same amount. The troop it drains deals half damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
+			"how_it_works": "Smile: the {smile.max_charmed} closest enemy ranged troops within {smile.sight} tiles walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within {happy_face.range} tiles at a time, {happy_face.drain_per_second|lvl} a second, and heals itself by the same amount. The troop it drains deals {happy_face.drained_damage_taken|less}% less damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
 		},
 		"pardoned": {
 			"number": 13,
@@ -442,7 +442,7 @@
 				"name": "A Thousand Years",
 				"ability": "feather_storm",
 				"grounded_time": 4.0,
-				"how_it_works": "A Thousand Years: her button, Feather Storm, fires every feather she has left at once, spread over every enemy in range. They all come back and heal her, but she is grounded for 4 seconds afterwards."
+				"how_it_works": "A Thousand Years: her button, Feather Storm, fires every feather she has left at once, spread over every enemy in range. They all come back and heal her, but she is grounded for {evolution.grounded_time} seconds afterwards."
 			},
 			"projectile": {
 				"style": "bolt",
@@ -451,7 +451,7 @@
 				"colour": "#E8E8F0"
 			},
 			"short_name": "Pardoned",
-			"how_it_works": "Sharp Wings: every shot is a feather that comes back after 1.5 seconds and heals her for the damage it dealt. She has 12. With more than 8 out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with 40% health. Killed while grounded, she is gone for good."
+			"how_it_works": "Sharp Wings: every shot is a feather that comes back after {sharp_wings.return_time} seconds and heals her for the damage it dealt. She has {sharp_wings.feathers}. With more than {sharp_wings.grounded_above} out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with {pardoned.reborn_health|pct}% health. Killed while grounded, she is gone for good."
 		},
 		"cloud": {
 			"number": 14,
@@ -479,10 +479,10 @@
 				"name": "Thunderhead",
 				"ability": "storm",
 				"drift_tiles": 3.0,
-				"how_it_works": "Thunderhead: its button, Storm, drifts it 3 tiles toward the enemy side and strikes straight away."
+				"how_it_works": "Thunderhead: its button, Storm, drifts it {evolution.drift_tiles} tiles toward the enemy side and strikes straight away."
 			},
 			"short_name": "Cloud",
-			"how_it_works": "Hovering: it stays where it is placed but counts as flying, so only troops that hit air, towers and spells can hurt it. Lightning Strike: it strikes an enemy troop within 2.5 tiles below it for 60 damage and a 1 second stun, then waits 5 to 8 seconds. Lightning goes straight through shields such as Kardemosh's skin. Irritated: whatever hurts it gets the next strike, if it is close enough."
+			"how_it_works": "Hovering: it stays where it is placed but counts as flying, so only troops that hit air, towers and spells can hurt it. Lightning Strike: it strikes an enemy troop within {lightning_strike.radius} tiles below it for {damage|lvl} damage and a {lightning_strike.stun} second stun, then waits {lightning_strike.min_wait} to {lightning_strike.max_wait} seconds. Lightning goes straight through shields such as Kardemosh's skin. Irritated: whatever hurts it gets the next strike, if it is close enough."
 		},
 		"danger_zone": {
 			"number": 15,
@@ -504,7 +504,7 @@
 				}
 			],
 			"short_name": "Danger Zone",
-			"how_it_works": "Enrage: for 10 seconds every living troop inside, yours and the enemy's, attacks and moves 35% faster and takes 25% less damage. Backlash: when the zone ends, every troop it enraged loses 10% of its max health. Towers, buildings and lifeless troops are not affected. Play it where you have more troops."
+			"how_it_works": "Enrage: for {enrage.duration} seconds every living troop within {radius} tiles, yours and the enemy's, attacks and moves {enrage.haste|pct}% faster and takes {enrage.damage_taken|less}% less damage. Backlash: when the zone ends, every troop it enraged loses {enrage.backlash|pct}% of its max health. Towers, buildings and lifeless troops are not affected. Play it where you have more troops."
 		},
 		"hanged_one": {
 			"number": 16,
@@ -533,10 +533,10 @@
 				"name": "The Rope",
 				"ability": "leash",
 				"reach": 6.0,
-				"how_it_works": "The Rope: its button, Leash, pulls the nearest troop of yours within 6 tiles right next to it, so it is never alone."
+				"how_it_works": "The Rope: its button, Leash, pulls the nearest troop of yours within {evolution.reach} tiles right next to it, so it is never alone."
 			},
 			"short_name": "Hanged One",
-			"how_it_works": "Cannot Strike the Living: it ignores every troop and walks straight to buildings and towers. Not Living: The Gasket cannot lure it, The Devil In The Forest and Mrs. Give & Take cannot drain it, and The Danger Zone cannot enrage it. Lost Dog: while a troop of yours is within 2 tiles, it takes 20% less damage."
+			"how_it_works": "Cannot Strike the Living: it ignores every troop and walks straight to buildings and towers. Not Living: The Gasket cannot lure it, The Devil In The Forest and Mrs. Give & Take cannot drain it, and The Danger Zone cannot enrage it. Lost Dog: while a troop of yours is within {lost_dog.radius} tiles, it takes {lost_dog.damage_taken|less}% less damage."
 		},
 		"clone": {
 			"number": 17,
@@ -555,7 +555,7 @@
 				}
 			],
 			"short_name": "Clone",
-			"how_it_works": "Clone: every troop of yours in the area gets a copy next to it with half its health and damage and the same abilities, in the base form. Buildings are not copied. Clones count as living, and a clone of The Pardoned One cannot be born anew."
+			"how_it_works": "Clone: every troop of yours within {radius} tiles gets a copy next to it with {clone.strength|pct}% of its health and damage and the same abilities, in the base form. Buildings are not copied. Clones count as living, and a clone of The Pardoned One cannot be born anew."
 		},
 		"give_and_take": {
 			"number": 18,
@@ -588,7 +588,7 @@
 				"how_it_works": "Return: her button pours her whole life pool out at once, shared between every ally in range."
 			},
 			"short_name": "Give & Take",
-			"how_it_works": "Take: she drains one enemy within 4 tiles at a time, 15 a second, into her life pool (up to 300). She goes first for whoever is attacking the ally she is healing, and with her pool over half full she drains 50% faster. Give: she heals the most hurt ally in range 20 a second from her pool, and once it is empty she pays with her own health, even if it kills her. Lifeless troops can be neither drained nor healed."
+			"how_it_works": "Take: she drains one enemy within {range} tiles at a time, {take_and_give.drain_per_second|lvl} a second, into her life pool (up to {take_and_give.pool_max|lvl}). She goes first for whoever is attacking the ally she is healing, and with her pool over {take_and_give.empowered_above|pct}% full she drains {take_and_give.empowered_rate|more}% faster. Give: she heals the most hurt ally in range {take_and_give.heal_per_second|lvl} a second from her pool, and once it is empty she pays with her own health, even if it kills her. Lifeless troops can be neither drained nor healed."
 		},
 		"blinker": {
 			"number": 19,
@@ -620,10 +620,10 @@
 				"name": "Quicker Than You Can Blink",
 				"ability": "overzoom",
 				"bite_multiplier": 3.0,
-				"how_it_works": "Quicker Than You Can Blink: its button, Overzoom, forces one more Zoom past its limit for a bite that does three times the damage, and then it dies."
+				"how_it_works": "Quicker Than You Can Blink: its button, Overzoom, forces one more Zoom past its limit for a bite that does {evolution.bite_multiplier} times the damage, and then it dies."
 			},
 			"short_name": "Blinker",
-			"how_it_works": "It only eats flesh: it attacks living troops and ignores buildings, towers and The Hanged One. Zoom: when its target is more than 2 tiles away, it dashes up to 4 tiles in an instant and bites on arrival. Each Zoom adds 1 strain, and strain wears off by 1 every 4 seconds without Zooming. It stops itself at 4 strain, because 5 kills it."
+			"how_it_works": "It only eats flesh: it attacks living troops and ignores buildings, towers and The Hanged One. Zoom: when its target is more than {zoom.trigger_distance} tiles away, it dashes up to {zoom.zoom_tiles} tiles in an instant and bites on arrival. Each Zoom adds 1 strain, and strain wears off by 1 every {zoom.recharge_every} seconds without Zooming. It stops itself at {zoom.max_strain} strain, because {zoom.deadly_strain} kills it."
 		},
 		"swarm": {
 			"number": 20,
@@ -648,10 +648,10 @@
 				"ability": "formation",
 				"charge_time": 3.0,
 				"charge_speed": 1.5,
-				"how_it_works": "Formation: its button pulls every surviving member together into a tight group, and they charge 50% faster for 3 seconds."
+				"how_it_works": "Formation: its button pulls every surviving member together into a tight group, and they charge {evolution.charge_speed|more}% faster for {evolution.charge_time} seconds."
 			},
 			"short_name": "Swarm",
-			"how_it_works": "Fifteen short humanoids with sharp swords. No special ability, just numbers: they shred tanks and anything that can only handle one troop at a time."
+			"how_it_works": "{count} short humanoids with sharp swords, {damage|lvl} damage each. No special ability, just numbers: they shred tanks and anything that can only handle one troop at a time."
 		},
 		"weight": {
 			"number": 21,
@@ -671,7 +671,7 @@
 				}
 			],
 			"short_name": "Weight",
-			"how_it_works": "Gravity: every enemy flyer within 4 tiles, hovering buildings included, slams to the ground for 4 seconds and takes 60 damage. While grounded, melee ground troops can hit it, and The Pardoned One killed while grounded is gone for good. Ground troops are not affected."
+			"how_it_works": "Gravity: every enemy flyer within {radius} tiles, hovering buildings included, slams to the ground for {gravity.grounded_time} seconds and takes {gravity.impact_damage|lvl} damage. While grounded, melee ground troops can hit it, and The Pardoned One killed while grounded is gone for good. Ground troops are not affected."
 		},
 		"moth_choir": {
 			"number": 22,
@@ -696,10 +696,10 @@
 				"ability": "cuddle",
 				"radius": 3.0,
 				"duration": 1.5,
-				"how_it_works": "Lights Out: their button smothers every enemy within 3 tiles in wings, and they cannot attack for 1.5 seconds."
+				"how_it_works": "Lights Out: their button smothers every enemy within {evolution.radius} tiles in wings, and they cannot attack for {evolution.duration} seconds."
 			},
 			"short_name": "Moths",
-			"how_it_works": "Five humming moths that fly and bite anything, in the air or on the ground. Cheap air cover that can chase down other flyers."
+			"how_it_works": "{count} humming moths that fly and bite anything, in the air or on the ground, for {damage|lvl} damage each. Cheap air cover that can chase down other flyers."
 		},
 		"toll": {
 			"number": 23,
@@ -725,10 +725,10 @@
 				"name": "Last Toll",
 				"ability": "last_toll",
 				"strength": 2.0,
-				"how_it_works": "Last Toll: its button rings the bell straight away, and that stun lasts twice as long."
+				"how_it_works": "Last Toll: its button rings the bell straight away, and that stun lasts {evolution.strength} times as long."
 			},
 			"short_name": "Toll",
-			"how_it_works": "Toll: every 6 seconds the bell rings. Every enemy troop within 3 tiles, flying or not, is stunned for 0.6 seconds and takes 20 damage. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
+			"how_it_works": "Toll: every {toll.interval} seconds the bell rings. Every enemy troop within {toll.radius} tiles, flying or not, is stunned for {toll.stun} seconds and takes {toll.damage|lvl} damage. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
 		},
 		"brood": {
 			"number": 24,
@@ -753,10 +753,10 @@
 				"name": "Swarming Season",
 				"ability": "swarming_season",
 				"count": 3,
-				"how_it_works": "Swarming Season: its button lets 3 Broodlings out at once."
+				"how_it_works": "Swarming Season: its button lets {evolution.count} Broodlings out at once."
 			},
 			"short_name": "Brood",
-			"how_it_works": "Brood: every 4 seconds a Broodling crawls out toward the enemy. Broodlings are small, fast biters with 60 health that fight on their own."
+			"how_it_works": "Brood: every {spawner.interval} seconds a Broodling crawls out toward the enemy. Broodlings are small, fast biters with {broodling.health|lvl} health and {broodling.damage|lvl} damage that fight on their own."
 		},
 		"broodling": {
 			"number": 0,
@@ -806,7 +806,7 @@
 				"how_it_works": "Mitosis: its button splits it straight away, wherever it stands, whatever health it has left."
 			},
 			"short_name": "Splitter",
-			"how_it_works": "Divide: when it dies it splits into 2 halves (400 health each), and each half splits once more into 2 quarters (180 health each). Kill all seven to be rid of it."
+			"how_it_works": "Divide: when it dies it splits into {split.count} halves ({splitter_half.health|lvl} health each), and each half splits once more into {split.count} quarters ({splitter_quarter.health|lvl} health each). Kill all seven to be rid of it."
 		},
 		"splitter_half": {
 			"number": 0,

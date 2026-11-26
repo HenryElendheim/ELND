@@ -154,13 +154,18 @@ func _info_lines(card: Dictionary) -> Array:
 		lines.append(["Locked. It turns up in chests from %s." % Progress.arena_name(int(card.get("unlock_arena", 1))), "MutedLabel"])
 	if card.has("how_it_works"):
 		lines.append(["How it works", "HeadingLabel"])
-		lines.append([card.how_it_works, ""])
+		lines.append([CardText.fill(card_id, card.how_it_works, _level()), ""])
 	if card.has("evolution"):
 		lines.append(["Evolution: %s" % card.evolution.name, "HeadingLabel"])
-		lines.append([card.evolution.get("how_it_works", ""), ""])
+		lines.append([CardText.fill(card_id, card.evolution.get("how_it_works", ""), _level()), ""])
 		var status := "Unlocked" if Progress.has_evolution(card_id) else "Locked"
 		lines.append(["%s. Needs %d cycle%s before it comes out evolved." % [status, Hand.cycles_needed(card_id), "" if Hand.cycles_needed(card_id) == 1 else "s"], "MutedLabel"])
 	return lines
+
+
+## The level the numbers in descriptions are shown at, which is the player's own level for the card, or 1 if not yet owned.
+func _level() -> int:
+	return maxi(int(Progress.card(card_id).level), 1)
 
 
 ## The Codex page: the ELND number, the Codex name when it differs from the card's, class, threat and tags,
