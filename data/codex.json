@@ -10,6 +10,20 @@
 		"dargalean": "A small, gentle creature with big eyes. Everyone who sees it feels an urge to go pet it. Harmless, but staff keep \"losing\" hours in its room.",
 		"spacefarer": "A humanoid alien who claims to be a human from the future. Intersex, like everyone of their species. Barely needs food or water and only 3 hours of sleep. Safe if kept fed and talked to.",
 		"individuals": "Top halves of human heads sticking out of the ground, sliding around like slugs and staring. Their gaze fills you with dread until they blink. Through a screen they look 2D. Throw something behind them and they all turn. Harmless, just creepy.",
-		"chain": "An ordinary-looking steel chain. Anything it touches becomes linked: what happens to one happens to the other."
+		"chain": "An ordinary-looking steel chain. Anything it touches becomes linked: what happens to one happens to the other.",
+		"devil": "A demonic humanoid who is too charming: tall, with curled horns and a wide, warm smile. Nothing about it reads as a threat, and people feel a strong urge to walk over and say hi. Within 2 metres it drains their life essence. They fight back, but their hits barely affect it. It does not work if your eyes are closed or you are out of range. Contained by feeding it clones. Do not look at it directly, ever.",
+		"pardoned": "A winged woman, alive for over 1000 years, who hunts humans and feasts on their bones and marrow. She claims she is no vampire, since she does not drink blood. Pardoned for one reason: she cannot die. Killed, she is born anew in a new host, forever, unless she is kept alive and in one spot. Sharp Wings: she shoots razor feathers that return to her wings carrying the victim's nutrients. Use too many and she cannot fly. Hard counter: birdfeed. Even a whiff makes her lose interest in killing. Prefers to be called Jessica Winters.",
+		"cloud": "A cloud that perceives reality and strikes lightning straight down at anyone it finds threatening, or just annoying. Not even rubber stops its lightning. It cannot strike faster than once every 5 to 8 seconds. Happy in captivity as long as it is entertained.",
+		"danger_zone": "A small parasite that affects a 15 metre area, enraging everyone inside it. They grow stronger, fight to the death and do not feel their own bones breaking from their newfound strength. It cannot stay active for more than 20 seconds. Mitigation: a full protective suit.",
+		"hanged_one": "A humanoid whose neck has been perfectly broken by the rope around it. For unknown reasons it cannot strike a living creature. Borderline indestructible, but its hits are mediocre, so it can never break out of its cell. Almost like a lost dog seeking companionship.",
+		"clone": "A clone from the future that can duplicate itself at will. The Foundation used its DNA to build its own cloning machines and injections, the source of the clones used to feed ELND-012 and ELND-015. Its cells clone anything they touch, so the Foundation turned it into an almost-grenade: thrown onto their strongest warriors, the clones fight alongside them. Clones are about 50% weaker, but fantastic decoys. Happy as long as it is treated kindly.",
+		"give_and_take": "A human woman who drains the life from one creature to give it to another. Take: she drains one creature at a time, and it empowers her. Give: she gives life force to the most hurt creature she can find. She can give more than she took, but only by draining her own life. Contained with lots of animal pets to look after. She drains every predatory animal sent in, to keep her pets safe and full of life.",
+		"blinker": "A mass of flesh that can speed past you in less than a second and consumes your flesh quicker than you can blink. Zoom: it speeds itself forward, but every skip shortens its lifespan by the time it skipped, so it has to be careful. If it Zooms more than 4 times in a row without a recharge, it dies.",
+		"swarm": "A group of 15 short humanoids with sharp swords."
+	},
+	"tags": {
+		"devil": [
+			"Cognitohazard"
+		]
 	}
 }

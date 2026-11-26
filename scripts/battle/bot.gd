@@ -3,6 +3,7 @@ extends RefCounted
 ## The opponent that plays the enemy hand. Every so often it looks at the field.
 ## If the player has troops on its half, it defends, and a bot with good counter-play picks the card that actually answers them.
 ## Otherwise it either backs up its own push with a supporting troop, or saves up and starts a new push in a random lane.
+## Spells that work on its own troops, such as The Danger Zone and The Clone, only ever go on its own push.
 ## How long it waits, how much it saves and how well it counters come from the difficulty in Settings and bot.json.
 
 var enabled := true
@@ -66,7 +67,7 @@ static func pick_deck(available: Array, size: int, knob: Dictionary, rng: Random
 static func _fills(card: Dictionary, need: String) -> bool:
 	if need == "towers":
 		return card.get("targets") == "buildings"
-	return card.get("targets") == "air_ground" or card.get("type") == "spell"
+	return card.get("targets") == "air_ground" or (card.get("type") == "spell" and card.get("cast_on") != "allies")
 
 
 func think(sim: BattleSim) -> void:
@@ -87,13 +88,21 @@ func think(sim: BattleSim) -> void:
 		return
 
 	var threats := _threats(sim)
+	var leader := _own_push(sim)
 	if not threats.is_empty():
 		var answer := _pick_counter(hand, affordable, threats, float(knob.counter_play))
+		if is_support(hand.cards[answer]):
+			if leader != null:
+				sim.play(_team, answer, leader.pos)
+			return
 		sim.play(_team, answer, _defend_spot(sim, threats[0], hand.cards[answer], placement))
 		return
 
 	var slot: int = affordable[_rng.randi() % affordable.size()]
-	var leader := _own_push(sim)
+	if is_support(hand.cards[slot]):
+		if leader != null and _rng.randf() < float(knob.ephrocity_smarts):
+			sim.play(_team, slot, leader.pos)
+		return
 	var smarts := float(knob.ephrocity_smarts)
 	if leader != null and _rng.randf() < smarts:
 		var behind := leader.pos - Vector2(0, float(placement.support_offset_tiles))
@@ -146,6 +155,8 @@ func _pick_counter(hand: Hand, affordable: Array, threats: Array[Unit], counter_
 ## Area and swarm cards are better against many small troops, and high damage is better against one big troop.
 ## Cheaper answers score a little higher, which means the bot does not waste Ephrocity.
 static func counter_score(card: Dictionary, threats: Array[Unit]) -> float:
+	if card.get("cast_on") == "allies":
+		return -50.0
 	var score := 0.0
 	var flying := threats.any(func(t: Unit) -> bool: return t.flying)
 	var hits_air: bool = card.get("targets") == "air_ground" and (card.get("attack") == "ranged" or card.get("movement") == "flying")
@@ -163,6 +174,11 @@ static func counter_score(card: Dictionary, threats: Array[Unit]) -> float:
 	else:
 		score += damage_per_second / 5.0 + float(card.get("health", 0)) / maxf(biggest, 1.0)
 	return score - float(card.get("cost", 0))
+
+
+## True for a spell that works on its caster's own troops, which is never an answer to a threat.
+static func is_support(card_id: String) -> bool:
+	return Data.table("cards").cards[card_id].get("cast_on") == "allies"
 
 
 ## The bot's own troop that is furthest along toward the player's towers, if any is walking.

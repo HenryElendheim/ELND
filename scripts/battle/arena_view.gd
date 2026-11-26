@@ -59,6 +59,8 @@ func take_events(delta: float) -> void:
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "burst": true, "team": event.team})
 			"death":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
+			"lightning":
+				_effects.append({"pos": event.pos, "from": event.from, "amount": 0.0, "age": 0.0, "bolt": true})
 			"tower_down":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "debris": true, "seed": randi()})
 				Sfx.play("tower_down")
@@ -215,6 +217,17 @@ func _draw_effect(effect: Dictionary) -> void:
 		var reach := share if motion else 0.6
 		draw_arc(at, _tile * (0.3 + 1.2 * reach), 0, TAU, 32, Color(team_colour, 0.9 * (1.0 - share)), 5.0)
 		return
+	# The Cloud's lightning is a jagged pale bolt from the cloud down to the troop, with a flash where it lands.
+	if effect.get("bolt", false):
+		var top := _to_screen(effect.from)
+		var points := PackedVector2Array()
+		for i in 7:
+			var along := top.lerp(at, i / 6.0)
+			var jag := 0.0 if i == 0 or i == 6 else (0.25 if i % 2 == 0 else -0.25) * _tile
+			points.append(along + Vector2(jag, 0))
+		draw_polyline(points, Color(1, 0.97, 0.7, 1.0 - share), maxf(_tile * 0.12, 3.0))
+		draw_circle(at, _tile * 0.5, Color(1, 0.97, 0.7, 0.5 * (1.0 - share)))
+		return
 	# A fallen tower flashes and throws stone chunks that fly out and fall.
 	if effect.get("debris", false):
 		draw_circle(at, _tile * 1.6 * (1.0 - share), Color(1, 1, 0.85, 0.6 * (1.0 - share)))
@@ -269,8 +282,14 @@ func _draw_spell(spell: Unit) -> void:
 	draw_circle(at, spell.radius * _tile, Color(colour, 0.25))
 	draw_arc(at, spell.radius * _tile, 0, TAU, 48, Color(colour, 0.8), 3.0)
 	for ability in spell.abilities:
-		if ability.params.get("id") == "spike_field":
-			UnitArt.draw_spikes(self, spell, sim, at, _tile, not Settings.reduced_motion())
+		match String(ability.params.get("id")):
+			"spike_field":
+				UnitArt.draw_spikes(self, spell, sim, at, _tile, not Settings.reduced_motion())
+			"enrage":
+				# The Danger Zone glows an angry red that pulses, or stays steady with reduced motion.
+				var pulse := 0.5 + 0.5 * sin(sim.time * 6.0) if not Settings.reduced_motion() else 0.5
+				draw_circle(at, spell.radius * _tile, Color(1.0, 0.3, 0.2, 0.12 + 0.1 * pulse))
+				draw_arc(at, spell.radius * _tile, 0, TAU, 48, Color(1.0, 0.35, 0.25, 0.9), 4.0)
 
 
 ## Linked troops are joined by a grey chain line to every other troop in the same link.

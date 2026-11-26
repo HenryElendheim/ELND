@@ -6,6 +6,8 @@ extends Node
 
 const TICKS := 30 * 60
 
+var _sims: Array[BattleSim] = []
+
 
 func _ready() -> void:
 	Settings.set_value("admin_mode", true)
@@ -20,6 +22,7 @@ func _ready() -> void:
 		broken += 1
 	broken += _check_placement()
 	broken += _check_card_search()
+	broken += _check_new_cards()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -223,13 +226,122 @@ func _check_defense() -> int:
 
 ## Checks the placement rules: spots snap to tile centres, tower tiles are blocked, the enemy half is blocked,
 ## and destroying a main tower takes the side towers with it for three cores.
+## Checks the special rules of the cards from ELND-012 on, each in a quiet battle of its own away from the towers.
+func _check_new_cards() -> int:
+	var broken := 0
+	var player := Unit.Team.PLAYER
+	var enemy := Unit.Team.ENEMY
+
+	# The Gasket never lures The Hanged One, which has no life in it.
+	var sim := _quiet_sim()
+	sim.spawn("gasket", player, Vector2(9, 20))
+	var hanged: Unit = sim.spawn("hanged_one", enemy, Vector2(9, 19))[0]
+	_run(sim, 3.0)
+	broken += _expect(hanged.carrier == null and hanged.goal_override == null, "The Gasket lured The Hanged One")
+
+	# The Devil drains the troop next to it and heals itself by the same amount.
+	sim = _quiet_sim()
+	var devil: Unit = sim.spawn("devil", player, Vector2(9, 20))[0]
+	var prey: Unit = sim.spawn("spacefarer", enemy, Vector2(9, 19))[0]
+	_run(sim, 1.2)
+	devil.hp = devil.max_hp * 0.5
+	_run(sim, 1.5)
+	broken += _expect(prey.hp < prey.max_hp and devil.hp > devil.max_hp * 0.5, "The Devil did not drain and heal")
+
+	# The Cloud's lightning goes through Kardemosh's skin and stuns it.
+	sim = _quiet_sim()
+	var kardemosh: Unit = sim.spawn("kardemosh", enemy, Vector2(9, 19))[0]
+	sim.spawn("cloud", player, Vector2(9, 20))
+	kardemosh.shield = 300.0
+	_run(sim, 1.3)
+	broken += _expect(kardemosh.hp < kardemosh.max_hp and kardemosh.stun_left > 0.0, "The Cloud's lightning missed or was blocked by skin")
+
+	# The Pardoned One is born anew once when killed while flying, and the new body stays dead.
+	sim = _quiet_sim()
+	var first: Unit = sim.spawn("pardoned", player, Vector2(9, 21))[0]
+	_run(sim, 1.2)
+	sim.deal_damage(null, first, first.hp + 1.0)
+	_run(sim, 0.1)
+	var bodies := sim.units.filter(func(u: Unit) -> bool: return u.id == "pardoned")
+	broken += _expect(bodies.size() == 1 and bodies[0].hp < bodies[0].max_hp * 0.5, "The Pardoned One was not born anew")
+	if bodies.size() == 1:
+		sim.deal_damage(null, bodies[0], bodies[0].hp + 1.0)
+		_run(sim, 0.1)
+		broken += _expect(not sim.units.any(func(u: Unit) -> bool: return u.id == "pardoned"), "The Pardoned One was born anew twice")
+
+	# The Clone copies a troop at half strength.
+	sim = _quiet_sim()
+	var hobb: Unit = sim.spawn("hobb", player, Vector2(9, 21))[0]
+	_run(sim, 1.2)
+	sim.spawn("clone", player, Vector2(9, 21))
+	_run(sim, 0.1)
+	var copies := sim.units.filter(func(u: Unit) -> bool: return u.id == "hobb" and u.is_clone)
+	broken += _expect(copies.size() == 1 and is_equal_approx(copies[0].max_hp, hobb.max_hp * 0.5), "The Clone did not make a half strength copy")
+
+	# The Blinker zooms at a troop a few tiles away.
+	sim = _quiet_sim()
+	var blinker: Unit = sim.spawn("blinker", player, Vector2(9, 23))[0]
+	sim.spawn("spacefarer", enemy, Vector2(9, 19))
+	_run(sim, 1.5)
+	broken += _expect(int(blinker.abilities[0].get("strain")) >= 1, "The Blinker never zoomed")
+
+	# The Danger Zone enrages a troop, then breaks its bones when it ends.
+	sim = _quiet_sim()
+	var raged: Unit = sim.spawn("hobb", player, Vector2(9, 21))[0]
+	raged.speed = 0.0
+	_run(sim, 1.2)
+	sim.spawn("danger_zone", player, Vector2(9, 21))
+	_run(sim, 10.5)
+	broken += _expect(raged.hp < raged.max_hp, "The Danger Zone backlash did not land")
+
+	# Mrs. Give & Take heals a hurt ally.
+	sim = _quiet_sim()
+	sim.spawn("give_and_take", player, Vector2(9, 22))
+	var patient: Unit = sim.spawn("hanged_one", player, Vector2(10, 22))[0]
+	var friend: Unit = sim.spawn("hobb", player, Vector2(8, 22))[0]
+	friend.speed = 0.0
+	patient.speed = 0.0
+	_run(sim, 1.1)
+	friend.hp = friend.max_hp * 0.5
+	patient.hp = patient.max_hp * 0.5
+	_run(sim, 1.0)
+	broken += _expect(friend.hp > friend.max_hp * 0.5 and is_equal_approx(patient.hp, patient.max_hp * 0.5), "Mrs. Give & Take healed the wrong troop")
+
+	for each in _sims:
+		each.clear()
+	_sims.clear()
+	print("New cards checked")
+	return broken
+
+
+## A battle with no bot and harmless towers, used to test one rule at a time without anything else getting in the way.
+func _quiet_sim() -> BattleSim:
+	var sim := BattleSim.new()
+	sim.bot.enabled = false
+	for unit in sim.units:
+		unit.damage = 0.0
+	_sims.append(sim)
+	return sim
+
+
+func _run(sim: BattleSim, seconds: float) -> void:
+	for i in roundi(seconds / sim.tick):
+		sim.step()
+
+
+func _expect(ok: bool, problem: String) -> int:
+	if not ok:
+		print("Broken file: " + problem)
+	return 0 if ok else 1
+
+
 ## The Admin Mode card search finds cards by name, by tag, and by a picked category.
 func _check_card_search() -> int:
 	var cases := [
-		[CardSearch.find("", "flying"), ["creeler"]],
+		[CardSearch.find("", "flying"), ["creeler", "pardoned", "cloud"]],
 		[CardSearch.find("the chain", "spell"), ["chain"]],
-		[CardSearch.find("ranged troop", ""), ["spacefarer"]],
-		[CardSearch.find("air", ""), ["spacefarer"]],
+		[CardSearch.find("ranged troop", ""), ["spacefarer", "pardoned", "give_and_take"]],
+		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take"]],
 		[CardSearch.find("legendary", "spell"), ["spiker"]],
 	]
 	for entry in cases:

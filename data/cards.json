@@ -371,6 +371,285 @@
 			"radius": 2.5,
 			"short_name": "Chain",
 			"how_it_works": "Link: up to 3 enemy troops in the area are chained for 6 seconds. Damage dealt to one is dealt in full to all of them."
+		},
+		"devil": {
+			"number": 12,
+			"name": "The Devil In The Forest",
+			"class": "RINNER",
+			"threat": 3,
+			"unlock_arena": 3,
+			"type": "troop",
+			"cost": 4,
+			"health": 550,
+			"damage": 0,
+			"speed": "medium",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"abilities": [
+				{
+					"id": "smile"
+				},
+				{
+					"id": "happy_face",
+					"drain_per_second": 20,
+					"range": 1.5,
+					"drained_damage_taken": 0.5
+				}
+			],
+			"evolution": {
+				"name": "Deeper Into the Woods",
+				"ability": "deeper_into_the_woods",
+				"boost": 3.0,
+				"boost_time": 3.0,
+				"how_it_works": "Deeper Into the Woods: its button switches the drain to a new troop straight away and drains three times as fast for 3 seconds."
+			},
+			"short_name": "Devil",
+			"how_it_works": "Smile: enemy ranged troops walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within 1.5 tiles at a time, 20 a second, and heals itself by the same amount. The troop it drains deals half damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
+		},
+		"pardoned": {
+			"number": 13,
+			"name": "The Pardoned One",
+			"codex_name": "Jessica Winters",
+			"class": "REKNA",
+			"threat": 5,
+			"unlock_arena": 4,
+			"type": "troop",
+			"cost": 6,
+			"health": 850,
+			"damage": 25,
+			"hit_speed": 0.6,
+			"range": 5.0,
+			"speed": "medium",
+			"movement": "flying",
+			"attack": "ranged",
+			"targets": "air_ground",
+			"abilities": [
+				{
+					"id": "sharp_wings",
+					"feathers": 12,
+					"grounded_above": 8,
+					"return_time": 1.5
+				},
+				{
+					"id": "pardoned",
+					"reborn_health": 0.4
+				}
+			],
+			"evolution": {
+				"name": "A Thousand Years",
+				"ability": "feather_storm",
+				"grounded_time": 4.0,
+				"how_it_works": "A Thousand Years: her button, Feather Storm, fires every feather she has left at once, spread over every enemy in range. They all come back and heal her, but she is grounded for 4 seconds afterwards."
+			},
+			"projectile": {
+				"style": "bolt",
+				"speed": 14,
+				"size": 0.5,
+				"colour": "#E8E8F0"
+			},
+			"short_name": "Pardoned",
+			"how_it_works": "Sharp Wings: every shot is a feather that comes back after 1.5 seconds and heals her for the damage it dealt. She has 12. With more than 8 out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with 40% health. Killed while grounded, she is gone for good."
+		},
+		"cloud": {
+			"number": 14,
+			"name": "The Cloud",
+			"class": "CLAM",
+			"threat": 2,
+			"unlock_arena": 2,
+			"type": "building",
+			"cost": 3,
+			"health": 300,
+			"lifetime": 20.0,
+			"damage": 60,
+			"movement": "flying",
+			"targets": "none",
+			"abilities": [
+				{
+					"id": "lightning_strike",
+					"radius": 2.5,
+					"min_wait": 5.0,
+					"max_wait": 8.0,
+					"stun": 1.0
+				}
+			],
+			"evolution": {
+				"name": "Thunderhead",
+				"ability": "storm",
+				"drift_tiles": 3.0,
+				"how_it_works": "Thunderhead: its button, Storm, drifts it 3 tiles toward the enemy side and strikes straight away."
+			},
+			"short_name": "Cloud",
+			"how_it_works": "Hovering: it stays where it is placed but counts as flying, so only troops that hit air, towers and spells can hurt it. Lightning Strike: it strikes an enemy troop within 2.5 tiles below it for 60 damage and a 1 second stun, then waits 5 to 8 seconds. Lightning goes straight through shields such as Kardemosh's skin. Irritated: whatever hurts it gets the next strike, if it is close enough."
+		},
+		"danger_zone": {
+			"number": 15,
+			"name": "The Danger Zone",
+			"class": "CLAM",
+			"threat": 4,
+			"unlock_arena": 4,
+			"type": "spell",
+			"cost": 3,
+			"radius": 3.5,
+			"cast_on": "allies",
+			"abilities": [
+				{
+					"id": "enrage",
+					"duration": 10.0,
+					"haste": 0.35,
+					"damage_taken": 0.75,
+					"backlash": 0.1
+				}
+			],
+			"short_name": "Danger Zone",
+			"how_it_works": "Enrage: for 10 seconds every living troop inside, yours and the enemy's, attacks and moves 35% faster and takes 25% less damage. Backlash: when the zone ends, every troop it enraged loses 10% of its max health. Towers, buildings and lifeless troops are not affected. Play it where you have more troops."
+		},
+		"hanged_one": {
+			"number": 16,
+			"name": "The Hanged One",
+			"class": "CLAM",
+			"threat": 1,
+			"unlock_arena": 2,
+			"type": "troop",
+			"cost": 5,
+			"health": 1400,
+			"damage": 30,
+			"hit_speed": 1.5,
+			"speed": "slow",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "buildings",
+			"living": false,
+			"abilities": [
+				{
+					"id": "lost_dog",
+					"radius": 2.0,
+					"damage_taken": 0.8
+				}
+			],
+			"evolution": {
+				"name": "The Rope",
+				"ability": "leash",
+				"reach": 6.0,
+				"how_it_works": "The Rope: its button, Leash, pulls the nearest troop of yours within 6 tiles right next to it, so it is never alone."
+			},
+			"short_name": "Hanged One",
+			"how_it_works": "Cannot Strike the Living: it ignores every troop and walks straight to buildings and towers. Not Living: The Gasket cannot lure it, The Devil In The Forest and Mrs. Give & Take cannot drain it, and The Danger Zone cannot enrage it. Lost Dog: while a troop of yours is within 2 tiles, it takes 20% less damage."
+		},
+		"clone": {
+			"number": 17,
+			"name": "The Clone",
+			"class": "CLAM",
+			"threat": 1,
+			"unlock_arena": 3,
+			"type": "spell",
+			"cost": 3,
+			"radius": 3.0,
+			"cast_on": "allies",
+			"abilities": [
+				{
+					"id": "clone",
+					"strength": 0.5
+				}
+			],
+			"short_name": "Clone",
+			"how_it_works": "Clone: every troop of yours in the area gets a copy next to it with half its health and damage and the same abilities, in the base form. Buildings are not copied. Clones count as living, and a clone of The Pardoned One cannot be born anew."
+		},
+		"give_and_take": {
+			"number": 18,
+			"name": "Mrs. Give & Take",
+			"class": "RINNER",
+			"threat": 3,
+			"unlock_arena": 3,
+			"type": "troop",
+			"cost": 4,
+			"health": 400,
+			"damage": 0,
+			"range": 4.0,
+			"speed": "medium",
+			"movement": "ground",
+			"attack": "ranged",
+			"targets": "air_ground",
+			"abilities": [
+				{
+					"id": "take_and_give",
+					"drain_per_second": 15,
+					"pool_max": 300,
+					"empowered_above": 0.5,
+					"empowered_rate": 1.5,
+					"heal_per_second": 20
+				}
+			],
+			"evolution": {
+				"name": "Return",
+				"ability": "return_pool",
+				"how_it_works": "Return: her button pours her whole life pool out at once, shared between every ally in range."
+			},
+			"short_name": "Give & Take",
+			"how_it_works": "Take: she drains one enemy within 4 tiles at a time, 15 a second, into her life pool (up to 300). She goes first for whoever is attacking the ally she is healing, and with her pool over half full she drains 50% faster. Give: she heals the most hurt ally in range 20 a second from her pool, and once it is empty she pays with her own health, even if it kills her. Lifeless troops can be neither drained nor healed."
+		},
+		"blinker": {
+			"number": 19,
+			"name": "The Blinker",
+			"class": "HEIMER",
+			"threat": 5,
+			"unlock_arena": 4,
+			"type": "troop",
+			"cost": 5,
+			"health": 500,
+			"damage": 90,
+			"hit_speed": 1.0,
+			"speed": "very_fast",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "living",
+			"abilities": [
+				{
+					"id": "zoom",
+					"trigger_distance": 2.0,
+					"zoom_tiles": 4.0,
+					"max_strain": 4,
+					"deadly_strain": 5,
+					"recharge_every": 4.0,
+					"zoom_gap": 0.4
+				}
+			],
+			"evolution": {
+				"name": "Quicker Than You Can Blink",
+				"ability": "overzoom",
+				"bite_multiplier": 3.0,
+				"how_it_works": "Quicker Than You Can Blink: its button, Overzoom, forces one more Zoom past its limit for a bite that does three times the damage, and then it dies."
+			},
+			"short_name": "Blinker",
+			"how_it_works": "It only eats flesh: it attacks living troops and ignores buildings, towers and The Hanged One. Zoom: when its target is more than 2 tiles away, it dashes up to 4 tiles in an instant and bites on arrival. Each Zoom adds 1 strain, and strain wears off by 1 every 4 seconds without Zooming. It stops itself at 4 strain, because 5 kills it."
+		},
+		"swarm": {
+			"number": 20,
+			"name": "The Swarm",
+			"class": "REKNA",
+			"threat": 1,
+			"unlock_arena": 2,
+			"type": "troop",
+			"cost": 4,
+			"count": 15,
+			"health": 30,
+			"damage": 8,
+			"hit_speed": 1.0,
+			"speed": "fast",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"size": 0.6,
+			"abilities": [],
+			"evolution": {
+				"name": "Formation",
+				"ability": "formation",
+				"charge_time": 3.0,
+				"charge_speed": 1.5,
+				"how_it_works": "Formation: its button pulls every surviving member together into a tight group, and they charge 50% faster for 3 seconds."
+			},
+			"short_name": "Swarm",
+			"how_it_works": "Fifteen short humanoids with sharp swords. No special ability, just numbers: they shred tanks and anything that can only handle one troop at a time."
 		}
 	},
 	"spell_kinds": {

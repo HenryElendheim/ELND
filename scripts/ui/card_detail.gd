@@ -4,10 +4,11 @@ extends CanvasLayer
 ## how it works and its evolution, and Codex, with its Foundation entry. Under them sit whatever buttons
 ## the screen that opened it hands over, such as adding the card to the deck. Back or Close shuts it.
 
-const SPEED_NAMES := {0.75: "Slow", 1.0: "Medium", 1.5: "Fast"}
+const SPEED_NAMES := {0.75: "Slow", 1.0: "Medium", 1.5: "Fast", 2.0: "Very fast"}
 const TARGET_NAMES := {
 	"ground": "Ground troops", "air_ground": "Air and ground", "buildings": "Buildings only",
 	"attackers_only": "Only what attacks it", "mode": "Troops or buildings, by mood", "none": "Nothing",
+	"living": "Living troops only",
 }
 
 var card_id := ""
@@ -159,9 +160,17 @@ func _info_lines(card: Dictionary) -> Array:
 	return lines
 
 
-## The Codex page: the ELND number, class and threat, and the Foundation entry once the card is acquired.
+## The Codex page: the ELND number, the Codex name when it differs from the card's, class, threat and tags,
+## and the Foundation entry once the card is acquired.
 func _codex_lines(card: Dictionary) -> Array:
-	var lines := [[[["Number", "ELND-%03d" % int(card.number)], ["Class", String(card["class"])], ["Threat", "%d of 5" % int(card.threat)], ["Rarity", Progress.card_rarity(card_id).capitalize()]], ""]]
+	var facts := [["Number", "ELND-%03d" % int(card.number)]]
+	if card.has("codex_name"):
+		facts.append(["Codex name", String(card.codex_name)])
+	facts.append_array([["Class", String(card["class"])], ["Threat", "%d of 5" % int(card.threat)], ["Rarity", Progress.card_rarity(card_id).capitalize()]])
+	var tags: Array = Data.table("codex").get("tags", {}).get(card_id, [])
+	if not tags.is_empty():
+		facts.append(["Tags", ", ".join(tags)])
+	var lines := [[facts, ""]]
 	if int(Progress.card(card_id).level) <= 0:
 		lines.append(["This entry unlocks once the anomaly is acquired.", "MutedLabel"])
 	else:

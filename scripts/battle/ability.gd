@@ -65,6 +65,11 @@ func on_stunned(_sim: BattleSim, seconds: float) -> float:
 	return seconds
 
 
+## Runs once when this unit dies, after its health reaches zero.
+func on_death(_sim: BattleSim) -> void:
+	pass
+
+
 ## Runs when this unit's hit finishes off an enemy.
 func on_kill(_sim: BattleSim, _victim: Unit) -> void:
 	pass

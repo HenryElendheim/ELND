@@ -6,6 +6,7 @@ extends Ability
 func tick(sim: BattleSim) -> void:
 	var every := number("blink_every")
 	var blinking := fmod(sim.time - unit.spawn_time, every) >= every - number("blink_time")
+	unit.blinking = blinking
 	if blinking or unit.target == null or unit.target.is_building():
 		return
 	unit.target.dread = maxf(unit.target.dread, number("attack_speed_penalty"))

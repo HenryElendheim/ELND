@@ -48,7 +48,8 @@
 	"speeds_tiles_per_second": {
 		"slow": 0.75,
 		"medium": 1.0,
-		"fast": 1.5
+		"fast": 1.5,
+		"very_fast": 2.0
 	},
 	"melee_range_tiles": 1.0,
 	"evolution": {

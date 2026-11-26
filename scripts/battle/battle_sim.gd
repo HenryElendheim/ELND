@@ -28,6 +28,9 @@ var bot_level := 1
 var _battle := {}
 var _arena := {}
 var _next_group := 0
+## Things to do once the current tick is over, such as The Pardoned One being born anew,
+## which means nothing is added to the field while the field is being looped over.
+var _after_tick: Array[Callable] = []
 
 
 func _init(match_mode := "battle") -> void:
@@ -201,38 +204,100 @@ func activate_evolution(unit: Unit) -> bool:
 	return true
 
 
-## Puts a card on the field. Swarm cards spawn several copies spread around the spot.
-func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved := false) -> void:
+## Puts a card on the field and hands back the units it made. Swarm cards spawn several copies spread around the spot,
+## in rings when there are many of them.
+func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved := false) -> Array[Unit]:
 	var card: Dictionary = Data.table("cards").cards[card_id]
 	var count := int(card.get("count", 1))
 	_next_group += 1
 	events.append({"type": "placed", "pos": at, "team": team})
+	var made: Array[Unit] = []
 	for i in count:
-		var offset := Vector2.ZERO
-		if count > 1:
-			offset = Vector2.from_angle(TAU * i / count) * float(_battle.swarm_spread_tiles)
-		var unit := _make(card_id, card.get("type", "troop"), card.name, team, _clamp_to_arena(at + offset), level)
+		var unit := _make(card_id, card.get("type", "troop"), card.name, team, _clamp_to_arena(at + _swarm_offset(i, count)), level)
 		unit.deploy_left = 0.0 if unit.is_spell() else float(_battle.deploy_time)
 		unit.spawn_time = time + unit.deploy_left
 		unit.group = _next_group
-		for entry in card.get("abilities", []):
-			var ability := Ability.create(entry, unit)
-			if ability != null:
-				unit.abilities.append(ability)
-		if evolved and card.has("evolution"):
-			unit.evolved = true
-			var entry: Dictionary = card.evolution.merged({"id": card.evolution.ability})
-			unit.evolution = Ability.create(entry, unit)
-			if unit.evolution != null:
-				unit.abilities.append(unit.evolution)
-		for ability in unit.abilities:
-			ability.on_spawn(self)
+		_give_abilities(unit, card, evolved)
+		made.append(unit)
 		if unit.is_spell():
 			_cast(unit, card)
+	return made
+
+
+## Where one member of a swarm stands around the spot. The first ring holds up to eight, and the rest go in a wider ring.
+func _swarm_offset(i: int, count: int) -> Vector2:
+	if count <= 1:
+		return Vector2.ZERO
+	var spread := float(_battle.swarm_spread_tiles)
+	var inner := mini(count, 8)
+	if i < inner:
+		return Vector2.from_angle(TAU * i / inner) * spread
+	return Vector2.from_angle(TAU * (i - inner) / (count - inner) + 0.3) * spread * 2.0
+
+
+func _give_abilities(unit: Unit, card: Dictionary, evolved: bool) -> void:
+	for entry in card.get("abilities", []):
+		var ability := Ability.create(entry, unit)
+		if ability != null:
+			unit.abilities.append(ability)
+	if evolved and card.has("evolution"):
+		unit.evolved = true
+		var entry: Dictionary = card.evolution.merged({"id": card.evolution.ability})
+		unit.evolution = Ability.create(entry, unit)
+		if unit.evolution != null:
+			unit.abilities.append(unit.evolution)
+	for ability in unit.abilities:
+		ability.on_spawn(self)
+
+
+## Makes a weaker copy of a troop next to it, as The Clone does. The copy has the same abilities in their base form,
+## with health and damage cut by the strength given, and it is never evolved.
+func clone_unit(original: Unit, at: Vector2, strength: float) -> Unit:
+	_next_group += 1
+	var copy := Unit.new()
+	copy.id = original.id
+	copy.kind = original.kind
+	copy.label = original.label
+	copy.team = original.team
+	copy.level = original.level
+	copy.strength = strength
+	copy.is_clone = true
+	copy.pos = _clamp_to_arena(at)
+	copy.prev_pos = copy.pos
+	copy.apply_stats(_stats_for(copy), _battle)
+	copy.deploy_left = float(_battle.deploy_time)
+	copy.spawn_time = time + copy.deploy_left
+	copy.group = _next_group
+	units.append(copy)
+	_give_abilities(copy, Data.table("cards").cards[copy.id], false)
+	events.append({"type": "placed", "pos": copy.pos, "team": copy.team})
+	return copy
+
+
+## The main tower of a team, or null once it has fallen.
+func main_tower(team: Unit.Team) -> Unit:
+	for unit in units:
+		if unit.kind == "main" and unit.team == team and unit.alive():
+			return unit
+	return null
+
+
+## True when a spot is over the river, where ground troops cannot stand except on the bridges.
+func in_river(at: Vector2) -> bool:
+	return _river_side(at.y) == 0
+
+
+## True when two spots are on the same side of the river, which means a ground troop can go straight between them.
+func same_river_side(a: Vector2, b: Vector2) -> bool:
+	return _river_side(a.y) == _river_side(b.y)
 
 
 ## A spell's instant hit when it lands. Towers take only part of it when the card says so.
 func _cast(spell: Unit, card: Dictionary) -> void:
+	if spell.damage <= 0.0:
+		if spell.abilities.is_empty():
+			spell.hp = 0.0
+		return
 	for victim in enemies_near(spell, spell.pos, spell.radius):
 		var share := float(card.get("tower_damage_share", 1.0)) if victim.is_tower() else 1.0
 		deal_damage(spell, victim, spell.damage * share)
@@ -381,7 +446,16 @@ func step() -> void:
 	_move_projectiles()
 	_keep_apart()
 	drop_dead()
+	var waiting := _after_tick
+	_after_tick = []
+	for action in waiting:
+		action.call()
 	_check_result()
+
+
+## Runs something once the current tick is over.
+func later(action: Callable) -> void:
+	_after_tick.append(action)
 
 
 ## Takes every unit with no health left off the field.
@@ -403,6 +477,7 @@ func clear() -> void:
 		unit.evolution = null
 	units.clear()
 	projectiles.clear()
+	_after_tick.clear()
 
 
 func _place_towers() -> void:
@@ -478,7 +553,7 @@ func _update(unit: Unit) -> void:
 
 	var goal := unit.target
 	if goal == null and unit.speed > 0.0:
-		goal = _nearest(unit, func(other: Unit) -> bool: return other.is_building(), INF)
+		goal = _nearest(unit, func(other: Unit) -> bool: return other.is_building() and not other.flying, INF)
 	if goal == null:
 		return
 	if _in_range(unit, goal):
@@ -543,20 +618,21 @@ func _move_projectiles() -> void:
 ## Every bit of damage goes through here, which means abilities, shields and damage taken changes always apply.
 ## Small damage over time passes flash as false, so the white hit flash is kept for real hits.
 ## A victim linked by The Chain passes the same damage on to every other troop in its link.
-func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, shared := false) -> void:
+## Piercing damage, such as The Cloud's lightning, skips shields and goes straight to health.
+func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, shared := false, pierce := false) -> void:
 	if not victim.alive():
 		return
 	if not shared and victim.link_until > time:
 		for other in units:
 			if other != victim and other.link_group == victim.link_group and other.link_until > time:
-				deal_damage(attacker, other, amount, flash, true)
+				deal_damage(attacker, other, amount, flash, true, pierce)
 	if attacker != null:
 		for ability in attacker.abilities:
 			amount = ability.on_hit(self, victim, amount)
 	for ability in victim.abilities:
 		amount = ability.on_hurt(self, attacker, amount)
 	amount *= victim.damage_taken
-	var absorbed := minf(victim.shield, amount)
+	var absorbed := 0.0 if pierce else minf(victim.shield, amount)
 	victim.shield -= absorbed
 	victim.hp -= amount - absorbed
 	if flash:
@@ -564,6 +640,9 @@ func deal_damage(attacker: Unit, victim: Unit, amount: float, flash := true, sha
 		events.append({"type": "hit", "pos": victim.pos, "amount": amount, "team": victim.team})
 	if victim.kind == "troop" and not victim.alive():
 		events.append({"type": "death", "pos": victim.pos, "team": victim.team})
+	if not victim.alive():
+		for ability in victim.abilities:
+			ability.on_death(self)
 	if victim.is_tower() and not victim.alive():
 		events.append({"type": "tower_down", "pos": victim.pos, "team": victim.team})
 		# When a main tower falls, the other towers on its side fall with it, which means it is worth every core.
@@ -630,14 +709,20 @@ func _find_target(unit: Unit) -> Unit:
 	return _nearest(unit, func(other: Unit) -> bool: return other.is_building() and can_target(unit, other), INF)
 
 
-## Flying units can only be hit by ranged attackers, other flyers and towers. Building-only troops ignore everything else.
+## Flying units, hovering buildings included, can only be hit by ranged attackers, other flyers and towers.
+## Building-only troops ignore everything else, and troops that only eat the living ignore buildings and lifeless troops.
 func can_target(unit: Unit, other: Unit) -> bool:
 	if other == null or not other.alive() or other.team == unit.team or other.carrier != null or other.is_spell() or other.hidden_left > 0.0:
 		return false
-	if unit.targets == "buildings":
-		return other.is_building()
+	if other.flying and not (unit.flying or unit.ranged):
+		return false
+	match unit.targets:
+		"buildings":
+			return other.is_building()
+		"living":
+			return other.kind == "troop" and other.living
 	if other.flying:
-		return unit.targets == "air_ground" and (unit.ranged or unit.flying)
+		return unit.targets == "air_ground"
 	return true
 
 
@@ -659,8 +744,14 @@ func _gap(a: Unit, b: Unit) -> float:
 	return a.pos.distance_to(b.pos) - a.radius - b.radius
 
 
+## A ranged troop with its eyes open walks right up to a charming unit instead of shooting from afar.
 func _in_range(unit: Unit, other: Unit) -> bool:
-	return other != null and _gap(unit, other) <= unit.attack_range
+	if other == null:
+		return false
+	var reach := unit.attack_range
+	if other.charming and unit.kind == "troop" and unit.ranged and not unit.eyes_closed():
+		reach = minf(reach, float(_battle.melee_range_tiles))
+	return _gap(unit, other) <= reach
 
 
 ## Ground troops cannot cross the river, so they head for the nearest bridge first, walk over it, then go straight for the goal.

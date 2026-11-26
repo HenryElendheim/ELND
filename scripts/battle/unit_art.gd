@@ -7,6 +7,9 @@ class_name UnitArt
 const LUNGE_TIME := 0.15
 const PINK := Color("#FF8FC8")
 const CYAN := Color("#6FF2FF")
+const DRAIN := Color("#C0304A")
+const HEAL := Color("#6CE08A")
+const ROPE := Color("#9A7848")
 
 
 ## How far a unit is drawn away from its real spot this frame: a small bob while walking,
@@ -65,6 +68,31 @@ static func draw_ability_art(canvas: CanvasItem, unit: Unit, sim: BattleSim, at:
 				if not front:
 					var pulse := 0.5 + 0.5 * sin(sim.time * 3.0) if motion else 0.5
 					canvas.draw_arc(at, ability.number("radius") * tile, 0, TAU, 64, Color(PINK, 0.15 + 0.2 * pulse), 3.0)
+			"smile":
+				if front:
+					canvas.draw_arc(at + Vector2(0, r * 0.05), r * 0.5, 0.35, PI - 0.35, 12, Color.WHITE, maxf(r * 0.1, 2.0))
+			"happy_face":
+				if not front:
+					_beam(canvas, unit, ability.get("victim"), at, tile, DRAIN, sim, motion)
+			"take_and_give":
+				if not front:
+					_beam(canvas, unit, ability.get("prey"), at, tile, DRAIN, sim, motion)
+					_beam(canvas, unit, ability.get("patient"), at, tile, HEAL, sim, motion)
+				else:
+					var share := float(ability.get("pool")) / maxf(ability.number("pool_max") * unit.power, 1.0)
+					if share > 0.0:
+						canvas.draw_arc(at, r * 1.2, -PI / 2.0, -PI / 2.0 + TAU * share, 32, HEAL, 3.0)
+			"sharp_wings":
+				if front:
+					_feathers(canvas, int(ability.call("feathers_left")), int(ability.number("feathers")), at, r)
+			"lost_dog":
+				if front:
+					canvas.draw_line(at + Vector2(-r * 0.6, -r * 0.35), at + Vector2(r * 0.6, -r * 0.35), ROPE, maxf(r * 0.12, 3.0))
+					canvas.draw_line(at + Vector2(0, -r * 0.35), at + Vector2(0, -r * 1.4), ROPE, maxf(r * 0.1, 2.0))
+			"zoom":
+				if front:
+					for i in int(ability.get("strain")):
+						canvas.draw_circle(at + Vector2((i - 1.5) * r * 0.45, -r * 1.35), r * 0.15, DRAIN)
 			"three_hours":
 				if not front and unit.attack_speed > 1.05:
 					canvas.draw_circle(at, r * 1.3, Color(CYAN, clampf((unit.attack_speed - 1.0) * 0.8, 0.1, 0.45)))
@@ -142,6 +170,25 @@ static func _coffin(canvas: CanvasItem, ability: Ability, at: Vector2, r: float)
 	canvas.draw_rect(lid, Color("#3A2A20"))
 	canvas.draw_line(lid.position + Vector2(r * 0.8, r * 0.3), lid.position + Vector2(r * 0.8, r * 1.3), Color("#C8A060"), 4.0)
 	canvas.draw_line(lid.position + Vector2(r * 0.45, r * 0.65), lid.position + Vector2(r * 1.15, r * 0.65), Color("#C8A060"), 4.0)
+
+
+## A line from a unit to the troop its ability works on, such as a drain or a heal.
+## It flickers gently unless reduced motion is on. Positions are worked out from the unit's own spot on screen.
+static func _beam(canvas: CanvasItem, unit: Unit, other: Variant, at: Vector2, tile: float, colour: Color, sim: BattleSim, motion: bool) -> void:
+	if other == null or not other.alive():
+		return
+	var to: Vector2 = at + (other.pos - unit.pos) * tile
+	var strength := 0.55 + 0.25 * sin(sim.time * 12.0) if motion else 0.7
+	canvas.draw_line(at, to, Color(colour, strength), maxf(tile * 0.12, 3.0))
+
+
+## The Pardoned One's feathers that are still on her wings, as small white marks in an arc over her.
+static func _feathers(canvas: CanvasItem, left: int, total: int, at: Vector2, r: float) -> void:
+	for i in total:
+		var angle := PI + PI * (i + 0.5) / total
+		var tip := at + Vector2.from_angle(angle) * r * 1.35
+		var base := at + Vector2.from_angle(angle) * r * 1.05
+		canvas.draw_line(base, tip, Color(1, 1, 1, 0.9 if i < left else 0.15), maxf(r * 0.1, 2.0))
 
 
 ## The Spiker's field: black spikes that rise over the first second, spread over the area.

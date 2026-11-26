@@ -55,6 +55,17 @@ Keep this file up to date whenever something important changes.
   - `card_search.gd` gives every card plain tags from its data (troop, flying, ranged, rarity, class and so on) and finds cards by name or tag. Admin Mode uses it to neutralize cards.
 - `scenes/`: splash, main menu (pages Shop, Cards, Battle, Stats), home (the Battle page), battle, chest, deck (Cards), shop, stats, settings and admin tools.
 
+## Systems added with ELND-012 to 020
+
+- `living` in a card's data (default true) marks lifeless troops such as The Hanged One. Drains, lures, heals and The Danger Zone use `Unit.is_living_troop()`.
+- `Unit.power` is level, growth and clone strength together. Ability damage and healing multiply by it so they scale like normal hits.
+- A building with `"movement": "flying"` hovers (The Cloud): only troops that hit air, towers and spells can reach it.
+- `Unit.eyes_closed()` is true while stunned or blinking (The Individuals set `blinking`). The Devil's drain and Smile skip closed eyes.
+- `Unit.charming` makes enemy ranged troops close to melee range before shooting (The Devil's Smile).
+- `deal_damage` takes `pierce` to skip shields (The Cloud's lightning). Abilities have an `on_death` hook, and `BattleSim.later()` runs something once the tick is over (The Pardoned One's rebirth).
+- `BattleSim.clone_unit()` makes half-strength copies, which are `is_clone`. `spawn()` hands back the units it made, and big swarms spawn in two rings.
+- Targets `"living"` (The Blinker) only hits living troops. Speed `very_fast` is 2 tiles a second.
+
 ## Gotchas learned the hard way
 
 - Never name functions `_get`, `_set` or other built-in Object methods. It breaks the script.
@@ -83,6 +94,8 @@ Keep this file up to date whenever something important changes.
 - The bot gets as many evolutions as the player has in their evolution slot.
 - In battle, hand cards with an evolution show dots for the plays still needed, then EVO. A purple line above the hand names the evolution card and the plays left. Evolved units glow purple on the field.
 - Every placement snaps to tile centres, and tower tiles can never be used.
+- Cards ELND-012 to 020 unlock across arenas: Arena 2 gets The Cloud, The Hanged One and The Swarm, Arena 3 The Devil In The Forest, Mrs. Give & Take and The Clone, and Arena 4 The Danger Zone, The Blinker and The Pardoned One (chosen with Henry on 26 Nov 2026).
+- Spells don't evolve. The Danger Zone and The Clone have `"cast_on": "allies"`, so the bot only casts them on its own push and never as an answer to a threat.
 
 ## Placeholder numbers (Henry can tune these in Admin Mode)
 

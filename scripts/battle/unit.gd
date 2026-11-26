@@ -42,6 +42,15 @@ var calm_left := 0.0
 var hidden_left := 0.0
 ## Units from the same card play share a group number, so a swarm can react together.
 var group := 0
+## False for anomalies with no life in them, such as The Hanged One. Effects that drain, lure, heal or enrage skip them.
+var living := true
+## True for a copy made by The Clone. It is weaker, and some abilities treat it differently.
+var is_clone := false
+## Multiplies health and damage on top of the level, which is how clones come out at half strength.
+var strength := 1.0
+## The unit's level, growth and strength together. Abilities multiply their damage and healing by it,
+## which means an ability scales with levels the same way normal hits do.
+var power := 1.0
 
 var deploy_left := 0.0
 var cooldown := 0.0
@@ -73,6 +82,10 @@ var can_attack := true
 var dread := 0.0
 var taunt_radius := 0.0
 var goal_override: Variant = null
+## True while the unit blinks, as The Individuals do. Together with stuns, this is when its eyes are closed.
+var blinking := false
+## True while The Devil In The Forest is charming the troops that see it.
+var charming := false
 
 
 func alive() -> bool:
@@ -93,6 +106,16 @@ func is_tower() -> bool:
 	return kind == "side" or kind == "main"
 
 
+## A living troop that is not held by anything, which is what drains, heals and rages work on.
+func is_living_troop() -> bool:
+	return kind == "troop" and living and alive() and carrier == null
+
+
+## Stunned or blinking units have their eyes closed, which means sight-based effects such as The Devil's smile miss them.
+func eyes_closed() -> bool:
+	return stun_left > 0.0 or blinking
+
+
 func reset_effects() -> void:
 	attack_speed = 1.0
 	move_speed = 1.0
@@ -101,16 +124,19 @@ func reset_effects() -> void:
 	dread = 0.0
 	taunt_radius = 0.0
 	goal_override = null
+	blinking = false
+	charming = false
 
 
 ## Reads the unit's numbers from its data entry. Health keeps the same share it had,
 ## which means changing max health in Admin Mode mid-match does not heal or kill anything.
 func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
-	var scale := pow(1.0 + float(battle.level_scaling.per_level), level - 1) * growth
+	power = pow(1.0 + float(battle.level_scaling.per_level), level - 1) * growth * strength
 	var share := hp / max_hp if max_hp > 0.0 else 1.0
-	max_hp = float(stats.get("health", 1)) * scale
+	max_hp = float(stats.get("health", 1)) * power
 	hp = max_hp * share
-	damage = float(stats.get("damage", 0)) * scale
+	damage = float(stats.get("damage", 0)) * power
+	living = bool(stats.get("living", true))
 	hit_speed = float(stats.get("hit_speed", battle.default_hit_speed))
 	ranged = stats.get("attack", "ranged") == "ranged"
 	attack_range = float(stats.get("range", battle.melee_range_tiles))

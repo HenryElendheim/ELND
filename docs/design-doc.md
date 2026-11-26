@@ -223,7 +223,9 @@ An **Evolution** is an empowered version of a card.
 - **Rare (2):** John Arms, The Gasket
 - **Epic (2):** The Hobb, Kardemosh
 - **Legendary (1):** The Creeler
-- **Arena 2 unlock:** The Spiker (Legendary spell)
+- **Arena 2 unlocks:** The Spiker (Legendary spell), The Cloud, The Hanged One, The Swarm
+- **Arena 3 unlocks:** The Devil In The Forest, Mrs. Give & Take, The Clone
+- **Arena 4 unlocks:** The Danger Zone, The Blinker, The Pardoned One
 
 **Rarity rule:** rarity follows the Codex threat level.
 Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 → Legendary
@@ -510,6 +512,259 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 
 ---
 
+### ELND-012 — The Devil In The Forest
+**Codex:** Class RINNER · Threat 3/5 · Tags: Cognitohazard. A demonic humanoid who is too charming: tall, curled horns, a wide warm smile. Nothing about it reads as a threat, and people feel a strong urge to walk over and say hi. Within 2 metres it drains their life essence; they fight back, but their hits barely affect it. Doesn't work if your eyes are closed or you're out of range. Contained by feeding it clones. Do not look at it directly ever. (Name originally from a 2018 game Henry made with old friends.)
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Melee |
+| Targets | Ground |
+| Rarity | Rare (Threat 3) |
+| Ephrocity cost | 4 |
+| Health | ~550 |
+| Damage | Drain only (see below) |
+| Speed | Medium |
+| Unlock | Arena 3 |
+
+**Passive: Smile (the urge to say hi)**
+- Enemy ranged troops don't shoot it from a distance: they walk up to it, losing their range advantage
+
+**Ability: Happy Face**
+- Drains one enemy troop at a time within ~1.5 tiles: ~20 damage per second, and heals itself by the same amount
+- The drained troop deals −50% damage to it ("hits barely affect it")
+- When the victim dies, it picks the next closest one
+
+**Limits (from the codex): no eyes, no effect**
+- Towers, buildings and spells aren't affected by Smile or the −50%, so they hit it at full damage
+- Any troop that's stunned or "blinking" (e.g. The Individuals mid-blink) is immune while its eyes are closed
+
+**Evolution idea: Deeper Into the Woods**
+- **Ability button:** instantly switches the drain to a new target and drains extra fast (3×) for 3 s
+
+**Counter:** swarms (it can only drain one), spells, and letting your tower deal with it.
+
+---
+
+### ELND-013 — The Pardoned One
+**Card name:** The Pardoned One · **Codex name:** Jessica Winters
+**Codex:** Class REKNA · Threat 5/5. A winged woman, alive for over 1000 years, who hunts humans and feasts on their bones and marrow (claims she's no vampire: she doesn't drink blood). Pardoned for one reason: she cannot die. Killed, she's born anew in a new host, forever, unless she's kept alive and in one spot. Sharp Wings: shoots razor feathers that return to her wings carrying the victim's nutrients; use too many and she can't fly. Hard counter: birdfeed, even a whiff makes her lose interest in killing. Prefers to be called Jessica Winters.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Flying · Ranged |
+| Targets | Air & ground |
+| Rarity | Legendary (Threat 5) |
+| Ephrocity cost | 6 |
+| Health | ~850 |
+| Damage | ~25 per feather · 0.6 s hit speed · range 5 tiles |
+| Speed | Medium |
+| Unlock | Arena 4 |
+
+**Ability: Sharp Wings**
+- Each shot sends out a feather that returns to her after ~1.5 s and heals her for the damage it dealt
+- She has 12 feathers. If more than 8 are out at once, she's grounded: she can't fly, so melee ground troops can hit her, until enough feathers return. With all 12 out she can't shoot.
+- She never lands in the river: over water she stays up until she reaches ground or a bridge
+
+**Passive: Pardoned (reincarnation)**
+- When she dies while flying, she's born anew once at your main tower with ~40% health
+- If she dies while grounded ("kept in one spot"), she's gone for good
+
+**Evolution idea: A Thousand Years**
+- **Ability button:** Feather Storm: fires all her remaining feathers at everything in range at once, a huge burst with big healing, but she's grounded for 4 s afterwards
+
+**Counter:** swarms to make her ground herself, then melee + spells. Future card idea: a Birdfeed spell that pacifies flyers for a few seconds.
+
+---
+
+### ELND-014 — The Cloud
+**Codex:** Class CLAM · Threat 2/5. A cloud that perceives reality and strikes lightning straight down at anyone it finds threatening, or just annoying. Not even rubber stops its lightning. Can't strike faster than once every 5–8 s. Happy in captivity as long as it's entertained.
+
+| Stat | Draft |
+|---|---|
+| Type | Building (hovering): stays where it's placed, counts as air (only air-targeting troops, towers and spells can hit it) |
+| Rarity | Common (Threat 2) |
+| Ephrocity cost | 3 |
+| Health / lifetime | ~300 · drains over ~20 s |
+| Damage | ~60 per strike + 1 s stun |
+| Unlock | Arena 2 |
+
+**Ability: Lightning Strike**
+- Strikes an enemy troop below it (~2.5 tile radius), then waits 5–8 s (random each time). The first strike comes as soon as something is below it.
+- Irritated: if something damages it, its next strike goes to that attacker (if in range)
+- Lightning ignores shields: hits Kardemosh's Skin directly
+- This is the game's first stun: it triggers Kardemosh's Halt reset and closes enemies' "eyes" vs The Devil In The Forest
+
+**Evolution idea: Thunderhead**
+- **Ability button:** Storm: drifts ~3 tiles toward the enemy side and strikes immediately
+
+**Counter:** air-targeting troops and spells; rush past between strikes.
+
+---
+
+### ELND-015 — The Danger Zone
+**Codex:** Class CLAM · Threat 4/5. A small parasite that affects a 15 m area, enraging everyone inside it. They grow stronger, fight to the death and don't feel their own bones breaking from their newfound strength. Can't stay active for more than 20 s. Mitigation: a full protective suit.
+
+| Stat | Draft |
+|---|---|
+| Type | Spell (empower zone) |
+| Rarity | Epic (Threat 4) |
+| Ephrocity cost | 3 |
+| Radius | ~3.5 tiles |
+| Duration | 10 s (lore max 20 s) |
+| Unlock | Arena 4 |
+
+**Ability: Enrage**
+- Every living troop inside, yours AND the enemy's, gets +35% attack speed and move speed and takes −25% damage ("doesn't feel the hurt")
+- Backlash (breaking bones): when the zone ends, every troop that was enraged takes 10% of its max health as damage
+- Play it where you have more troops than the enemy. Misplace it and you buff their push.
+
+**Counter:** Full Protective Suit. Towers and buildings are unaffected, and so are non-living troops (see The Hanged One).
+
+**Evolution:** spells don't evolve.
+
+---
+
+### ELND-016 — The Hanged One
+**Codex:** Class CLAM · Threat 1/5. A humanoid whose neck has been perfectly broken by the rope around it. For unknown reasons it cannot strike a living creature. Borderline indestructible, but its hits are mediocre, so it can never break out of its cell. Almost like a lost dog seeking companionship. (Abilities and containment are not written in the codex yet, so the card mechanics below are draft.)
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Melee · Tank |
+| Targets | Buildings & towers only (they aren't living) |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 5 |
+| Health | ~1400 (the game's biggest so far) |
+| Damage | ~30 per hit · 1.5 s hit speed (mediocre) |
+| Speed | Slow |
+| Unlock | Arena 2 |
+
+**Passive: Cannot Strike the Living**
+- Ignores all troops and walks straight to buildings and towers: your first ground win condition
+
+**Passive: Not Living**
+- Can't be lured by The Gasket, drained by The Devil In The Forest or Mrs. Give & Take, healed by Mrs. Give & Take, or enraged by The Danger Zone (there's no life to affect)
+
+**Passive: Lost Dog (teamwork)**
+- While an allied troop is within ~2 tiles, it takes −20% damage. It's tougher with company.
+
+**Evolution idea: The Rope**
+- **Ability button:** Leash: pulls the nearest allied troop (within ~6 tiles) next to it so it's never alone
+
+**Counter:** high-damage troops and swarms (it can't hit back), or kill its companions to remove Lost Dog.
+
+---
+
+### ELND-017 — The Clone
+**Codex:** Class CLAM · Threat 1/5. A clone from the future that can duplicate itself at will. The Foundation used its DNA to build its own cloning machines and injections (the source of the clones used to feed ELND-012 and ELND-015). Its cells clone anything they touch, so the Foundation turned it into an almost-grenade: thrown on their strongest warriors, the clones fight alongside them. Clones are about 50% weaker, but fantastic decoys. Happy as long as it's treated kindly.
+
+| Stat | Draft |
+|---|---|
+| Type | Spell (clone grenade) |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 3 |
+| Radius | ~3 tiles |
+| Unlock | Arena 3 |
+
+**Ability: Clone**
+- Every allied troop in the area gets a clone next to it
+- Clones have 50% health and 50% damage of the original (abilities included)
+- Clones are the base form: evolutions aren't copied
+- Doesn't clone buildings
+
+**Lore interactions**
+- A clone of The Pardoned One can't reincarnate (it was never really her)
+- Clones count as living (unlike The Hanged One), so The Gasket and The Devil happily take them, which makes them perfect decoys
+
+**Evolution:** spells don't evolve.
+
+**Counter:** area spells; clones are half-strength and die fast.
+
+---
+
+### ELND-018 — Mrs. Give & Take
+**Codex:** Class RINNER · Threat 3/5. A human woman who drains the life from one creature to give it to another. Take: drains one creature at a time, and it empowers her. Give: gives life force to the most hurt creature she can find; she can give more than she took, but only by draining her own life. Contained with lots of animal pets to look after; she drains every predatory animal sent in, to keep her pets safe and full of life.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Ranged (drain beam) · Support / healer |
+| Targets | Ground & air (drain) |
+| Rarity | Rare (Threat 3) |
+| Ephrocity cost | 4 |
+| Health | ~400 |
+| Damage | Drain only (see below) · range ~4 tiles |
+| Speed | Medium |
+| Unlock | Arena 3 |
+
+**Ability: Take**
+- Drains one enemy at a time: ~15 damage per second, stored in her Life Pool (max ~300)
+- Protective (her pets): she drains the enemy that's attacking the ally she's healing first ("drains the predators")
+- Empowered: while her Life Pool is over half full, her drain is +50% faster
+
+**Ability: Give**
+- Constantly heals the most hurt allied troop in range (~20 health per second), paid from her Life Pool
+- Empty pool: she keeps healing by spending her own health. She can die keeping an ally alive.
+
+**Lore interactions**
+- The Hanged One can't be drained or healed (not living)
+- Clones are living: perfect "pets" or "prey"
+
+**Evolution idea: Return**
+- **Ability button:** dumps her entire Life Pool at once, split between all allies in range
+
+**Counter:** kill her first (she's fragile), or out-damage her healing with swarms and spells.
+
+---
+
+### ELND-019 — The Blinker
+**Codex:** Class HEIMER · Threat 5/5. A mass of flesh that can speed past you in less than a second and consumes your flesh quicker than you can blink. Zoom: it speeds itself forward, but every skip shortens its lifespan by the time it skipped, so it has to be careful. If it Zooms more than 4 times in a row without a recharge, it dies.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Melee · Assassin |
+| Targets | Living troops only (it eats flesh: ignores buildings, towers and The Hanged One) |
+| Rarity | Legendary (Threat 5) |
+| Ephrocity cost | 5 |
+| Health | ~500 |
+| Damage | ~90 per bite · 1.0 s hit speed |
+| Speed | Very fast (2 tiles a second) |
+| Unlock | Arena 4 |
+
+**Ability: Zoom**
+- When its target is more than ~2 tiles away, it Zooms: instantly dashes up to ~4 tiles and bites on arrival
+- Each Zoom adds 1 Strain (its lifespan burning away). Strain recharges by 1 every 4 s without Zooming
+- 5 Strain = death. On its own it stops at 4 ("it has to be careful")
+- It only Zooms on its own side of the river (it can't skip over water)
+
+**Evolution idea: Quicker Than You Can Blink**
+- **Ability button:** Overzoom: forces one more Zoom past the limit, a huge bite (×3 damage), then it dies. A sacrifice play.
+
+**Counter:** non-living tanks (The Hanged One), buildings, flyers (it can't reach them) and spells.
+
+---
+
+### ELND-020 — The Swarm
+**Codex:** Class REKNA · Threat 1/5. A group of 15 short humanoids with sharp swords. (Only the summary is written in the codex so far, so the card mechanics below are draft.)
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Melee · Swarm (×15) |
+| Targets | Ground |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 4 |
+| Health | ~30 each |
+| Damage | ~8 per hit each · 1.0 s hit speed |
+| Speed | Fast |
+| Unlock | Arena 2 |
+
+No special ability: pure numbers. Fifteen sharp swords shred tanks and single-target cards (The Devil, Mrs. Give & Take, The Gasket can only handle one at a time).
+
+**Evolution idea: Formation**
+- **Ability button:** pulls all surviving members together into a tight group for a focused charge (+50% speed for 3 s)
+
+**Counter:** area damage: The Spiker, John Arms' Flurry, area spells.
+
+---
+
 ## 6. Progression
 
 ### 6.1 Reputation Road & Arenas
@@ -735,6 +990,9 @@ Saved locally. Ideas:
 
 - [ ] Write the full Codex entries for The Creeler, The Spiker, The Dargalean and The Chain (drafts in section 5b)
 - [ ] Can spells evolve? (suggested: no)
-- [ ] Cards for Arena 3+
+- [x] Cards for Arena 3 and 4 (ELND-012 to 020)
+- [ ] Cards for Arena 5+
+- [ ] Birdfeed spell (pacifies flyers for a few seconds, a hard counter to The Pardoned One)
+- [ ] Full codex entries (abilities and containment) for The Hanged One and The Swarm
 - [ ] Which cards can evolve, and each one's cycle requirement
 - [ ] Pixel art colour palette

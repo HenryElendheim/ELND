@@ -17,8 +17,9 @@ const CATEGORIES := [
 static func tags(id: String) -> Array:
 	var card: Dictionary = Data.table("cards").cards[id]
 	var result := [String(card.type)]
-	if card.type == "troop":
+	if card.type == "troop" or card.has("movement"):
 		result.append(String(card.get("movement", "ground")))
+	if card.type == "troop":
 		var attack := String(card.get("attack", "melee"))
 		result.append("no attack" if attack == "none" else attack)
 		if card.get("targets") == "air_ground":

@@ -45,9 +45,9 @@ func close_lid(sim: BattleSim, damage: float) -> void:
 func _find_guest(sim: BattleSim) -> Unit:
 	var best: Unit = null
 	for other in sim.units:
-		if other.team == unit.team or not other.alive() or other.flying or other.kind != "troop":
+		if other.team == unit.team or not other.is_living_troop() or other.flying:
 			continue
-		if other.targets == "buildings" or other.carrier != null or other.deploy_left > 0.0:
+		if other.targets == "buildings" or other.deploy_left > 0.0:
 			continue
 		var distance := other.pos.distance_to(unit.pos)
 		if distance <= number("lure_radius") and (best == null or distance < best.pos.distance_to(unit.pos)):
