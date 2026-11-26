@@ -14,9 +14,20 @@ const LEVEL_HEIGHT := 44.0
 const GAP := 8.0
 const LIFT := 14.0
 
+## With gestures on, a quick tap sends tapped and holding still sends held, while a finger that moves is left to scroll the list.
+signal tapped
+signal held
+
+const HOLD_MS := 450
+const MOVE_SLACK := 18.0
+
 var card_id := ""
 ## Shows the level above the tile and the bar of copies toward the next level under it.
 var show_progress := false
+var _down_at: Variant = null
+var _down_ms := 0
+var _moved := false
+var _held := false
 ## A card the player cannot get yet. It is drawn dimmed, with the arena that unlocks it where the level would be.
 var locked := false
 ## Glows purple, which marks a card in the evolution slot with its evolution unlocked, or one ready to come out evolved.
@@ -25,6 +36,38 @@ var evolution := false
 var evolution_slot := false
 ## In battle, how many more normal plays the card needs before it comes out evolved. Zero means ready, and -1 means it has no evolution.
 var cycles_left := -1
+
+
+## Turns on tap and hold for this tile. The tile then lets touches pass on to the list around it,
+## which means a swipe that starts on a card still scrolls.
+func enable_gestures() -> void:
+	toggle_mode = true
+	button_mask = 0
+	mouse_filter = MOUSE_FILTER_PASS
+	set_process(true)
+
+
+func _gui_input(event: InputEvent) -> void:
+	if button_mask != 0:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_down_at = event.position
+			_down_ms = Time.get_ticks_msec()
+			_moved = false
+			_held = false
+		elif _down_at != null:
+			if not _moved and not _held and Rect2(Vector2.ZERO, size).has_point(event.position):
+				tapped.emit()
+			_down_at = null
+	elif event is InputEventMouseMotion and _down_at != null and event.position.distance_to(_down_at) > MOVE_SLACK:
+		_moved = true
+
+
+func _process(_delta: float) -> void:
+	if _down_at != null and not _moved and not _held and Time.get_ticks_msec() - _down_ms >= HOLD_MS:
+		_held = true
+		held.emit()
 
 
 static func short_name(id: String) -> String:
@@ -42,6 +85,7 @@ func _init(id := "", progress := false) -> void:
 	clip_contents = true
 	size_flags_horizontal = SIZE_EXPAND_FILL
 	custom_minimum_size = Vector2(0, 230 + (LEVEL_HEIGHT + BAR_HEIGHT + GAP * 2 if progress else 0))
+	set_process(false)
 
 
 func _draw() -> void:

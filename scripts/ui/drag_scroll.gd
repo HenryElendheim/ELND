@@ -25,7 +25,7 @@ static func attach(scroll: ScrollContainer) -> ScrollContainer:
 
 
 func _input(event: InputEvent) -> void:
-	if Touch.cancelling or not _scroll.is_visible_in_tree() or Touch.blocked(_scroll):
+	if Touch.cancelling or Touch.holding or not _scroll.is_visible_in_tree() or Touch.blocked(_scroll):
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and _scroll.get_global_rect().has_point(event.position):

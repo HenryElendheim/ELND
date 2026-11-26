@@ -86,7 +86,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if Touch.blocked(self):
 		return
-	if Touch.cancelling:
+	if Touch.cancelling or Touch.holding:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and get_global_rect().has_point(event.position):

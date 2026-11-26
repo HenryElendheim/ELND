@@ -261,6 +261,44 @@ static func _unlock_evolution(id: String) -> void:
 	_write("evolutions", unlocked)
 
 
+## How many decks the player can keep. The one picked last is the one battles use, and it is also kept under "deck",
+## which means everything that reads the battle deck works the same as with a single deck.
+static func deck_slots() -> int:
+	return int(_table("battle").deck.get("slots", 3))
+
+
+static func active_deck() -> int:
+	return clampi(int(_read("deck_index", 0)), 0, deck_slots() - 1)
+
+
+## Every saved deck, one list per slot. A slot never used is an empty list.
+static func decks() -> Array:
+	var raw: Variant = _read("decks", [])
+	var stored: Array = raw.duplicate(true) if raw is Array else []
+	while stored.size() < deck_slots():
+		stored.append([])
+	var current: Variant = _read("deck", null)
+	if current is Array and not current.is_empty():
+		stored[active_deck()] = current.duplicate()
+	return stored
+
+
+static func save_deck(index: int, cards: Array) -> void:
+	var all := decks()
+	all[index] = cards.duplicate()
+	_write("decks", all)
+	if index == active_deck():
+		_write("deck", cards.duplicate())
+
+
+## Picks the deck battles use from now on.
+static func select_deck(index: int) -> void:
+	var all := decks()
+	_write("decks", all)
+	_write("deck_index", index)
+	_write("deck", all[index].duplicate())
+
+
 ## How many evolution slots a deck has. They are the first places in the deck.
 static func evolution_slots() -> int:
 	return int(Data.table("battle").evolution.slots)

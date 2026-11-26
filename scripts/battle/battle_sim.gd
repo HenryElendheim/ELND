@@ -81,11 +81,16 @@ static func available_cards() -> Array:
 
 ## The player's saved deck when it is still valid, and otherwise the first cards that are available.
 static func starting_deck() -> Array:
+	return valid_deck(Save.get_value("deck"))
+
+
+## A saved deck as it is when it is full and every card in it can be played, and otherwise the first cards that are available.
+static func valid_deck(saved: Variant) -> Array:
 	var size := int(Data.table("battle").deck.size)
 	var available := available_cards()
-	var saved: Array = Save.get_value("deck") if Save.get_value("deck") is Array else []
-	if saved.size() == mini(size, available.size()) and saved.all(func(id: Variant) -> bool: return id in available):
-		return saved
+	var cards: Array = saved if saved is Array else []
+	if cards.size() == mini(size, available.size()) and cards.all(func(id: Variant) -> bool: return id in available):
+		return cards
 	return available.slice(0, size)
 
 

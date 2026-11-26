@@ -3,6 +3,8 @@ class_name Touch
 
 ## True while a pretend release is being sent, which every gesture handler ignores.
 static var cancelling := false
+## True while a card is held and being moved, which stops lists scrolling and pages swiping under the finger.
+static var holding := false
 
 
 ## Lets go of whatever button the finger started on, far off screen, which means that button neither fires

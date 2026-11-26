@@ -15,7 +15,8 @@
 	"deploy_time": 1.0,
 	"deck": {
 		"size": 8,
-		"hand": 4
+		"hand": 4,
+		"slots": 3
 	},
 	"match": {
 		"regular_seconds": 180,

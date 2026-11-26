@@ -73,6 +73,12 @@ Keep this file up to date whenever something important changes.
 - Units show what is happening to them: a red aura while enraged (`Unit.enraged`), dark spikes while slowed by The Spiker (`Unit.slowed`), a dark haze while filled with dread, a grey ring while chained, and yellow sparks while stunned. The Danger Zone's backlash bursts red on each troop (`backlash` event), and clones streak in cyan from their original (`cloned` event).
 - The Cards screen has a Locked section with every card from later arenas, showing the arena that unlocks it. Tapping one shows its details with no buttons.
 
+## Cards screen
+
+- Up to 3 decks (`deck.slots` in `battle.json`), kept in `Save` under `decks`. The one picked last is the battle deck and is also kept under `deck`, so battles, stats and the bot read it as before (`Progress.decks`, `save_deck`, `select_deck`). `BattleSim.valid_deck` turns a saved deck into a playable one.
+- The collection and the locked cards can be sorted (Ephrocity, rarity, type, name, number) and filtered by the card search categories. The choice is remembered in Settings.
+- Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
+
 ## Troop movement
 
 - Close to its goal (within `steering.approach_tiles` of attack range), a troop heads for a free spot on a ring around the goal at attacking distance, trying further round each way until one is open. Attackers spread around towers and big troops instead of queuing.

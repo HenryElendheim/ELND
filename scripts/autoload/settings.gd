@@ -19,6 +19,8 @@ func _init() -> void:
 		"bot_counter_play": 0.5,
 		"pure_balance": false,
 		"admin_mode": false,
+		"collection_sort": "cost",
+		"collection_filter": "",
 	}
 
 

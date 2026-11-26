@@ -23,6 +23,7 @@ func _ready() -> void:
 	broken += _check_placement()
 	broken += _check_card_search()
 	broken += _check_new_cards()
+	broken += _check_decks()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -318,6 +319,21 @@ func _check_new_cards() -> int:
 	_sims.clear()
 	print("New cards checked")
 	return broken
+
+
+## Three decks: saving one, switching to another, and battles always using the deck picked last.
+func _check_decks() -> int:
+	var first := BattleSim.starting_deck().duplicate()
+	Progress.save_deck(Progress.active_deck(), first)
+	var reversed := first.duplicate()
+	reversed.reverse()
+	Progress.select_deck(1)
+	Progress.save_deck(1, reversed)
+	var ok := BattleSim.starting_deck() == reversed
+	Progress.select_deck(0)
+	ok = ok and BattleSim.starting_deck() == first and Progress.decks()[1] == reversed
+	print("Decks checked")
+	return _expect(ok, "switching decks did not keep each deck")
 
 
 ## A battle with no bot and harmless towers, used to test one rule at a time without anything else getting in the way.
