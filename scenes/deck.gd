@@ -2,7 +2,7 @@ extends Screen
 ## The Cards screen. At the top you pick one of your decks, and the one picked last is the one battles use.
 ## The deck sits below as two rows of four tiles, each with its level above it and its copies bar below,
 ## then the average Ephrocity cost and tower level, then your collection and the cards still locked,
-## which you can sort and filter by cost, rarity, kind and more.
+## which you can sort and filter by cost, rarity, kind and more. Tapping the sort in use again flips its order.
 ## Tap a card to open its details, with its stats, how it works and its Codex entry,
 ## and the buttons to add it, swap it in, take it out, put it in the evolution slot or spend wild cards.
 ## Hold a card still for a moment to pick it up, then drop it on a deck card to swap them.
@@ -12,7 +12,15 @@ extends Screen
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const COLUMNS := 4
-const SORTS := [["cost", "Ephrocity"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "Number"]]
+const SORTS := [["cost", "Cost"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "Number"]]
+## How each order reads, first for highest first and then for lowest first.
+const ORDER_NAMES := {
+	"cost": ["Most expensive first", "Cheapest first"],
+	"rarity": ["Rarest first", "Commonest first"],
+	"type": ["Spells, then buildings, then troops", "Troops, then buildings, then spells"],
+	"name": ["Z to A", "A to Z"],
+	"number": ["Highest number first", "Lowest number first"],
+}
 const TYPE_ORDER := ["troop", "building", "spell"]
 
 var _deck := []
@@ -55,6 +63,8 @@ func build() -> void:
 	add(Ui.label("Collection", "HeadingLabel"))
 	add(Ui.label("Sort by", "MutedLabel"))
 	add(Ui.strip(SORTS, Settings.get_value("collection_sort"), _on_sort))
+	var names: Array = ORDER_NAMES.get(Settings.get_value("collection_sort"), ["", ""])
+	add(Ui.label("%s. Tap again to flip." % names[0 if Settings.get_value("collection_descending") else 1], "MutedLabel"))
 	add(Ui.label("Show", "MutedLabel"))
 	add(Ui.strip(_filters(), Settings.get_value("collection_filter"), _on_filter))
 	var rest := _shown(BattleSim.available_cards().filter(func(id: String) -> bool: return not id in _deck))
@@ -92,8 +102,13 @@ func _shown(ids: Array) -> Array:
 	return found
 
 
-## Whether one card goes before another in the picked order. Ties fall back to the card number.
+## Whether one card goes before another in the picked order. Highest first is simply lowest first turned around.
 func _before(a: String, b: String) -> bool:
+	return _ahead(b, a) if Settings.get_value("collection_descending") else _ahead(a, b)
+
+
+## Lowest first in the picked order, with the card number deciding ties.
+func _ahead(a: String, b: String) -> bool:
 	var cards: Dictionary = Data.table("cards").cards
 	var first: Dictionary = cards[a]
 	var second: Dictionary = cards[b]
@@ -112,13 +127,22 @@ func _before(a: String, b: String) -> bool:
 		"name":
 			if first.name != second.name:
 				return String(first.name).naturalnocasecmp_to(String(second.name)) < 0
+		"number":
+			x = float(first.number)
+			y = float(second.number)
 	if x != y:
 		return x < y
 	return int(first.number) < int(second.number)
 
 
+## Picking a new sort starts with the highest first, apart from names, which start at A.
+## Picking the sort already in use flips it.
 func _on_sort(mode: String) -> void:
-	Settings.set_value("collection_sort", mode)
+	if mode == Settings.get_value("collection_sort"):
+		Settings.set_value("collection_descending", not Settings.get_value("collection_descending"))
+	else:
+		Settings.set_value("collection_sort", mode)
+		Settings.set_value("collection_descending", mode != "name")
 	_rebuild()
 
 

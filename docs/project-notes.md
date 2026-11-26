@@ -76,7 +76,7 @@ Keep this file up to date whenever something important changes.
 ## Cards screen
 
 - Up to 3 decks (`deck.slots` in `battle.json`), kept in `Save` under `decks`. The one picked last is the battle deck and is also kept under `deck`, so battles, stats and the bot read it as before (`Progress.decks`, `save_deck`, `select_deck`). `BattleSim.valid_deck` turns a saved deck into a playable one.
-- The collection and the locked cards can be sorted (Ephrocity, rarity, type, name, number) and filtered by the card search categories. The choice is remembered in Settings.
+- The collection and the locked cards can be sorted (cost, rarity, type, name, number) and filtered by the card search categories. A new sort starts highest first (names start at A), and tapping the sort in use again flips it. The choice and direction are remembered in Settings (`collection_sort`, `collection_descending`).
 - The sort and filter rows (`Ui.strip`) scroll sideways with a drag from anywhere on them (`DragScroll.attach(scroll, true)`). They join `Touch.SIDEWAYS_GROUP`, and a page swipe that starts on one is ignored, so dragging the filters never flips the menu page.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 

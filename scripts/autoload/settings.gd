@@ -20,6 +20,7 @@ func _init() -> void:
 		"pure_balance": false,
 		"admin_mode": false,
 		"collection_sort": "cost",
+		"collection_descending": true,
 		"collection_filter": "",
 	}
 
