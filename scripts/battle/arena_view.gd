@@ -38,6 +38,8 @@ const SHAKE_TIME := 0.35
 
 var _tile := 1.0
 var _origin := Vector2.ZERO
+## Groups whose level has already been drawn this frame, so a swarm shows it once.
+var _level_shown := {}
 var _class_colours := {}
 
 
@@ -59,6 +61,12 @@ func take_events(delta: float) -> void:
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "burst": true, "team": event.team})
 			"death":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
+			"cast":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "cast": true, "radius": event.radius, "card": event.card})
+			"backlash":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "backlash": true})
+			"cloned":
+				_effects.append({"pos": event.pos, "from": event.from, "amount": 0.0, "age": 0.0, "cloned": true})
 			"lightning":
 				_effects.append({"pos": event.pos, "from": event.from, "amount": 0.0, "age": 0.0, "bolt": true})
 			"tower_down":
@@ -90,6 +98,7 @@ func _draw() -> void:
 	_tile = floorf(minf(size.x / width, size.y / length))
 	_origin = ((size - Vector2(width, length) * _tile) / 2.0).floor()
 	_class_colours = Data.table("cards").classes
+	_level_shown.clear()
 
 	for y in int(length):
 		for x in int(width):
@@ -146,6 +155,7 @@ func _draw_unit(unit: Unit) -> void:
 		at.y -= r * 0.6
 	if unit.evolved:
 		_draw_evolution_glow(at, r, unit.is_building(), motion)
+	_draw_status(unit, at, r, motion, false)
 	UnitArt.draw_ability_art(self, unit, sim, at, r, _tile, motion, false)
 	if unit.is_building():
 		var box := Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0)
@@ -158,13 +168,57 @@ func _draw_unit(unit: Unit) -> void:
 		draw_arc(at, r, 0, TAU, 32, team_colour, 4.0)
 		_draw_label(at, CardTile.short_name(unit.id), r)
 	UnitArt.draw_ability_art(self, unit, sim, at, r, _tile, motion, true)
+	_draw_status(unit, at, r, motion, true)
 
 	if show_hitboxes:
 		draw_arc(at, r, 0, TAU, 32, Color.YELLOW, 2.0)
 	if unit.is_tower() or unit.hp < unit.max_hp:
 		_draw_health(at - Vector2(r, r + 14), r * 2.0, unit.hp / unit.max_hp, team_colour)
+	var top := r + 14
 	if unit.shield > 0.0:
-		_draw_health(at - Vector2(r, r + 26), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
+		top = r + 26
+		_draw_health(at - Vector2(r, top), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
+	# Towers all share group zero, so they are told apart by the unit itself.
+	var key: Variant = unit.group if unit.group > 0 else unit
+	if not _level_shown.has(key):
+		_level_shown[key] = true
+		_draw_level(unit, at - Vector2(0, top + 4), team_colour)
+
+
+## The level sits just above the health bar in small text with a dark outline. Towers show theirs a little bigger.
+## A swarm shows its level once, over the first member drawn, which keeps a crowd readable.
+func _draw_level(unit: Unit, bottom: Vector2, team_colour: Color) -> void:
+	var font := ThemeDB.fallback_font
+	var font_size := maxi(int(_tile * (0.55 if unit.is_tower() else 0.4)), 12)
+	var text := "Lv %d" % unit.level
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var spot := bottom - Vector2(width / 2.0, 0)
+	draw_string_outline(font, spot, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, maxi(font_size / 5, 3), Color.BLACK)
+	draw_string(font, spot, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, team_colour.lightened(0.45))
+
+
+## Shows what spells and abilities are doing to a unit right now. Behind it: a red flickering aura while enraged,
+## a ring of dark spikes while slowed, a dark haze while filled with dread, and a grey ring while chained.
+## In front: yellow sparks circling over its head while stunned. Without motion everything stays still but still shows.
+func _draw_status(unit: Unit, at: Vector2, r: float, motion: bool, front: bool) -> void:
+	var wobble := sin(sim.time * 14.0 + unit.group) if motion else 0.0
+	if front:
+		if unit.stun_left > 0.0 and unit.alive():
+			for i in 3:
+				var angle := TAU * i / 3.0 + (sim.time * 5.0 if motion else 0.0)
+				draw_circle(at + Vector2(cos(angle) * r * 0.7, -r * 1.1 + sin(angle) * r * 0.2), maxf(r * 0.14, 3.0), Color("#FFE45C"))
+		return
+	if unit.enraged:
+		draw_circle(at, r * (1.3 + 0.08 * wobble), Color(1.0, 0.25, 0.15, 0.35))
+	if unit.slowed:
+		for i in 8:
+			var direction := Vector2.from_angle(TAU * i / 8.0)
+			var base := at + direction * r * 1.05
+			draw_colored_polygon(PackedVector2Array([base - direction.orthogonal() * r * 0.12, base + direction * r * 0.35, base + direction.orthogonal() * r * 0.12]), Color(0.1, 0.1, 0.12, 0.85))
+	if unit.dread > 0.0:
+		draw_circle(at, r * 1.2, Color(0.25, 0.1, 0.35, 0.35))
+	if unit.link_until > sim.time:
+		draw_arc(at, r * 1.15, 0, TAU, 24, Color("#C8C8D0"), 3.0)
 
 
 ## An evolved unit sits in a soft purple glow with a bright purple ring, which pulses gently unless reduced motion is on.
@@ -216,6 +270,25 @@ func _draw_effect(effect: Dictionary) -> void:
 		var team_colour := PLAYER_COLOUR if effect.team == Unit.Team.PLAYER else ENEMY_COLOUR
 		var reach := share if motion else 0.6
 		draw_arc(at, _tile * (0.3 + 1.2 * reach), 0, TAU, 32, Color(team_colour, 0.9 * (1.0 - share)), 5.0)
+		return
+	# A spell lands with a flash over its whole area and a ring that sweeps out to its edge, in the card's class colour.
+	if effect.get("cast", false):
+		var colour := Color(_class_colours.get(Data.table("cards").cards[effect.card].get("class", ""), "#FFFFFF"))
+		var reach: float = effect.radius * _tile
+		draw_circle(at, reach, Color(colour.lightened(0.3), 0.35 * (1.0 - share)))
+		draw_arc(at, reach * (0.3 + 0.7 * share if motion else 1.0), 0, TAU, 48, Color(Color.WHITE, 1.0 - share), 5.0)
+		return
+	# The Danger Zone's backlash cracks each troop it enraged, with short red lines bursting out.
+	if effect.get("backlash", false):
+		for i in 6:
+			var direction := Vector2.from_angle(TAU * i / 6.0 + 0.4)
+			var length := _tile * (0.4 + 0.5 * (share if motion else 0.5))
+			draw_line(at + direction * _tile * 0.25, at + direction * length, Color(1, 0.25, 0.2, 1.0 - share), 4.0)
+		return
+	# A clone appears with a cyan streak from its original and a soft cyan puff.
+	if effect.get("cloned", false):
+		draw_line(_to_screen(effect.from), at, Color(UnitArt.CYAN, 0.8 * (1.0 - share)), 4.0)
+		draw_circle(at, _tile * (0.3 + 0.4 * (share if motion else 0.5)), Color(UnitArt.CYAN, 0.4 * (1.0 - share)))
 		return
 	# The Cloud's lightning is a jagged pale bolt from the cloud down to the troop, with a flash where it lands.
 	if effect.get("bolt", false):

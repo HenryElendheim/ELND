@@ -98,6 +98,9 @@ var goal_override: Variant = null
 var blinking := false
 ## True while The Devil In The Forest is charming the troops that see it.
 var charming := false
+## True while The Danger Zone enrages the unit, and while The Spiker's field slows it, so the screen can show it.
+var enraged := false
+var slowed := false
 
 
 func alive() -> bool:
@@ -138,6 +141,8 @@ func reset_effects() -> void:
 	goal_override = null
 	blinking = false
 	charming = false
+	enraged = false
+	slowed = false
 
 
 ## Reads the unit's numbers from its data entry. Health keeps the same share it had,

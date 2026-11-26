@@ -38,7 +38,44 @@ func build() -> void:
 		add(Ui.spacer(12))
 		add(Ui.label("Collection", "HeadingLabel"))
 		add(_grid(rest, false))
+	var locked := _locked_cards()
+	if not locked.is_empty():
+		add(Ui.spacer(12))
+		add(Ui.label("Locked", "HeadingLabel"))
+		add(Ui.label("These turn up in chests once you reach their arena. Tap one to see what it does.", "MutedLabel"))
+		var grid := GridContainer.new()
+		grid.columns = COLUMNS
+		for id in locked:
+			var tile := CardTile.new(id, true)
+			tile.locked = true
+			tile.pressed.connect(func() -> void: _peek(id))
+			grid.add_child(tile)
+		add(grid)
 	add_back_button()
+
+
+## Cards from later arenas, soonest first. Neutralized cards stay hidden.
+static func _locked_cards() -> Array:
+	var cards: Dictionary = Data.table("cards").cards
+	var playable: Array = Data.table("battle").playable_types
+	var found := []
+	for id in cards:
+		var card: Dictionary = cards[id]
+		if card.get("type") in playable and not card.get("neutralized", false) and int(card.get("unlock_arena", 1)) > Progress.arena():
+			found.append(id)
+	found.sort_custom(func(a: String, b: String) -> bool: return _order(cards[a]) < _order(cards[b]))
+	return found
+
+
+## Sorts by unlock arena first and card number second.
+static func _order(card: Dictionary) -> int:
+	return int(card.get("unlock_arena", 1)) * 1000 + int(card.number)
+
+
+## Opens a locked card's details with no buttons, since it cannot go in a deck yet.
+func _peek(id: String) -> void:
+	_detail = CardDetail.new(id, [])
+	add_child(_detail)
 
 
 func _grid(ids: Array, in_deck: bool) -> GridContainer:

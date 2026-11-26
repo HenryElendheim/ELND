@@ -17,6 +17,8 @@ const LIFT := 14.0
 var card_id := ""
 ## Shows the level above the tile and the bar of copies toward the next level under it.
 var show_progress := false
+## A card the player cannot get yet. It is drawn dimmed, with the arena that unlocks it where the level would be.
+var locked := false
 ## Glows purple, which marks a card in the evolution slot with its evolution unlocked, or one ready to come out evolved.
 var evolution := false
 ## On the Cards screen, marks a tile sitting in the deck's evolution slot.
@@ -93,19 +95,29 @@ func _draw() -> void:
 
 	if button_pressed:
 		draw_rect(tile, Color.WHITE, false, 6.0)
+	if locked:
+		draw_rect(tile, Color(0, 0, 0, 0.55))
 	if show_progress:
 		_draw_progress(font, Rect2(0, tile.end.y + GAP, size.x, BAR_HEIGHT))
 
 
 ## The card's level sits above the tile in its rarity colour, which means it reads at a glance before the card itself.
+## A locked card shows the arena that unlocks it there instead.
 func _draw_level(font: Font, colour: Color) -> void:
 	var level := int(Progress.card(card_id).level)
 	var text_value := "Max level" if level >= Progress.max_card_level() else "Level %d" % level
+	if locked:
+		text_value = "Arena %d" % int(Data.table("cards").cards[card_id].get("unlock_arena", 1))
+		colour = Color(0.75, 0.75, 0.8)
 	_centred(font, text_value, Vector2(size.x / 2.0, LEVEL_HEIGHT * 0.8), int(LEVEL_HEIGHT * 0.8), colour.lightened(0.2), size.x - 8)
 
 
 ## A bar filling toward the next level with the copies on it, or "Max" once the card is at the top level.
 func _draw_progress(font: Font, bar: Rect2) -> void:
+	if locked:
+		draw_rect(bar, Color(0, 0, 0, 0.5))
+		_centred(font, "Locked", Vector2(bar.get_center().x, bar.get_center().y + bar.size.y * 0.25), int(bar.size.y * 0.62), Color(0.75, 0.75, 0.8), bar.size.x - 8)
+		return
 	var progress := Progress.card(card_id)
 	var level := int(progress.level)
 	var needed := Progress.copies_for_next(maxi(level, 1))

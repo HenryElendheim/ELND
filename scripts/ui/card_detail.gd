@@ -149,6 +149,8 @@ func _info_lines(card: Dictionary) -> Array:
 	if card.has("radius"):
 		stats.append(["Area", "%.1f tiles" % float(card.radius)])
 	var lines := [[stats, ""]]
+	if int(Progress.card(card_id).level) <= 0:
+		lines.append(["Locked. It turns up in chests from Arena %d." % int(card.get("unlock_arena", 1)), "MutedLabel"])
 	if card.has("how_it_works"):
 		lines.append(["How it works", "HeadingLabel"])
 		lines.append([card.how_it_works, ""])

@@ -220,6 +220,7 @@ func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved :=
 		_give_abilities(unit, card, evolved)
 		made.append(unit)
 		if unit.is_spell():
+			events.append({"type": "cast", "pos": unit.pos, "radius": unit.radius, "card": card_id})
 			_cast(unit, card)
 	return made
 
@@ -270,7 +271,7 @@ func clone_unit(original: Unit, at: Vector2, strength: float) -> Unit:
 	copy.group = _next_group
 	units.append(copy)
 	_give_abilities(copy, Data.table("cards").cards[copy.id], false)
-	events.append({"type": "placed", "pos": copy.pos, "team": copy.team})
+	events.append({"type": "cloned", "pos": copy.pos, "from": original.pos})
 	return copy
 
 

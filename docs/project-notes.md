@@ -66,6 +66,13 @@ Keep this file up to date whenever something important changes.
 - `BattleSim.clone_unit()` makes half-strength copies, which are `is_clone`. `spawn()` hands back the units it made, and big swarms spawn in two rings.
 - Targets `"living"` (The Blinker) only hits living troops. Speed `very_fast` is 2 tiles a second.
 
+## Battle readability
+
+- Every troop, building and tower shows its level ("Lv 3") just above where its health bar sits. A swarm shows it once.
+- A spell landing flashes over its area with a ring sweeping out, in its class colour (`cast` event).
+- Units show what is happening to them: a red aura while enraged (`Unit.enraged`), dark spikes while slowed by The Spiker (`Unit.slowed`), a dark haze while filled with dread, a grey ring while chained, and yellow sparks while stunned. The Danger Zone's backlash bursts red on each troop (`backlash` event), and clones streak in cyan from their original (`cloned` event).
+- The Cards screen has a Locked section with every card from later arenas, showing the arena that unlocks it. Tapping one shows its details with no buttons.
+
 ## Troop movement
 
 - Close to its goal (within `steering.approach_tiles` of attack range), a troop heads for a free spot on a ring around the goal at attacking distance, trying further round each way until one is open. Attackers spread around towers and big troops instead of queuing.

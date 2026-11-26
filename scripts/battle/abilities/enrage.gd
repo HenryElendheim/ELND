@@ -13,6 +13,7 @@ func tick(sim: BattleSim) -> void:
 		for troop in _enraged:
 			if troop.alive():
 				sim.deal_damage(null, troop, troop.max_hp * number("backlash"))
+				sim.events.append({"type": "backlash", "pos": troop.pos})
 		_enraged.clear()
 		unit.hp = 0.0
 		return
@@ -22,4 +23,5 @@ func tick(sim: BattleSim) -> void:
 			troop.attack_speed *= haste
 			troop.move_speed *= haste
 			troop.damage_taken *= number("damage_taken")
+			troop.enraged = true
 			_enraged[troop] = true

@@ -16,6 +16,7 @@ func tick(sim: BattleSim) -> void:
 		var stay: float = _inside.get(victim, 0.0) + sim.tick
 		still_inside[victim] = stay
 		victim.move_speed *= 1.0 - number("slow")
+		victim.slowed = true
 		var grow := 1.0 + floorf(stay) * number("growth_per_second")
 		sim.deal_damage(unit, victim, number("damage_per_second") * grow * sim.tick, false)
 	_inside = still_inside
