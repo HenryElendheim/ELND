@@ -1,5 +1,5 @@
 extends Screen
-## The Foundation road: every Lab and Site from the first to the last, with the reputation each one needs
+## The Foundation road: every Lab and Site, with the last one at the top and the first at the bottom, with the reputation each one needs
 ## and the anomalies that turn up in chests from there on. Your place on the road is marked, and the screen opens on it.
 ## Cards from places you have not reached yet are drawn in grey. Tap any card to see what it does.
 
@@ -15,7 +15,7 @@ func build() -> void:
 	add(Ui.label("You are at %s with %d reputation. Win battles to earn more and rank up through the ELND Foundation." % [Progress.arena_name(here), Progress.reputation()], "MutedLabel"))
 	var by_place := _cards_by_place()
 	var marker: Control = null
-	for place in range(1, Progress.arena_count() + 1):
+	for place in range(Progress.arena_count(), 0, -1):
 		add(Ui.spacer(24))
 		var heading := Ui.label(Progress.arena_name(place), "HeadingLabel")
 		if place == here:

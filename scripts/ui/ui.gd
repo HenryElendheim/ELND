@@ -70,6 +70,7 @@ static func strip(options: Array, current: Variant, on_change: Callable) -> Cont
 	return scroll
 
 
+## In a sideways row only a clean tap picks an option, which means swiping along the row never picks one by accident.
 static func _fill_choices(box: Container, options: Array, current: Variant, on_change: Callable, expand: bool) -> void:
 	var group := ButtonGroup.new()
 	for option in options:
@@ -79,7 +80,13 @@ static func _fill_choices(box: Container, options: Array, current: Variant, on_c
 		node.button_pressed = option[0] == current
 		if not expand:
 			node.size_flags_horizontal = Control.SIZE_FILL
+			TapGuard.attach(node, func() -> void: _pick(node, option[0], on_change))
 		box.add_child(node)
+
+
+static func _pick(node: Button, value: Variant, on_change: Callable) -> void:
+	node.button_pressed = true
+	on_change.call(value)
 
 
 ## A label with the current value, and a slider below it. Values show as a percentage, or as seconds when asked.

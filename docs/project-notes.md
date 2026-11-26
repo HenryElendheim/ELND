@@ -71,6 +71,7 @@ Keep this file up to date whenever something important changes.
 - Every troop, building and tower shows its level ("Lv 3") just above where its health bar sits. A swarm shows it once.
 - A spell landing flashes over its area with a ring sweeping out, in its class colour (`cast` event).
 - Units show what is happening to them: a red aura while enraged (`Unit.enraged`), dark spikes while slowed by The Spiker (`Unit.slowed`), a dark haze while filled with dread, a grey ring while chained, and yellow sparks while stunned. The Danger Zone's backlash bursts red on each troop (`backlash` event), and clones streak in cyan from their original (`cloned` event).
+- The Foundation road lists the last Site at the top and Lab 1 at the bottom, and opens on where you are.
 - The Cards screen has a Locked section with every card from later arenas, showing the arena that unlocks it. Tapping one shows its details with no buttons.
 
 ## Cards screen
@@ -78,7 +79,8 @@ Keep this file up to date whenever something important changes.
 - Up to 3 decks (`deck.slots` in `battle.json`), kept in `Save` under `decks`. The one picked last is the battle deck and is also kept under `deck`, so battles, stats and the bot read it as before (`Progress.decks`, `save_deck`, `select_deck`). `BattleSim.valid_deck` turns a saved deck into a playable one.
 - The collection and the locked cards can be sorted (cost, rarity, type, name, number) and filtered by the card search categories. A new sort starts highest first (names start at A), and tapping the sort in use again flips it. The choice and direction are remembered in Settings (`collection_sort`, `collection_descending`).
 - The sort and filter rows (`Ui.strip`) scroll sideways with a drag from anywhere on them (`DragScroll.attach(scroll, true)`). They join `Touch.SIDEWAYS_GROUP`, and a page swipe that starts on one is ignored, so dragging the filters never flips the menu page.
-- Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
+- `TapGuard` (`scripts/ui/tap_guard.gd`) makes a button react only to a clean tap, with an optional hold. Sideways rows (`Ui.strip`) and card tiles use it, so swiping over them never picks anything.
+- Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`, built on `TapGuard`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
 ## Items, injections and gold
 
