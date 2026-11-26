@@ -46,5 +46,25 @@
 			"size": 0.3,
 			"colour": "#FFE9A8"
 		}
+	},
+	"core": {
+		"health": 2600,
+		"damage": 45,
+		"range": 7.5,
+		"hit_speed": 0.5,
+		"targets": "air_ground",
+		"size": 4,
+		"positions": [
+			[
+				9,
+				29
+			]
+		],
+		"projectile": {
+			"style": "orb",
+			"speed": 13,
+			"size": 0.35,
+			"colour": "#FF7A8A"
+		}
 	}
 }

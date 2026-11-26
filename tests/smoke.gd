@@ -24,6 +24,7 @@ func _ready() -> void:
 	broken += _check_card_search()
 	broken += _check_new_cards()
 	broken += _check_decks()
+	broken += _check_items()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -43,7 +44,7 @@ func _ready() -> void:
 	stats_screen.call("_switch")
 	await get_tree().process_frame
 	stats_screen.queue_free()
-	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin", "road"]:
+	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin", "road", "items"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
@@ -222,11 +223,17 @@ func _check_defense() -> int:
 	var sim := BattleSim.new("defense")
 	for i in 30 * 40:
 		sim.step()
-	var enemy_towers := sim.units.filter(func(u: Unit) -> bool: return u.is_tower() and u.team == Unit.Team.ENEMY).size()
+	var enemy_towers := sim.units.filter(func(u: Unit) -> bool: return u.is_tower() and u.team == Unit.Team.ENEMY)
 	print("Defense: wave %d, result '%s'" % [sim.waves.wave, sim.result])
+	var ok := sim.waves.wave >= 2 and enemy_towers.size() == 1 and enemy_towers[0].kind == "core"
+	# Destroying the core wins the run.
+	if ok and sim.result == "":
+		sim.deal_damage(null, enemy_towers[0], enemy_towers[0].hp + 1.0)
+		sim.step()
+		ok = sim.result == "player"
 	sim.clear()
-	if sim.waves.wave < 2 or enemy_towers > 0:
-		print("Broken file: defense waves did not run properly")
+	if not ok:
+		print("Broken file: defense waves or the enemy core did not work")
 		return 1
 	return 0
 
@@ -373,6 +380,22 @@ func _check_decks() -> int:
 	ok = ok and BattleSim.starting_deck() == first and Progress.decks()[1] == reversed
 	print("Decks checked")
 	return _expect(ok, "switching decks did not keep each deck")
+
+
+## Every tenth game brings an Injection chest holding an Evolution Injection, and card level ups give no gold.
+func _check_items() -> int:
+	Save.set_value("games", Progress.injection_chest_every() - 1)
+	Save.set_value("chests_waiting", [])
+	Progress.record_match("enemy")
+	var waiting := Progress.chests_waiting()
+	var injections := Progress.injections()
+	while not Progress.chests_waiting().is_empty():
+		Progress.open_next_chest()
+	var got_injection := Progress.INJECTION_CHEST in waiting and Progress.injections() == injections + 1
+	# Levelling a card can still level the player up, which pays gold, so the card part is checked on its own.
+	var no_card_gold := int(Data.table("economy").gold.per_card_upgrade_times_level) == 0
+	print("Items checked")
+	return _expect(got_injection and no_card_gold, "the Injection chest or card level up gold is wrong")
 
 
 ## A battle with no bot and harmless towers, used to test one rule at a time without anything else getting in the way.

@@ -2,6 +2,9 @@ class_name Progress
 ## Everything about the player's progress: reputation, arenas, player level, card levels, wild cards and chests.
 ## It all lives in the save game, and every number comes from progression.json, chests.json and economy.json.
 
+## The chest that comes every few games and holds Evolution Injections.
+const INJECTION_CHEST := "injection"
+
 
 static func _table(name: String) -> Dictionary:
 	return Data.table(name)
@@ -112,10 +115,11 @@ static func buy_chest(rarity: String) -> bool:
 	return true
 
 
-## Records a finished Defense run: no reputation, a chest that gets better the further the run got, and the best wave.
-static func record_defense(reached: int) -> void:
-	_write("games", int(_read("games", 0)) + 1)
-	queue_chest(Waves.chest_for(reached))
+## Records a finished Defense run and the best wave. No reputation changes hands. Destroying the enemy core gives a chest
+## that is better the faster it fell, and a run that ends with your main tower down gives one that is better the further it got.
+static func record_defense(reached: int, won := false, seconds := 0.0) -> void:
+	queue_chest(Waves.win_chest(seconds) if won else Waves.chest_for(reached))
+	_count_game()
 	Stats.record_wave(reached)
 
 
@@ -130,8 +134,26 @@ static func record_match(result: String) -> void:
 	if won:
 		add_xp(int(progression.xp.per_win))
 		add_gold(int(_table("economy").gold.per_win))
-	_write("games", int(_read("games", 0)) + 1)
 	queue_chest(roll_chest())
+	_count_game()
+
+
+## Counts a finished game. Every few games an Injection chest is waiting too.
+static func _count_game() -> void:
+	var games := int(_read("games", 0)) + 1
+	_write("games", games)
+	if games % injection_chest_every() == 0:
+		queue_chest(INJECTION_CHEST)
+
+
+static func injection_chest_every() -> int:
+	return maxi(int(_table("chests").get("injection_chest", {}).get("every_games", 10)), 1)
+
+
+## How many more finished games until the next Injection chest.
+static func games_to_injection_chest() -> int:
+	var every := injection_chest_every()
+	return every - int(_read("games", 0)) % every
 
 
 static func add_gold(amount: int) -> void:
@@ -179,6 +201,13 @@ static func open_next_chest() -> Dictionary:
 		return {}
 	var rarity: String = waiting.pop_front()
 	_write("chests_waiting", waiting)
+	# An Injection chest holds Evolution Injections and nothing else.
+	if rarity == INJECTION_CHEST:
+		var count := int(_table("chests").injection_chest.get("injections", 1))
+		for i in count:
+			add_injection()
+		Stats.record_chest(rarity, 0)
+		return {"rarity": rarity, "cards": [{"text": "Evolution Injection x%d" % count}]}
 	var legendaries := 0
 	var chests: Dictionary = _table("chests")
 	var contents: Dictionary = chests.contents[rarity]

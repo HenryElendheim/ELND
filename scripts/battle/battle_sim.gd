@@ -401,6 +401,8 @@ func _check_result() -> void:
 	if mode == "defense":
 		if not _main_standing(Unit.Team.PLAYER):
 			result = "enemy"
+		elif not units.any(func(unit: Unit) -> bool: return unit.kind == "core" and unit.alive()):
+			result = "player"
 		return
 	var player_main := _main_standing(Unit.Team.PLAYER)
 	var enemy_main := _main_standing(Unit.Team.ENEMY)
@@ -498,6 +500,8 @@ func clear() -> void:
 	_after_tick.clear()
 
 
+## Both sides get their side towers and main tower. In Defense mode the enemy instead has a single core
+## where its main tower would be, which hits harder and faster but has a little less health.
 func _place_towers() -> void:
 	var towers := Data.table("towers")
 	for kind in ["side", "main"]:
@@ -505,11 +509,17 @@ func _place_towers() -> void:
 			for team in [Unit.Team.PLAYER, Unit.Team.ENEMY]:
 				if team == Unit.Team.ENEMY and mode == "defense":
 					continue
-				var at := Vector2(spot[0], spot[1])
-				if team == Unit.Team.ENEMY:
-					at.y = float(_arena.length_tiles) - at.y
-				var tower := _make(kind, kind, "", team, at, 1)
-				tower.awake = kind != "main"
+				_place_tower(kind, team, Vector2(spot[0], spot[1]))
+	if mode == "defense":
+		for spot in towers.core.positions:
+			_place_tower("core", Unit.Team.ENEMY, Vector2(spot[0], spot[1]))
+
+
+func _place_tower(kind: String, team: Unit.Team, at: Vector2) -> void:
+	if team == Unit.Team.ENEMY:
+		at.y = float(_arena.length_tiles) - at.y
+	var tower := _make(kind, kind, "", team, at, 1)
+	tower.awake = kind != "main"
 
 
 func _make(id: String, kind: String, label: String, team: Unit.Team, at: Vector2, level: int) -> Unit:

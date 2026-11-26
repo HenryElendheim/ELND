@@ -80,6 +80,17 @@ Keep this file up to date whenever something important changes.
 - The sort and filter rows (`Ui.strip`) scroll sideways with a drag from anywhere on them (`DragScroll.attach(scroll, true)`). They join `Touch.SIDEWAYS_GROUP`, and a page swipe that starts on one is ignored, so dragging the filters never flips the menu page.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
+## Items, injections and gold
+
+- The Foundation items screen (`scenes/items.gd`, from the Battle page and the Cards page) shows gold, wild cards, injections, shards, evolutions unlocked, chests waiting and the games left until the next Injection chest.
+- Every 10 finished games (`injection_chest.every_games` in `chests.json`) an Injection chest is queued. It holds one Evolution Injection. Epic and Legendary chests no longer give evolutions or injections (decided with Henry on 27 Nov 2026).
+- Card level ups give no gold (`per_card_upgrade_times_level` is 0). Battle wins and player level ups still do.
+
+## Defense mode
+
+- The enemy has a single core (`core` in `towers.json`) where its main tower would be: 2600 health, 45 damage every 0.5 s. Waves keep coming and grow stronger until the core falls or your main tower does.
+- Destroying the core wins, with a chest that is better the faster it fell (`win_chest_by_seconds` in `defense.json`). Losing gives the wave chest as before.
+
 ## Levelling up with wild cards
 
 - `LevelUp` (`scripts/ui/level_up.gd`) celebrates a card levelling up with wild cards: pop in, a charging shake with a rising tone, then a white flash, spinning rays (the shared `Burst`), sparks, LEVEL UP slammed down, the level ticking up, health and damage counting up, and the gold earned. A tap skips to the end, another closes it. Reduced motion shows the end straight away.

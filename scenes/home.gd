@@ -5,6 +5,7 @@ const BATTLE_SCENE := "res://scenes/battle.tscn"
 const CHEST_SCENE := "res://scenes/chest.tscn"
 const SETTINGS_SCENE := "res://scenes/settings_menu.tscn"
 const ROAD_SCENE := "res://scenes/road.tscn"
+const ITEMS_SCENE := "res://scenes/items.tscn"
 
 
 func build() -> void:
@@ -21,5 +22,6 @@ func build() -> void:
 	if waiting > 0:
 		add(Ui.button("Open chests (%d)" % waiting, func() -> void: Nav.go(CHEST_SCENE)))
 	add(Ui.button("Foundation road", func() -> void: Nav.go(ROAD_SCENE)))
+	add(Ui.button("Foundation items", func() -> void: Nav.go(ITEMS_SCENE)))
 	add(Ui.spacer(40))
 	add(Ui.button("Settings", func() -> void: Nav.go(SETTINGS_SCENE)))

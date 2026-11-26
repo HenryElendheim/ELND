@@ -142,7 +142,7 @@ func _show_result() -> void:
 	var defense := sim.mode == "defense"
 	var reached := sim.waves.wave - 1 if defense else 0
 	if defense:
-		Progress.record_defense(reached)
+		Progress.record_defense(reached, sim.result == "player", sim.time)
 	else:
 		Progress.record_match(sim.result)
 	Stats.record_match(sim.mode, sim.result, sim.towers_lost(Unit.Team.ENEMY), sim.played_cards, BattleSim.starting_deck(), sim.time)
@@ -157,7 +157,10 @@ func _show_result() -> void:
 	var title := Ui.label(titles[sim.result], "TitleLabel")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var summary := "Waves survived: %d" % reached if defense else "Cores %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	var summary := "Cores %d : %d" % [sim.towers_lost(Unit.Team.ENEMY), sim.towers_lost(Unit.Team.PLAYER)]
+	if defense:
+		var clock := "%d:%02d" % [int(sim.time) / 60, int(sim.time) % 60]
+		summary = "Core destroyed in %s, through %d waves" % [clock, reached] if sim.result == "player" else "Waves survived: %d" % reached
 	var cores := Ui.label(summary)
 	cores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(cores)

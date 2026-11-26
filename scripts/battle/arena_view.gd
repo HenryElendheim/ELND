@@ -399,6 +399,8 @@ func _draw_health(top_left: Vector2, width: float, share: float, colour: Color) 
 
 ## Troops are filled with their containment class colour, and towers use a plain stone grey.
 func _fill_for(unit: Unit) -> Color:
+	if unit.kind == "core":
+		return Color("#7A2E3A")
 	if unit.is_tower():
 		return Color("#6B6B73") if unit.awake else Color("#4A4A50")
 	var card: Dictionary = Data.table("cards").cards.get(unit.id, {})

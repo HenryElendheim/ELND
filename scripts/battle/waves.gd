@@ -56,6 +56,14 @@ func _spawn_wave(sim: BattleSim, rules: Dictionary) -> void:
 		sim.spawn(id, Unit.Team.ENEMY, Vector2(x, float(rules.spawn_row_from_back) + _rng.randf_range(0.0, 2.0)), level)
 
 
+## The chest for destroying the enemy core, which is better the faster it fell.
+static func win_chest(seconds: float) -> String:
+	for step in Data.table("defense").win_chest_by_seconds:
+		if seconds <= float(step.within):
+			return step.chest
+	return "common"
+
+
 ## The chest a run earns, which gets better the further the player got.
 static func chest_for(reached: int) -> String:
 	var chest := "common"

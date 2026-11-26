@@ -32,7 +32,7 @@ func build() -> void:
 	_give("Unlock everything", _unlock_everything)
 
 	_section("Open a chest")
-	for rarity in Data.table("chests").odds:
+	for rarity in Data.table("chests").odds.keys() + [Progress.INJECTION_CHEST]:
 		add(Ui.button("%s chest" % String(rarity).capitalize(), func() -> void: _open(rarity)))
 
 	_section("Neutralize")

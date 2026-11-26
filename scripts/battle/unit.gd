@@ -121,8 +121,9 @@ func is_spell() -> bool:
 	return kind == "spell"
 
 
+## The enemy core in Defense mode counts as a tower too.
 func is_tower() -> bool:
-	return kind == "side" or kind == "main"
+	return kind == "side" or kind == "main" or kind == "core"
 
 
 ## A living troop that is not held by anything, which is what drains, heals and rages work on.

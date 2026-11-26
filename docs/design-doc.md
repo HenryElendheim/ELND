@@ -207,8 +207,7 @@ An **Evolution** is an empowered version of a card.
 - Evolved troops and buildings on the field have a **purple glow and ring**, which pulses gently unless reduced motion is on
 
 ### Unlocking evolutions
-- **Epic chests:** contain a **random evolution**
-- **Legendary chests:** contain a random evolution **plus an Evolution Injection**
+- **Injection chests:** every **10 games** you get one, holding an **Evolution Injection** (Epic and Legendary chests no longer give evolutions)
 - **Evolution Injection:** use it on **any** card that can be evolved to unlock its evolution for free
 - **Duplicate evolution:** turns into an **Injection Shard**. **3 shards = 1 Evolution Injection**
 
@@ -927,8 +926,9 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 |---|---|---|
 | Common | 5 | 1 Rare |
 | Rare | 10 | 1 Epic |
-| Epic | 20 | 1 random evolution |
-| Legendary | 40 | 1 random evolution + 1 Evolution Injection + 1 extra Legendary |
+| Epic | 20 | none |
+| Legendary | 40 | 1 extra Legendary |
+| **Injection** | 0 | 1 Evolution Injection. You get one every **10 games**, on top of the normal chest |
 
 **Chests scale with your arena:** the card counts above are for **Arena 1**. Each new arena gives more cards from the same chest.
 - Default formula: cards × **(1 + 0.25 × (arena − 1))**, rounded
@@ -952,7 +952,6 @@ Goal: **really satisfying and addicting**, escalating hard with rarity.
 ### 7.2 Gold & Shop
 - **Gold is earned from:**
   - **50** per win
-  - **20 × new level** per card upgrade
   - **100** per player level
 - **Gold is only used to buy chests** in the **Shop** (never for upgrades)
 - Shop chests use the same contents table as above:
@@ -973,7 +972,7 @@ Goal: **really satisfying and addicting**, escalating hard with rarity.
 | Mode | Description |
 |---|---|
 | **Battle** | Classic 1v1 vs a bot. Earns reputation + chests. |
-| **Defense (PvE)** | Tower defense: waves of anomalies attack your towers, you defend with your deck. A chest after every run; the further you get, the better the chest tier. Best wave saved as a record. |
+| **Defense (PvE)** | Waves of anomalies attack your towers while your troops push to destroy the enemy's single **core** (stronger and faster than a main tower, slightly less health). Waves grow stronger until the core falls or you lose your main tower. Destroying the core wins: the faster, the better the chest. Losing gives a chest by waves survived. Best wave saved as a record. |
 | **Challenges** *(later)* | Special rule sets, e.g. "spells only", boss fights, survival. |
 
 All modes use the **same cards and unit system**.

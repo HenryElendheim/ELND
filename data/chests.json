@@ -22,15 +22,11 @@
 		},
 		"epic": {
 			"cards": 20,
-			"guaranteed": {
-				"evolution": 1
-			}
+			"guaranteed": {}
 		},
 		"legendary": {
 			"cards": 40,
 			"guaranteed": {
-				"evolution": 1,
-				"injection": 1,
 				"legendary_card": 1
 			}
 		}
@@ -66,12 +62,18 @@
 		"common": "#9AA4B1",
 		"rare": "#E59A3C",
 		"epic": "#9B59D6",
-		"legendary": "#F2C14E"
+		"legendary": "#F2C14E",
+		"injection": "#B46CFF"
 	},
 	"build_up_seconds": {
 		"common": 0.6,
 		"rare": 1.0,
 		"epic": 1.6,
-		"legendary": 2.6
+		"legendary": 2.6,
+		"injection": 1.4
+	},
+	"injection_chest": {
+		"every_games": 10,
+		"injections": 1
 	}
 }
