@@ -1,6 +1,6 @@
 extends Screen
 ## Admin Mode's progression and balance tools: give anything, open any chest, unlock everything,
-## neutralize cards, swap whole balance setups, and reset progress. Only reachable with Admin Mode on.
+## neutralize cards, edit any card or tower, swap whole balance setups, and reset progress. Only reachable with Admin Mode on.
 
 const SETTINGS_SCENE := "res://scenes/settings_menu.tscn"
 const CHEST_SCENE := "res://scenes/chest.tscn"
@@ -47,6 +47,9 @@ func build() -> void:
 	add(_show_button)
 	add(_found)
 	add(_results)
+
+	_section("Edit cards")
+	add(CardEditor.new())
 
 	_section("Balance")
 	add(Ui.button("Export balance", func() -> void: Backup.export_balance(Nav.toast)))

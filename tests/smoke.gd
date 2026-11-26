@@ -25,6 +25,7 @@ func _ready() -> void:
 	broken += _check_new_cards()
 	broken += _check_decks()
 	broken += _check_items()
+	broken += _check_editor()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -396,6 +397,25 @@ func _check_items() -> int:
 	var no_card_gold := int(Data.table("economy").gold.per_card_upgrade_times_level) == 0
 	print("Items checked")
 	return _expect(got_injection and no_card_gold, "the Injection chest or card level up gold is wrong")
+
+
+## The Admin card editor changes a card's numbers and type, a tower's numbers, and puts them all back.
+func _check_editor() -> int:
+	var editor := CardEditor.new()
+	add_child(editor)
+	editor.call("_pick", "cards/hobb")
+	editor.call("_change", "health", 333.0)
+	editor.call("_change", "movement", "flying")
+	var changed: bool = int(Data.table("cards").cards.hobb.health) == 333 and Data.table("cards").cards.hobb.movement == "flying"
+	editor.call("_reset", "")
+	editor.call("_pick", "towers/side")
+	editor.call("_change", "damage", 99.0)
+	changed = changed and int(Data.table("towers").side.damage) == 99
+	editor.call("_reset", "")
+	var restored: bool = int(Data.table("cards").cards.hobb.health) == 250 and Data.table("cards").cards.hobb.movement == "ground" and int(Data.table("towers").side.damage) == 15
+	editor.queue_free()
+	print("Card editor checked")
+	return _expect(changed and restored, "the card editor did not change or reset values")
 
 
 ## A battle with no bot and harmless towers, used to test one rule at a time without anything else getting in the way.

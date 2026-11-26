@@ -1029,7 +1029,7 @@ Saved locally. Ideas:
 - **Unlock:** tap the version number in Settings 7 times
 
 **Card & balance editor**
-- Edit any stat of any card, tower or evolution (health, damage, speed, range, cost, ability values, cooldowns)
+- Edit any stat of any card, tower or evolution (health, damage, speed, range, cost, ability values, cooldowns), plus its type, movement, attack and targets. Search for a card or show all, tap it, and changed values show their default with a reset
 - Changes apply **live**, even mid-match
 - Save to the data files, reset a card to defaults, or **export/import** a whole balance setup
 - **Neutralize** a card (pulls it from bots and decks). Find cards with a search field by name or by category (troop, building, spell, ground, flying, melee, ranged, rarity, class) and neutralize or restore everything shown at once

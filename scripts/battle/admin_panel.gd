@@ -9,7 +9,6 @@ const OVERLAYS := [["Hitboxes", "show_hitboxes"], ["Attack ranges", "show_ranges
 
 var _battle: Node
 var _view: ArenaView
-var _fields := VBoxContainer.new()
 
 
 func _init(battle: Node, view: ArenaView) -> void:
@@ -37,12 +36,12 @@ func _ready() -> void:
 
 	column.add_child(Ui.choice("Speed", SPEEDS, _battle.get("speed"), func(value: float) -> void: _battle.set("speed", value)))
 
-	# The spawn tool drops any troop anywhere for free, on either side.
+	# The spawn tool drops any card anywhere for free, on either side, locked cards included.
 	var troops := [["", "Off"]]
-	var cards: Dictionary = Data.table("cards").cards
-	for id in BattleSim.starting_deck():
+	for id in CardSearch.find("", ""):
 		troops.append([id, CardTile.short_name(id)])
-	column.add_child(Ui.choice("Spawn tool", troops, "", func(id: String) -> void: _battle.set("spawn_card", id), 4))
+	column.add_child(Ui.label("Spawn tool", "MutedLabel"))
+	column.add_child(Ui.strip(troops, "", func(id: String) -> void: _battle.set("spawn_card", id)))
 	column.add_child(Ui.choice("Spawn for", SIDES, Unit.Team.PLAYER, func(team: int) -> void: _battle.set("spawn_team", team)))
 	var sim: BattleSim = _battle.get("sim")
 	column.add_child(Ui.toggle("Bot plays", true, func(on: bool) -> void: sim.bot.enabled = on))
@@ -55,57 +54,11 @@ func _ready() -> void:
 	column.add_child(Ui.button("Clear troops", Callable(_battle, "clear_troops")))
 	column.add_child(Ui.button("Give an Evolution Injection", _give_injection))
 
-	var subjects := [["towers/side", "Side tower"], ["towers/main", "Main tower"]]
-	for id in cards:
-		subjects.append(["cards/" + id, CardTile.short_name(id)])
 	column.add_child(Ui.label("Edits save by themselves and stay in normal games too, until you reset them.", "MutedLabel"))
 	column.add_child(Ui.button("Export balance", func() -> void: Backup.export_balance(Nav.toast)))
-	column.add_child(Ui.choice("Edit stats", subjects, subjects[0][0], _show_fields))
-	column.add_child(_fields)
-	_show_fields(subjects[0][0])
-
-
-## Lists every number of one card or tower as an editable box. A subject looks like "cards/hobb" or "towers/side".
-func _show_fields(subject: String) -> void:
-	for child in _fields.get_children():
-		child.queue_free()
-	var parts := subject.split("/")
-	var file := parts[0]
-	var path := [parts[1]] if file == "towers" else ["cards", parts[1]]
-	var stats: Dictionary = Data.table(file)[path[0]] if file == "towers" else Data.table(file).cards[parts[1]]
-	_number_fields(stats, func(key: String, v: float) -> void: Data.set_override(file, path + [key], v))
-	# Each ability gets its own block of numbers. Abilities are a list in cards.json, so a change stores
-	# the card's whole ability list with that one number changed, and Reset to default puts it all back.
-	var abilities: Array = stats.get("abilities", [])
-	for i in abilities.size():
-		_fields.add_child(Ui.label(String(abilities[i].id).capitalize(), "HeadingLabel"))
-		_number_fields(abilities[i], func(key: String, v: float) -> void: _set_ability(path, abilities, i, key, v))
-	if stats.has("evolution"):
-		_fields.add_child(Ui.label("Evolution: %s" % stats.evolution.get("name", ""), "HeadingLabel"))
-		_number_fields(stats.evolution, func(key: String, v: float) -> void: Data.set_override(file, path + ["evolution", key], v))
-	_fields.add_child(Ui.button("Reset to default", func() -> void: _reset(file, path, subject)))
-
-
-## Adds an editable box for every number in a dictionary. The change callback gets the key and the new value.
-func _number_fields(values: Dictionary, on_change: Callable) -> void:
-	for key in values:
-		var value: Variant = values[key]
-		if value is float or value is int:
-			_fields.add_child(Ui.number(String(key).capitalize(), value, func(v: float) -> void: on_change.call(key, v)))
-
-
-func _set_ability(path: Array, abilities: Array, index: int, key: String, value: float) -> void:
-	var changed := abilities.duplicate(true)
-	changed[index][key] = value
-	abilities[index][key] = value
-	Data.set_override("cards", path + ["abilities"], changed)
+	column.add_child(CardEditor.new())
 
 
 func _give_injection() -> void:
 	Progress.add_injection()
 	Nav.toast("Injection added")
-
-
-func _reset(file: String, path: Array, subject: String) -> void:
-	Data.reset_override(file, path)
-	_show_fields(subject)

@@ -82,6 +82,12 @@ Keep this file up to date whenever something important changes.
 - `TapGuard` (`scripts/ui/tap_guard.gd`) makes a button react only to a clean tap, with an optional hold. Sideways rows (`Ui.strip`) and card tiles use it, so swiping over them never picks anything.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`, built on `TapGuard`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
+## Admin card editor
+
+- `CardEditor` (`scripts/ui/card_editor.gd`) is shared by the Admin screen ("Edit cards") and the in-battle Admin panel. Search or Show all, tap a card or tower (side, main, Defense core), and edit its numbers (cost, health, damage, seconds per hit, range, group size, unit size, lifetime, area, unlock place), its type, movement, attack, targets and speed, and every ability and evolution number.
+- Edits go through `Data.set_override`, so they save straight away and reach running battles. A changed value shows its default and has its own reset, and there are resets for abilities, the evolution and the whole card.
+- The in-battle spawn tool lists every collectable card in a sideways row, locked ones included.
+
 ## Items, injections and gold
 
 - The Foundation items screen (`scenes/items.gd`, from the Battle page and the Cards page) shows gold, wild cards, injections, shards, evolutions unlocked, chests waiting and the games left until the next Injection chest.
