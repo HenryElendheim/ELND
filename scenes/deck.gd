@@ -1,5 +1,5 @@
 extends Screen
-## The Cards screen. Your deck sits at the top as two rows of four tiles, each with its level and copies bar,
+## The Cards screen. Your deck sits at the top as two rows of four tiles, each with its level above it and its copies bar below,
 ## then the average Ephrocity cost and tower level, then the rest of your collection.
 ## Tap a card to open its details, with its stats, how it works and its Codex entry,
 ## and the buttons to add it, swap it in, take it out, switch its evolution or spend wild cards.
