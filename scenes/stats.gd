@@ -20,7 +20,6 @@ func build() -> void:
 		_build_overview(s)
 	add(Ui.spacer(16))
 	add(Ui.button("Simple view" if _advanced else "Advanced view", _switch))
-	add_back_button()
 
 
 func _switch() -> void:
@@ -31,6 +30,7 @@ func _switch() -> void:
 	for child in content.get_children():
 		child.queue_free()
 	build()
+	refresh_back()
 
 
 ## Six big numbers in two columns, then the favourite card and the total play time.
@@ -208,6 +208,14 @@ static func _play_time(s: Dictionary) -> String:
 	return "%d h %d min" % [minutes / 60, minutes % 60] if minutes >= 60 else "%d min" % minutes
 
 
+## The advanced view is a deeper view, so it gets the Back button in the top left, which returns to the simple view.
+func wants_back() -> bool:
+	return super() or _advanced
+
+
 func go_back() -> bool:
+	if _advanced:
+		_switch()
+		return true
 	Nav.go(MENU_SCENE)
 	return true

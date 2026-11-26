@@ -39,7 +39,6 @@ func build() -> void:
 			tile.tapped.connect(func() -> void: _open(id))
 			grid.add_child(tile)
 		add(grid)
-	add_back_button()
 	if marker != null:
 		_scroll_to.call_deferred(marker)
 

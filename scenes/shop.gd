@@ -17,7 +17,6 @@ func build() -> void:
 	if waiting > 0:
 		add(Ui.spacer(24))
 		add(Ui.button("Open chests (%d)" % waiting, func() -> void: Nav.go(CHEST_SCENE)))
-	add_back_button()
 	_show_gold()
 
 

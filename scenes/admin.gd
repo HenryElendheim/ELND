@@ -58,8 +58,6 @@ func build() -> void:
 
 	_section("Progress")
 	add(Ui.button("Reset progress", _reset_progress))
-	add(Ui.spacer(24))
-	add(Ui.button("Back", go_back))
 
 
 func _section(title: String) -> void:

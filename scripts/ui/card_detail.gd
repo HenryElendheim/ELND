@@ -42,6 +42,10 @@ func _ready() -> void:
 	cover.add_child(margin)
 	var column := VBoxContainer.new()
 	margin.add_child(column)
+	var back := Ui.button("Back", close)
+	back.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	back.custom_minimum_size = Screen.BACK_SIZE
+	column.add_child(back)
 
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 32)
@@ -75,9 +79,6 @@ func _ready() -> void:
 		var button := Ui.button(action[0], func() -> void: _run(action[1]))
 		button.custom_minimum_size.y = 130
 		buttons.add_child(button)
-	var close_button := Ui.button("Close", close)
-	close_button.custom_minimum_size.y = 130
-	buttons.add_child(close_button)
 	column.add_child(buttons)
 
 

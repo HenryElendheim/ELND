@@ -46,7 +46,7 @@ Keep this file up to date whenever something important changes.
 - `scripts/ui/`:
   - `theme_builder.gd` builds the whole look from a small palette.
   - `ui.gd` holds shared widgets (buttons with a press squish, toggles, choices, sliders, number fields, the scrolling strip).
-  - `screen.gd` is the base for menu screens.
+  - `screen.gd` is the base for menu screens. Screens opened on top of the main menu (Settings, Admin, Foundation road, Foundation items) get a Back button fixed in the top left that never scrolls away (`wants_back`, `refresh_back`). A main menu page can ask for it while it shows a deeper view, as the advanced stats do. Card details have the same Back in the top left.
   - `card_tile.gd` draws a card with its name fitted to the tile.
   - `card_detail.gd` is the card Info and Codex view.
   - `pager.gd` is the swipeable pages with tabs.

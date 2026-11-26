@@ -47,7 +47,6 @@ func build() -> void:
 	if Settings.get_value("admin_mode"):
 		add(Ui.button("Admin tools", func() -> void: Nav.go("res://scenes/admin.tscn")))
 	add(Ui.spacer(24))
-	add(Ui.button("Back", go_back))
 	add(Ui.spacer(24))
 	var version: Label = add(Ui.label("v%s" % ProjectSettings.get_setting("application/config/version"), "MutedLabel"))
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

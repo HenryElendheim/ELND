@@ -45,7 +45,6 @@ func build() -> void:
 		add(Ui.button("Open chests", func() -> void: Nav.go(CHEST_SCENE)))
 	var next := Progress.games_to_injection_chest()
 	_row(Color(colours.injection), "10", "Next Injection chest", "in %d game%s" % [next, "" if next == 1 else "s"], "Every %d games you finish, an Injection chest with an Evolution Injection is waiting." % Progress.injection_chest_every())
-	add_back_button()
 
 
 ## One item: its badge, its name and count, and a line about what it does.

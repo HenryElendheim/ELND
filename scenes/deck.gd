@@ -87,7 +87,6 @@ func build() -> void:
 			tile.tapped.connect(func() -> void: _peek(id))
 			grid.add_child(tile)
 		add(grid)
-	add_back_button()
 
 
 ## The filter buttons: every card category, apart from neutralized cards, which never show here.
