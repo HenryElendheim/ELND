@@ -80,6 +80,14 @@ func _layout() -> void:
 	_strip.position = Vector2(-page * size.x + _drag, 0)
 
 
+## True when a press lands on a row inside these pages that scrolls sideways by itself, such as the collection filters.
+func _on_sideways_row(point: Vector2) -> bool:
+	for row in get_tree().get_nodes_in_group(Touch.SIDEWAYS_GROUP):
+		if row is Control and is_ancestor_of(row) and row.is_visible_in_tree() and row.get_global_rect().has_point(point):
+			return true
+	return false
+
+
 ## Watches every touch before the pages see it. Once a drag is clearly sideways, it becomes a swipe and the pages stop getting it.
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree():
@@ -89,7 +97,7 @@ func _input(event: InputEvent) -> void:
 	if Touch.cancelling or Touch.holding:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed and get_global_rect().has_point(event.position):
+		if event.pressed and get_global_rect().has_point(event.position) and not _on_sideways_row(event.position):
 			_press_at = event.position
 			_swiping = false
 		elif not event.pressed and _press_at != null:

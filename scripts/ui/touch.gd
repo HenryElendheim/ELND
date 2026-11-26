@@ -3,6 +3,9 @@ class_name Touch
 
 ## True while a pretend release is being sent, which every gesture handler ignores.
 static var cancelling := false
+## Rows that scroll sideways join this group. A page swipe that starts on one of them is left to the row.
+const SIDEWAYS_GROUP := "sideways_scroll"
+
 ## True while a card is held and being moved, which stops lists scrolling and pages swiping under the finger.
 static var holding := false
 

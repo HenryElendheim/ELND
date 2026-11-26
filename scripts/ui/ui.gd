@@ -58,10 +58,12 @@ static func choice(text: String, options: Array, current: Variant, on_change: Ca
 
 
 ## The same kind of pick-one buttons in a single row that scrolls sideways, which suits long lists on small screens.
+## A sideways drag that starts anywhere on the row, buttons included, scrolls it and never flips the page.
 static func strip(options: Array, current: Variant, on_change: Callable) -> Control:
 	var scroll := ScrollContainer.new()
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	DragScroll.attach(scroll, true)
 	var row := HBoxContainer.new()
 	scroll.add_child(row)
 	_fill_choices(row, options, current, on_change, false)
