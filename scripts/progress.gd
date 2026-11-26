@@ -16,7 +16,7 @@ static func reputation() -> int:
 
 ## Arena 1 starts at zero reputation, and a new arena opens every few hundred reputation.
 static func arena() -> int:
-	return 1 + reputation() / int(_table("progression").reputation.per_arena)
+	return arena_at(reputation())
 
 
 ## The name of a Lab or Site on the reputation road, such as "Site 49". Past the named ones they are numbered Sites.
@@ -29,6 +29,21 @@ static func arena_name(index: int) -> String:
 static func arena_count() -> int:
 	var names: Array = _table("progression").get("arena_names", [])
 	return maxi(names.size(), 1 + int(_table("progression").road_top_reputation) / int(_table("progression").reputation.per_arena))
+
+
+## The Lab or Site a reputation reaches. Arena 1 is reached at zero.
+static func arena_at(points: int) -> int:
+	return 1 + maxi(points, 0) / int(_table("progression").reputation.per_arena)
+
+
+## How far a reputation is between the place it reaches and the next one, from 0 to 1.
+## At the last place it stays full.
+static func share_to_next(points: int) -> float:
+	var place := arena_at(points)
+	if place >= arena_count():
+		return 1.0
+	var start := reputation_for(place)
+	return clampf(float(points - start) / float(reputation_for(place + 1) - start), 0.0, 1.0)
 
 
 ## The reputation needed to reach a Lab or Site.

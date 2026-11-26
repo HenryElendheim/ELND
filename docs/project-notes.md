@@ -82,6 +82,15 @@ Keep this file up to date whenever something important changes.
 - `TapGuard` (`scripts/ui/tap_guard.gd`) makes a button react only to a clean tap, with an optional hold. Sideways rows (`Ui.strip`) and card tiles use it, so swiping over them never picks anything.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`, built on `TapGuard`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
+## Reputation and celebrations
+
+- `ReputationBar` shows how far you are from your Lab or Site to the next one. It sits on the Battle page, on your place on the Foundation road, and in the battle result, where it plays the change: the gain pops up and the bar fills with a ticking count. Crossing into a new place flashes the bar and sends `place_reached`.
+- `PlaceReached` celebrates a new Lab or Site, with a flash, rays, the name slammed down and the newly unlocked cards popping in.
+- `Celebration` is the shared base for full screen celebrations (`LevelUp` and `PlaceReached`): dark cover, title, rays behind a centre piece, lines, a white flash, and a tap that skips to the end and then closes.
+- `Progress.arena_at` and `share_to_next` turn a reputation into a place and how far it is to the next.
+- The Devil's Smile charms at most two enemy ranged troops at a time, the closest with their eyes open (`max_charmed`), using `Unit.charmed_by`.
+- Every member of a swarm shows its level.
+
 ## Admin card editor
 
 - `CardEditor` (`scripts/ui/card_editor.gd`) is shared by the Admin screen ("Edit cards") and the in-battle Admin panel. Search or Show all, tap a card or tower (side, main, Defense core), and edit its numbers (cost, health, damage, seconds per hit, range, group size, unit size, lifetime, area, unlock place), its type, movement, attack, targets and speed, and every ability and evolution number.

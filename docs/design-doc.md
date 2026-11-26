@@ -528,7 +528,7 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 | Unlock | Arena 3 |
 
 **Passive: Smile (the urge to say hi)**
-- Enemy ranged troops don't shoot it from a distance: they walk up to it, losing their range advantage
+- The **two closest** enemy ranged troops don't shoot it from a distance: they walk up to it, losing their range advantage. Others shoot as normal.
 
 **Ability: Happy Face**
 - Drains one enemy troop at a time within ~1.5 tiles: ~20 damage per second, and heals itself by the same amount

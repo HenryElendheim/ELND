@@ -14,7 +14,8 @@ func build() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var stats: Label = add(Ui.label("%s   %d reputation\nLevel %d   %d gold" % [Progress.arena_name(Progress.arena()), Progress.reputation(), Progress.player_level(), Progress.gold()]))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	add(Ui.spacer(60))
+	add(ReputationBar.new(Progress.reputation()))
+	add(Ui.spacer(40))
 	var battle: Button = add(Ui.button("Battle", func() -> void: Nav.go(BATTLE_SCENE, {"mode": "battle"})))
 	battle.custom_minimum_size.y = 200
 	add(Ui.button("Defense", func() -> void: Nav.go(BATTLE_SCENE, {"mode": "defense"})))

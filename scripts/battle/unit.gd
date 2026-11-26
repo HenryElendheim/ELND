@@ -100,8 +100,8 @@ var taunt_radius := 0.0
 var goal_override: Variant = null
 ## True while the unit blinks, as The Individuals do. Together with stuns, this is when its eyes are closed.
 var blinking := false
-## True while The Devil In The Forest is charming the troops that see it.
-var charming := false
+## The Devil In The Forest charming this troop right now, which makes it walk up close instead of shooting from afar.
+var charmed_by: Unit = null
 ## True while The Danger Zone enrages the unit, and while The Spiker's field slows it, so the screen can show it.
 var enraged := false
 var slowed := false
@@ -145,7 +145,7 @@ func reset_effects() -> void:
 	taunt_radius = 0.0
 	goal_override = null
 	blinking = false
-	charming = false
+	charmed_by = null
 	enraged = false
 	slowed = false
 

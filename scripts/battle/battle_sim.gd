@@ -492,6 +492,7 @@ func clear() -> void:
 		unit.target = null
 		unit.last_attacker = null
 		unit.carrier = null
+		unit.charmed_by = null
 		unit.approach_goal = null
 		unit.abilities.clear()
 		unit.evolution = null
@@ -778,12 +779,12 @@ func _gap(a: Unit, b: Unit) -> float:
 	return a.pos.distance_to(b.pos) - a.radius - b.radius
 
 
-## A ranged troop with its eyes open walks right up to a charming unit instead of shooting from afar.
+## A ranged troop charmed by a unit walks right up to it instead of shooting from afar.
 func _in_range(unit: Unit, other: Unit) -> bool:
 	if other == null:
 		return false
 	var reach := unit.attack_range
-	if other.charming and unit.kind == "troop" and unit.ranged and not unit.eyes_closed():
+	if unit.charmed_by == other:
 		reach = minf(reach, float(_battle.melee_range_tiles))
 	return _gap(unit, other) <= reach
 

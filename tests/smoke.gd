@@ -22,7 +22,7 @@ func _ready() -> void:
 		broken += 1
 	broken += _check_placement()
 	broken += _check_card_search()
-	broken += _check_new_cards()
+	broken += await _check_new_cards()
 	broken += _check_decks()
 	broken += _check_items()
 	broken += _check_editor()
@@ -354,6 +354,28 @@ func _check_new_cards() -> int:
 	_run(sim, 0.1)
 	var halves := sim.units.filter(func(u: Unit) -> bool: return u.id == "splitter_half").size()
 	broken += _expect(halves == 2, "The Splitter split into %d halves" % halves)
+
+	# The Devil's Smile charms only the two closest ranged troops.
+	sim = _quiet_sim()
+	sim.spawn("devil", player, Vector2(9, 22))
+	for x in [7.0, 9.0, 11.0]:
+		sim.spawn("spacefarer", enemy, Vector2(x, 19))
+	_run(sim, 1.2)
+	var charmed := sim.units.filter(func(u: Unit) -> bool: return u.charmed_by != null).size()
+	broken += _expect(charmed == 2, "The Devil charmed %d troops instead of 2" % charmed)
+
+	# Reputation knows the place it reaches and how far it is to the next one.
+	var per := Progress.reputation_for(2)
+	broken += _expect(Progress.arena_at(per - 1) == 1 and Progress.arena_at(per) == 2 and is_equal_approx(Progress.share_to_next(per / 2), 0.5), "reputation places are worked out wrong")
+	var cheer := PlaceReached.new(2)
+	add_child(cheer)
+	var bar := ReputationBar.new(per - 10)
+	add_child(bar)
+	bar.play_to(per + 10)
+	for i in 5:
+		await get_tree().process_frame
+	cheer.queue_free()
+	bar.queue_free()
 
 	# A troop placed right behind its own side tower walks around it instead of getting stuck.
 	sim = _quiet_sim()

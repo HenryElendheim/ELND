@@ -388,7 +388,9 @@
 			"targets": "ground",
 			"abilities": [
 				{
-					"id": "smile"
+					"id": "smile",
+					"max_charmed": 2,
+					"sight": 6.0
 				},
 				{
 					"id": "happy_face",
@@ -405,7 +407,7 @@
 				"how_it_works": "Deeper Into the Woods: its button switches the drain to a new troop straight away and drains three times as fast for 3 seconds."
 			},
 			"short_name": "Devil",
-			"how_it_works": "Smile: enemy ranged troops walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within 1.5 tiles at a time, 20 a second, and heals itself by the same amount. The troop it drains deals half damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
+			"how_it_works": "Smile: the two closest enemy ranged troops walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within 1.5 tiles at a time, 20 a second, and heals itself by the same amount. The troop it drains deals half damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
 		},
 		"pardoned": {
 			"number": 13,

@@ -141,6 +141,7 @@ func _show_result() -> void:
 	_result_shown = true
 	var defense := sim.mode == "defense"
 	var reached := sim.waves.wave - 1 if defense else 0
+	var reputation_before := Progress.reputation()
 	if defense:
 		Progress.record_defense(reached, sim.result == "player", sim.time)
 	else:
@@ -164,6 +165,12 @@ func _show_result() -> void:
 	var cores := Ui.label(summary)
 	cores.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(cores)
+	# The reputation bar plays the change, and reaching a new Lab or Site gets its own celebration.
+	if Progress.reputation() != reputation_before:
+		var bar := ReputationBar.new(reputation_before)
+		bar.place_reached.connect(func(place: int) -> void: add_child(PlaceReached.new(place)))
+		column.add_child(bar)
+		bar.play_to.call_deferred(Progress.reputation())
 	column.add_child(Ui.button("Open chest", func() -> void: Nav.go(CHEST_SCENE)))
 	column.add_child(Ui.button("Menu", func() -> void: go_back()))
 	add_child(panel)

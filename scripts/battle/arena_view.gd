@@ -38,8 +38,7 @@ const SHAKE_TIME := 0.35
 
 var _tile := 1.0
 var _origin := Vector2.ZERO
-## Groups whose level has already been drawn this frame, so a swarm shows it once.
-var _level_shown := {}
+
 var _class_colours := {}
 
 
@@ -100,7 +99,6 @@ func _draw() -> void:
 	_tile = floorf(minf(size.x / width, size.y / length))
 	_origin = ((size - Vector2(width, length) * _tile) / 2.0).floor()
 	_class_colours = Data.table("cards").classes
-	_level_shown.clear()
 
 	for y in int(length):
 		for x in int(width):
@@ -180,15 +178,10 @@ func _draw_unit(unit: Unit) -> void:
 	if unit.shield > 0.0:
 		top = r + 26
 		_draw_health(at - Vector2(r, top), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
-	# Towers all share group zero, so they are told apart by the unit itself.
-	var key: Variant = unit.group if unit.group > 0 else unit
-	if not _level_shown.has(key):
-		_level_shown[key] = true
-		_draw_level(unit, at - Vector2(0, top + 4), team_colour)
+	_draw_level(unit, at - Vector2(0, top + 4), team_colour)
 
 
 ## The level sits just above the health bar in small text with a dark outline. Towers show theirs a little bigger.
-## A swarm shows its level once, over the first member drawn, which keeps a crowd readable.
 func _draw_level(unit: Unit, bottom: Vector2, team_colour: Color) -> void:
 	var font := ThemeDB.fallback_font
 	var font_size := maxi(int(_tile * (0.55 if unit.is_tower() else 0.4)), 12)

@@ -2,6 +2,7 @@ extends Screen
 ## The Foundation road: every Lab and Site, with the last one at the top and the first at the bottom, with the reputation each one needs
 ## and the anomalies that turn up in chests from there on. Your place on the road is marked, and the screen opens on it.
 ## Cards from places you have not reached yet are drawn in grey. Tap any card to see what it does.
+## Your place has a bar showing how close you are to the next one.
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const COLUMNS := 4
@@ -23,6 +24,8 @@ func build() -> void:
 			marker = heading
 		add(heading)
 		add(Ui.label(_status(place, here), "MutedLabel"))
+		if place == here:
+			add(ReputationBar.new(Progress.reputation()))
 		var ids: Array = by_place.get(place, [])
 		if ids.is_empty():
 			add(Ui.label("No new anomalies here yet.", "MutedLabel"))
