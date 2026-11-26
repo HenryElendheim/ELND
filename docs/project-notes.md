@@ -79,6 +79,12 @@ Keep this file up to date whenever something important changes.
 - The collection and the locked cards can be sorted (Ephrocity, rarity, type, name, number) and filtered by the card search categories. The choice is remembered in Settings.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
+## Chest opening
+
+- Cards come out as real tiles over a burst of light in their rarity colour: common pops, rare flips in, epic bursts purple, and legendary gets a white flash, spinning rays, a "LEGENDARY" title, a slam and a long buzz. New cards get the codex stamp slammed on.
+- Skip works on every chest. Skipping, or reaching the last card, shows a summary of everything the chest gave, rarest first, with counts, NEW or level, and extras.
+- Placeholder sounds `card`, `card_rare` and `legendary` are in `sfx.gd`.
+
 ## Troop movement
 
 - Close to its goal (within `steering.approach_tiles` of attack range), a troop heads for a free spot on a ring around the goal at attacking distance, trying further round each way until one is open. Attackers spread around towers and big troops instead of queuing.

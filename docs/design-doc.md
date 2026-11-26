@@ -853,7 +853,8 @@ Goal: **really satisfying and addicting**, escalating hard with rarity.
 - **Card reveal:** cards come out one at a time with a tap; Rare+ cards flip with a short pause first
 - **New card:** an "**NEW ANOMALY ACQUIRED**" codex stamp slams onto the card, and it unlocks in the in-game Codex
 - **Haptics** (phone vibration) on every big moment
-- **Skip button** for Common/Rare chests so they never get annoying
+- **Skip button** on every chest, which jumps to a summary of every card it gave (the summary also shows after the last card)
+- **Card animations:** each card pops in over a burst in its rarity colour. Rare cards flip, Epic cards burst purple, and a Legendary card gets a white flash, spinning golden rays and a slam
 
 ### 7.2 Gold & Shop
 - **Gold is earned from:**
