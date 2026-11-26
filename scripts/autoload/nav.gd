@@ -17,9 +17,16 @@ var _banner_tween: Tween
 const BANNER_TIME := 1.2
 
 
+func _guard_button(node: Node) -> void:
+	if node is BaseButton and not node.has_meta(TapGuard.MARK):
+		TapGuard.attach(node)
+
+
 func _ready() -> void:
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Every button in the app only reacts to a clean tap. Each one gets a TapGuard the moment it appears.
+	get_tree().node_added.connect(_guard_button)
 	_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_holder)

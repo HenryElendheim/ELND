@@ -26,6 +26,7 @@ func _ready() -> void:
 	broken += _check_decks()
 	broken += _check_items()
 	broken += _check_editor()
+	broken += _check_taps()
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
@@ -438,6 +439,36 @@ func _check_editor() -> int:
 	editor.queue_free()
 	print("Card editor checked")
 	return _expect(changed and restored, "the card editor did not change or reset values")
+
+
+## Every button only reacts to a clean tap. Sliding off before letting go does nothing.
+func _check_taps() -> int:
+	var button := Button.new()
+	button.size = Vector2(200, 100)
+	var presses := [0]
+	button.pressed.connect(func() -> void: presses[0] += 1)
+	add_child(button)
+	button.gui_input.emit(_touch(true, Vector2(20, 20)))
+	button.gui_input.emit(_touch(false, Vector2(22, 20)))
+	var tapped: bool = presses[0] == 1
+	button.gui_input.emit(_touch(true, Vector2(20, 20)))
+	var away := InputEventMouseMotion.new()
+	away.position = Vector2(600, 20)
+	away.button_mask = MOUSE_BUTTON_MASK_LEFT
+	button.gui_input.emit(away)
+	button.gui_input.emit(_touch(false, Vector2(600, 20)))
+	var ignored: bool = presses[0] == 1
+	button.queue_free()
+	print("Taps checked")
+	return _expect(button.has_meta(TapGuard.MARK) and tapped and ignored, "a button reacted to a slide off, or not to a tap")
+
+
+func _touch(down: bool, at: Vector2) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = down
+	event.position = at
+	return event
 
 
 ## A battle with no bot and harmless towers, used to test one rule at a time without anything else getting in the way.
