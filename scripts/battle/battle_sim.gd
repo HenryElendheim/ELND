@@ -475,6 +475,7 @@ func clear() -> void:
 		unit.target = null
 		unit.last_attacker = null
 		unit.carrier = null
+		unit.approach_goal = null
 		unit.abilities.clear()
 		unit.evolution = null
 	units.clear()
@@ -563,7 +564,12 @@ func _update(unit: Unit) -> void:
 		if goal == unit.target and unit.can_attack and unit.cooldown <= 0.0 and unit.damage > 0.0:
 			_hit(unit, goal)
 	elif unit.speed > 0.0:
-		unit.pos = _steer(unit, _waypoint(unit, _approach_spot(unit, goal)), step_length, goal)
+		if unit.approach_goal != goal or time >= unit.approach_until:
+			unit.approach_goal = goal
+			unit.approach_spot = _approach_spot(unit, goal)
+			unit.approach_until = time + float(_battle.steering.rethink_seconds)
+		var aim: Vector2 = goal.pos if unit.approach_spot == null else unit.approach_spot
+		unit.pos = _steer(unit, _waypoint(unit, aim), step_length, goal)
 
 
 ## The main tower sleeps until it takes damage or one of its side towers falls.
@@ -760,12 +766,13 @@ func _in_range(unit: Unit, other: Unit) -> bool:
 ## Where a unit should head to attack its goal. Far away, that is simply the goal. Close by, it is a free spot
 ## on a ring around the goal at attacking distance, starting from the side the unit comes from and trying further round
 ## each way until one is open. That way attackers spread around a tower or a big troop instead of queuing behind each other.
-func _approach_spot(unit: Unit, goal: Unit) -> Vector2:
+## Null means there is no need for a spot, so the unit heads for the goal itself.
+func _approach_spot(unit: Unit, goal: Unit) -> Variant:
 	if not unit.flying and not same_river_side(unit.pos, goal.pos):
-		return goal.pos
+		return null
 	var reach := unit.attack_range
 	if _gap(unit, goal) > reach + float(_battle.steering.approach_tiles):
-		return goal.pos
+		return null
 	var standoff := goal.radius + unit.radius + reach * 0.8
 	var base := (unit.pos - goal.pos).angle() if unit.pos != goal.pos else PI / 2.0
 	var turn := float(_battle.steering.approach_turn)
@@ -775,7 +782,7 @@ func _approach_spot(unit: Unit, goal: Unit) -> Vector2:
 		var spot := goal.pos + Vector2.from_angle(base + side * turn * ceilf(i / 2.0)) * standoff
 		if _spot_free(unit, goal, spot):
 			return spot
-	return goal.pos
+	return null
 
 
 ## A spot is free when no other unit on the same layer already stands there, it is inside the arena,
@@ -839,9 +846,9 @@ func _blocker(unit: Unit, heading: Vector2, step_length: float, goal: Unit) -> U
 func _open_side(unit: Unit, heading: Vector2, blocker: Unit, step_length: float, goal: Unit) -> float:
 	var lean := (blocker.pos - unit.pos).cross(heading)
 	var first := 1.0 if lean > 0.05 else (-1.0 if lean < -0.05 else (1.0 if unit.group % 2 == 0 else -1.0))
-	for side in [first, -first]:
-		var perpendicular := Vector2(-heading.y, heading.x) * side
-		var probe := unit.pos + perpendicular * (unit.radius + blocker.radius)
+	for side: float in [first, -first]:
+		var perpendicular: Vector2 = Vector2(-heading.y, heading.x) * side
+		var probe: Vector2 = unit.pos + perpendicular * (unit.radius + blocker.radius)
 		if (unit.flying or not in_river(probe)) and probe == _clamp_to_arena(probe) and _blocker(unit, perpendicular, step_length, goal) == null:
 			return side
 	return first

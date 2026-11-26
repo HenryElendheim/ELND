@@ -58,6 +58,11 @@ var last_step := Vector2.ZERO
 ## It keeps the same side for a moment, which stops it from wobbling back and forth.
 var steer_side := 0.0
 var steer_until := 0.0
+## The open spot around its goal the unit is heading for, worked out a few times a second instead of every tick.
+## Null means it heads straight for the goal itself.
+var approach_spot: Variant = null
+var approach_goal: Unit = null
+var approach_until := 0.0
 
 var deploy_left := 0.0
 var cooldown := 0.0
