@@ -54,7 +54,8 @@ static func draw_ability_art(canvas: CanvasItem, unit: Unit, sim: BattleSim, at:
 				if front and ability.get("carrying") != null:
 					_cage(canvas, at, r)
 			"comfortable_end":
-				_coffin(canvas, ability, at, r, tile, front)
+				if front:
+					_coffin(canvas, ability, at, r)
 			"quiet_revision":
 				var since: float = sim.time - float(ability.get("last_revision"))
 				if not front and since < 0.5:
@@ -133,25 +134,14 @@ static func _cage(canvas: CanvasItem, at: Vector2, r: float) -> void:
 	canvas.draw_arc(at + Vector2(0, r * 1.2), r * 0.7, 0.2, PI - 0.2, 12, Color("#E8E0D0"), maxf(r * 0.08, 2.0))
 
 
-## The Gasket: a dotted line pulling in the troop it lures, and a closed lid while a troop lies inside.
-static func _coffin(canvas: CanvasItem, ability: Ability, at: Vector2, r: float, tile: float, front: bool) -> void:
-	var guest: Variant = ability.get("_guest")
-	if guest == null:
+## The Gasket: a closed lid while a troop lies inside.
+static func _coffin(canvas: CanvasItem, ability: Ability, at: Vector2, r: float) -> void:
+	if ability.get("_guest") == null or not ability.get("_trapped"):
 		return
-	if ability.get("_trapped"):
-		if front:
-			var lid := Rect2(at - Vector2(r * 0.8, r * 0.8), Vector2(r * 1.6, r * 1.6))
-			canvas.draw_rect(lid, Color("#3A2A20"))
-			canvas.draw_line(lid.position + Vector2(r * 0.8, r * 0.3), lid.position + Vector2(r * 0.8, r * 1.3), Color("#C8A060"), 4.0)
-			canvas.draw_line(lid.position + Vector2(r * 0.45, r * 0.65), lid.position + Vector2(r * 1.15, r * 0.65), Color("#C8A060"), 4.0)
-	elif not front:
-		var target: Vector2 = guest.pos
-		var start := at
-		var finish := at + (target - at)
-		var steps := 10
-		for i in steps:
-			if i % 2 == 0:
-				canvas.draw_line(start.lerp(finish, float(i) / steps), start.lerp(finish, float(i + 1) / steps), Color(PINK, 0.7), 3.0)
+	var lid := Rect2(at - Vector2(r * 0.8, r * 0.8), Vector2(r * 1.6, r * 1.6))
+	canvas.draw_rect(lid, Color("#3A2A20"))
+	canvas.draw_line(lid.position + Vector2(r * 0.8, r * 0.3), lid.position + Vector2(r * 0.8, r * 1.3), Color("#C8A060"), 4.0)
+	canvas.draw_line(lid.position + Vector2(r * 0.45, r * 0.65), lid.position + Vector2(r * 1.15, r * 0.65), Color("#C8A060"), 4.0)
 
 
 ## The Spiker's field: black spikes that rise over the first second, spread over the area.
