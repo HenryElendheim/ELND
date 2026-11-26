@@ -33,7 +33,7 @@ Keep this file up to date whenever something important changes.
 
 ## Code layout
 
-- `data/*.json` holds every game number. Admin Mode edits go to `user://overrides.json` and are deep merged on top (`scripts/autoload/data_store.gd`). Lists such as a card's `abilities` are replaced whole when overridden.
+- `data/*.json` holds every game number. Card descriptions (`how_it_works`) never type numbers out. They use placeholders such as `{happy_face.drain_per_second|lvl}` that `CardText.fill` reads from the data, so text always matches the real values, Admin edits included. `|pct`, `|more`, `|less` and `|lvl` change how a number shows, and `|lvl` is only for numbers battles scale with level. The smoke test fails on a placeholder that points at nothing. Admin Mode edits go to `user://overrides.json` and are deep merged on top (`scripts/autoload/data_store.gd`). Lists such as a card's `abilities` are replaced whole when overridden.
 - Autoloads, in order: `Data` (data files and overrides), `Settings` and `Save` (both extend `StoredDict`, a JSON file under `user://`), `Nav` (screen changes with a fade, toasts, the big centre `banner`, and the Android back button), `Sfx` (placeholder tones generated in code, played on the Effects bus).
 - `scripts/progress.gd`: reputation, arenas, player level, XP, gold, card levels and copies, wild cards, chests, evolutions, injections and shards, the deck's evolution slot. Static functions over `Save`.
 - `scripts/stats.gd`: everything the Stats screen shows, kept in `Save` under `stats`.

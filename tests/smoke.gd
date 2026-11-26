@@ -27,6 +27,13 @@ func _ready() -> void:
 	broken += _check_items()
 	broken += _check_editor()
 	broken += _check_taps()
+	# Every description fills in with real numbers, with no placeholder left pointing at nothing.
+	for id in Data.table("cards").cards:
+		var card: Dictionary = Data.table("cards").cards[id]
+		for text in [card.get("how_it_works", ""), card.get("evolution", {}).get("how_it_works", "")]:
+			if not CardText.complete(id, text):
+				print("Broken file: the description of %s has a placeholder with no number: %s" % [id, CardText.fill(id, text)])
+				broken += 1
 	# Every card's details open and close cleanly, which checks the info and codex text for every card.
 	for id in Data.table("cards").cards:
 		var detail := CardDetail.new(id, [["Nothing", func() -> void: pass]])
