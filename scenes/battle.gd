@@ -20,6 +20,9 @@ var _meter := EphrocityMeter.new()
 var _admin: AdminPanel
 var _accumulator := 0.0
 var _slot := -1
+## The hand card a finger went down on, while it might be dragged onto the arena, and whether it is being dragged.
+var _drag_slot := -1
+var _dragging := false
 var _slot_buttons: Array[CardTile] = []
 var _next_tile: CardTile
 var _clock: Label
@@ -300,6 +303,44 @@ func _on_release(tile: Vector2) -> void:
 		_slot = -1
 		_show_placing()
 
+
+
+## A card can be dragged out of the hand onto the arena: once the finger leaves the card, that card is picked,
+## the placement preview follows the finger over the arena, and letting go there plays it.
+## A plain tap still picks the card the normal way, and letting go off the arena keeps it picked.
+func _input(event: InputEvent) -> void:
+	if Touch.cancelling or _result_shown or (_admin != null and _admin.visible):
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_drag_slot = _slot_at(event.position)
+			_dragging = false
+		elif _drag_slot >= 0:
+			var was_dragging := _dragging
+			_drag_slot = -1
+			_dragging = false
+			if was_dragging:
+				get_viewport().set_input_as_handled()
+				if _view.covers(event.position):
+					_on_release(_view.to_tile(event.position))
+				else:
+					_view.preview_at = null
+	elif event is InputEventMouseMotion and _drag_slot >= 0 and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		if not _dragging and _slot_at(event.position) != _drag_slot:
+			_dragging = true
+			_slot_buttons[_drag_slot].button_pressed = true
+			_slot = _drag_slot
+			_show_placing()
+		if _dragging and _view.covers(event.position):
+			_on_touch(_view.to_tile(event.position))
+
+
+## The hand slot under a point on the screen, or -1.
+func _slot_at(point: Vector2) -> int:
+	for slot in _slot_buttons.size():
+		if _slot_buttons[slot].visible and _slot_buttons[slot].get_global_rect().has_point(point):
+			return slot
+	return -1
 
 
 ## Removes every troop and building but leaves the towers standing.

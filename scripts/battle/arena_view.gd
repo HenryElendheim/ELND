@@ -38,14 +38,7 @@ const SHAKE_TIME := 0.35
 
 var _tile := 1.0
 var _origin := Vector2.ZERO
-## What is being done to each unit this frame, as short named tags in the colour of the card doing it,
-## and dashed lines from a source to its target, such as The Devil to the troops it charms.
-var _tags := {}
-var _lines := []
 
-const STUN_COLOUR := Color("#FFE45C")
-const HEAL_COLOUR := Color("#6CE08A")
-const MAX_TAGS := 3
 
 var _class_colours := {}
 
@@ -123,9 +116,6 @@ func _draw() -> void:
 	for unit in sim.units:
 		if unit.is_spell():
 			_draw_spell(unit)
-	_collect_tags()
-	for line in _lines:
-		_draw_dashed(_to_screen(line[0]), _to_screen(line[1]), line[2])
 	for unit in sim.units:
 		if unit.link_until > sim.time:
 			_draw_links(unit)
@@ -190,90 +180,6 @@ func _draw_unit(unit: Unit) -> void:
 		top = r + 26
 		_draw_health(at - Vector2(r, top), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
 	_draw_level(unit, at - Vector2(0, top + 4), team_colour)
-	_draw_tags(unit, at - Vector2(0, top + 4 + _tile * 0.45))
-
-
-## Works out every tag and line for this frame from the units' states and their abilities.
-func _collect_tags() -> void:
-	_tags.clear()
-	_lines.clear()
-	for unit in sim.units:
-		if not unit.alive() or unit.is_spell():
-			continue
-		if unit.charmed_by != null:
-			_tag(unit, "Charmed", _fill_for(unit.charmed_by))
-			_lines.append([unit.pos, unit.charmed_by.pos, _fill_for(unit.charmed_by)])
-		if unit.stun_left > 0.0:
-			var halted := unit.abilities.any(func(a: Ability) -> bool: return a.params.get("id") == "halt")
-			_tag(unit, "Halted" if halted else "Stunned", STUN_COLOUR)
-		if unit.calm_left > 0.0:
-			_tag(unit, "Calmed", Color("#FF8FC8"))
-		if unit.enraged:
-			_tag(unit, "Enraged", Color(1.0, 0.35, 0.25))
-		if unit.slowed:
-			_tag(unit, "Slowed", Color(0.6, 0.6, 0.7))
-		if unit.dread > 0.0:
-			_tag(unit, "Dread", Color(0.6, 0.4, 0.8))
-		if unit.link_until > sim.time:
-			_tag(unit, "Chained", Color("#C8C8D0"))
-		if unit.grounded_left > 0.0 and unit.base_flying:
-			_tag(unit, "Grounded", Color(0.7, 0.7, 0.75))
-		if unit.hidden_left > 0.0:
-			_tag(unit, "Flattened", _fill_for(unit))
-		if unit.carrier != null:
-			_tag(unit, "Snatched" if unit.carrier.id == "creeler" else "Trapped", _fill_for(unit.carrier))
-		var colour := _fill_for(unit)
-		for ability in unit.abilities:
-			match String(ability.params.get("id", "")):
-				"happy_face":
-					_tag(ability.get("victim"), "Drained", colour)
-				"take_and_give":
-					_tag(ability.get("prey"), "Drained", colour)
-					_tag(ability.get("patient"), "Healed", HEAL_COLOUR)
-				"comfortable_end":
-					var guest: Variant = ability.get("_guest")
-					if guest != null and guest.alive() and not ability.get("_trapped"):
-						_tag(guest, "Lured", colour)
-						_lines.append([guest.pos, unit.pos, colour])
-				"irresistible":
-					for other in sim.units:
-						if other.target == unit and other.team != unit.team and other.alive() and other.pos.distance_to(unit.pos) <= ability.number("radius"):
-							_tag(other, "Drawn in", colour)
-							_lines.append([other.pos, unit.pos, colour])
-
-
-func _tag(unit: Variant, text: String, colour: Color) -> void:
-	if unit == null or not unit.alive():
-		return
-	var list: Array = _tags.get_or_add(unit, [])
-	if list.size() < MAX_TAGS and not list.any(func(entry: Array) -> bool: return entry[0] == text):
-		list.append([text, colour])
-
-
-## The tags over a unit, stacked upward from just above its level, each a small dark pill with its name in colour.
-func _draw_tags(unit: Unit, bottom: Vector2) -> void:
-	var list: Array = _tags.get(unit, [])
-	var font := ThemeDB.fallback_font
-	var font_size := maxi(int(_tile * 0.36), 12)
-	for i in list.size():
-		var text: String = list[i][0]
-		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-		var base := bottom - Vector2(0, i * (font_size + 8))
-		var pill := Rect2(base - Vector2(width / 2.0 + 6, font_size + 2), Vector2(width + 12, font_size + 8))
-		draw_rect(pill, Color(0, 0, 0, 0.75))
-		draw_rect(pill, list[i][1], false, 2.0)
-		draw_string(font, base - Vector2(width / 2.0, 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(list[i][1]).lightened(0.35))
-
-
-## A dashed line from a source to what it is doing something to.
-func _draw_dashed(from: Vector2, to: Vector2, colour: Color) -> void:
-	var length := from.distance_to(to)
-	if length <= 1.0:
-		return
-	var dash := _tile * 0.3
-	var steps := int(length / dash)
-	for i in range(0, steps, 2):
-		draw_line(from.lerp(to, float(i) / steps), from.lerp(to, float(i + 1) / steps), Color(colour, 0.85), 3.0)
 
 
 ## The level sits just above the health bar in small text with a dark outline. Towers show theirs a little bigger.
@@ -497,6 +403,16 @@ func _fill_for(unit: Unit) -> Color:
 
 func _to_screen(tile: Vector2) -> Vector2:
 	return _origin + tile * _tile
+
+
+## Where a point on the screen falls on the arena, in tiles. Used when a card is dragged in from the hand.
+func to_tile(global_point: Vector2) -> Vector2:
+	return (global_point - global_position - _origin) / maxf(_tile, 1.0)
+
+
+## True when a point on the screen is over the arena.
+func covers(global_point: Vector2) -> bool:
+	return get_global_rect().has_point(global_point)
 
 
 func _gui_input(event: InputEvent) -> void:

@@ -90,7 +90,8 @@ Keep this file up to date whenever something important changes.
 - `Progress.arena_at` and `share_to_next` turn a reputation into a place and how far it is to the next.
 - The Devil's Smile charms at most two enemy ranged troops at a time, the closest with their eyes open (`max_charmed`), using `Unit.charmed_by`.
 - Every member of a swarm shows its level.
-- Units show small named tags for what is being done to them (Charmed, Lured, Drained, Healed, Stunned, Halted, Calmed, Enraged, Slowed, Dread, Chained, Grounded, Snatched, Trapped, Drawn in, Flattened), in the colour of the card doing it, at most three each. Dashed lines join a source to its target for The Devil's charm, The Gasket's lure and The Dargalean's pull (`_collect_tags` in `arena_view.gd`).
+- Cards can be dragged from the hand onto the arena (`_input` in `battle.gd`): leaving the card picks it, the preview follows the finger over the arena, and letting go there plays it. A tap still picks it the normal way.
+- The named effect tags and dashed lines added in v1.014 were taken out again because they caused visual bugs.
 
 ## Admin card editor
 
