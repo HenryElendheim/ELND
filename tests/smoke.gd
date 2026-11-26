@@ -441,26 +441,31 @@ func _check_editor() -> int:
 	return _expect(changed and restored, "the card editor did not change or reset values")
 
 
-## Every button only reacts to a clean tap. Sliding off before letting go does nothing.
+## Every button gets a tap guard. Normal buttons keep pressing themselves, so they still work everywhere,
+## and a button with its own tap action fires on a clean tap and not after sliding off.
 func _check_taps() -> int:
+	var plain := Button.new()
+	add_child(plain)
+	var normal_ok := plain.has_meta(TapGuard.MARK) and plain.button_mask == MOUSE_BUTTON_MASK_LEFT
+	plain.queue_free()
 	var button := Button.new()
 	button.size = Vector2(200, 100)
-	var presses := [0]
-	button.pressed.connect(func() -> void: presses[0] += 1)
+	var taps := [0]
+	TapGuard.attach(button, func() -> void: taps[0] += 1)
 	add_child(button)
 	button.gui_input.emit(_touch(true, Vector2(20, 20)))
 	button.gui_input.emit(_touch(false, Vector2(22, 20)))
-	var tapped: bool = presses[0] == 1
+	var tapped: bool = taps[0] == 1
 	button.gui_input.emit(_touch(true, Vector2(20, 20)))
 	var away := InputEventMouseMotion.new()
 	away.position = Vector2(600, 20)
 	away.button_mask = MOUSE_BUTTON_MASK_LEFT
 	button.gui_input.emit(away)
 	button.gui_input.emit(_touch(false, Vector2(600, 20)))
-	var ignored: bool = presses[0] == 1
+	var ignored: bool = taps[0] == 1
 	button.queue_free()
 	print("Taps checked")
-	return _expect(button.has_meta(TapGuard.MARK) and tapped and ignored, "a button reacted to a slide off, or not to a tap")
+	return _expect(normal_ok and tapped and ignored, "a button lost its own pressing, or a tap action fired after a slide")
 
 
 func _touch(down: bool, at: Vector2) -> InputEventMouseButton:
