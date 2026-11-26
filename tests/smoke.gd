@@ -225,7 +225,7 @@ func _check_defense() -> int:
 		sim.step()
 	var enemy_towers := sim.units.filter(func(u: Unit) -> bool: return u.is_tower() and u.team == Unit.Team.ENEMY)
 	print("Defense: wave %d, result '%s'" % [sim.waves.wave, sim.result])
-	var ok := sim.waves.wave >= 2 and enemy_towers.size() == 1 and enemy_towers[0].kind == "core"
+	var ok: bool = sim.waves.wave >= 2 and enemy_towers.size() == 1 and enemy_towers[0].kind == "core"
 	# Destroying the core wins the run.
 	if ok and sim.result == "":
 		sim.deal_damage(null, enemy_towers[0], enemy_towers[0].hp + 1.0)
