@@ -48,10 +48,17 @@ static func cycles_needed(card_id: String) -> int:
 	return int(rule.high) if cost_of(card_id) >= float(rule.from_cost) else int(rule.low)
 
 
+## How many more times an evolution card has to be played normally before it comes out evolved.
+## Zero means it is ready, and cards without an evolution in this deck always give -1.
+func cycles_left(card: String) -> int:
+	if not card in evolutions:
+		return -1
+	return maxi(cycles_needed(card) - int(_cycles.get(card, 0)), 0)
+
+
 ## True when the card in a slot will come out evolved the next time it is played.
 func evolution_ready(slot: int) -> bool:
-	var card := cards[slot]
-	return card in evolutions and int(_cycles.get(card, 0)) >= cycles_needed(card)
+	return cycles_left(cards[slot]) == 0
 
 
 ## Pays for the card in a slot and cycles it out. It returns the card that was played.

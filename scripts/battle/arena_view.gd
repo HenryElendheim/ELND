@@ -142,14 +142,14 @@ func _draw_unit(unit: Unit) -> void:
 	if unit.flying:
 		draw_circle(at + Vector2(0, r * 0.6), r * 0.8, SHADOW)
 		at.y -= r * 0.6
+	if unit.evolved:
+		_draw_evolution_glow(at, r, unit.is_building(), motion)
 	UnitArt.draw_ability_art(self, unit, sim, at, r, _tile, motion, false)
 	if unit.is_building():
 		var box := Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0)
 		draw_rect(box, fill)
 		draw_rect(box, team_colour, false, 4.0)
 	else:
-		if unit.evolved:
-			draw_circle(at, r * 1.35, Color("#A33B4C", 0.45))
 		if unit.hidden_left > 0.0:
 			fill.a = 0.3
 		draw_circle(at, r, fill)
@@ -163,6 +163,25 @@ func _draw_unit(unit: Unit) -> void:
 		_draw_health(at - Vector2(r, r + 14), r * 2.0, unit.hp / unit.max_hp, team_colour)
 	if unit.shield > 0.0:
 		_draw_health(at - Vector2(r, r + 26), r * 2.0, unit.shield / unit.max_hp, Color("#E8D9C0"))
+
+
+## An evolved unit sits in a soft purple glow with a bright purple ring, which pulses gently unless reduced motion is on.
+## Buildings get the same glow, shaped as a square.
+func _draw_evolution_glow(at: Vector2, r: float, square: bool, motion: bool) -> void:
+	var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 250.0) if motion else 0.5
+	var glow := CardTile.EVOLUTION_GLOW
+	for layer in 3:
+		var reach := r * (1.25 + 0.2 * layer + 0.1 * pulse)
+		var faint := Color(glow, 0.3 - 0.08 * layer)
+		if square:
+			draw_rect(Rect2(at - Vector2(reach, reach), Vector2(reach, reach) * 2.0), faint)
+		else:
+			draw_circle(at, reach, faint)
+	var ring := r * (1.15 + 0.05 * pulse)
+	if square:
+		draw_rect(Rect2(at - Vector2(ring, ring), Vector2(ring, ring) * 2.0), glow, false, 5.0)
+	else:
+		draw_arc(at, ring, 0, TAU, 40, glow, 5.0)
 
 
 ## Shots are drawn on top of everything so they are never hidden. Every shot has an edge in its team colour.

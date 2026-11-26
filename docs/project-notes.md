@@ -35,7 +35,7 @@ Keep this file up to date whenever something important changes.
 
 - `data/*.json` holds every game number. Admin Mode edits go to `user://overrides.json` and are deep merged on top (`scripts/autoload/data_store.gd`). Lists such as a card's `abilities` are replaced whole when overridden.
 - Autoloads, in order: `Data` (data files and overrides), `Settings` and `Save` (both extend `StoredDict`, a JSON file under `user://`), `Nav` (screen changes with a fade, toasts, the big centre `banner`, and the Android back button), `Sfx` (placeholder tones generated in code, played on the Effects bus).
-- `scripts/progress.gd`: trophies, arenas, player level, XP, gold, card levels and copies, wild cards, chests, evolutions, injections and shards, deck evolutions. Static functions over `Save`.
+- `scripts/progress.gd`: trophies, arenas, player level, XP, gold, card levels and copies, wild cards, chests, evolutions, injections and shards, the deck's evolution slot. Static functions over `Save`.
 - `scripts/stats.gd`: everything the Stats screen shows, kept in `Save` under `stats`.
 - `scripts/battle/`:
   - `battle_sim.gd` runs the battle on a fixed tick with no drawing. It handles targeting, bridges and river paths, tile snapping, placement rules, damage (everything goes through `deal_damage`), spells as short-lived invisible units, buildings draining over their lifetime, stuns, Chain links, win rules (cores, overtime, tiebreaker), Defense mode, and `events` for the screen to show.
@@ -74,7 +74,9 @@ Keep this file up to date whenever something important changes.
 - The menu is swipeable pages with bottom tabs: Shop, Cards, Battle, Stats. The Codex lives in each card's details (Info and Codex pages).
 - Leaving a match with Back asks first and counts as cancelled: no trophies, no chest, and no effect on wins, losses or streaks.
 - Admin Mode edits save on their own and apply in normal games until reset. Henry may send an exported `elnd-balance.json`. When he does, fold those numbers into the real data files.
-- The bot gets as many evolutions as the player has switched on.
+- The deck has one evolution slot, its first place (`evolution.slots` in `battle.json`). The card there is the only evolution, if its evolution is unlocked. This replaced the old on/off switches with up to 2 per deck (decided with Henry on 26 Nov 2026).
+- The bot gets as many evolutions as the player has in their evolution slot.
+- In battle, hand cards with an evolution show dots for the plays still needed, then EVO. A purple line above the hand names the evolution card and the plays left. Evolved units glow purple on the field.
 - Every placement snaps to tile centres, and tower tiles can never be used.
 
 ## Placeholder numbers (Henry can tune these in Admin Mode)
