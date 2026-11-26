@@ -80,6 +80,12 @@ Keep this file up to date whenever something important changes.
 - The sort and filter rows (`Ui.strip`) scroll sideways with a drag from anywhere on them (`DragScroll.attach(scroll, true)`). They join `Touch.SIDEWAYS_GROUP`, and a page swipe that starts on one is ignored, so dragging the filters never flips the menu page.
 - Card tiles on this screen use their own tap and hold (`CardTile.enable_gestures`) and let touches pass through, so a swipe that starts on a card scrolls the list. Holding a card picks it up (`Touch.holding` stops lists and pages moving), and dropping it on a deck card swaps them. A collection card dropped on a deck card takes its place.
 
+## Levelling up with wild cards
+
+- `LevelUp` (`scripts/ui/level_up.gd`) celebrates a card levelling up with wild cards: pop in, a charging shake with a rising tone, then a white flash, spinning rays (the shared `Burst`), sparks, LEVEL UP slammed down, the level ticking up, health and damage counting up, and the gold earned. A tap skips to the end, another closes it. Reduced motion shows the end straight away.
+- Card details say "Add" and "Remove" for the deck.
+- The Admin neutralize list is empty until you search, pick a category, or press Show all.
+
 ## Chest opening
 
 - Cards come out as real tiles over a burst of light in their rarity colour: common pops, rare flips in, epic bursts purple, and legendary gets a white flash, spinning rays, a "LEGENDARY" title, a slam and a long buzz. New cards get the codex stamp slammed on.

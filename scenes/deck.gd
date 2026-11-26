@@ -267,11 +267,11 @@ func _drop(place: int) -> void:
 func _actions(id: String) -> Array:
 	var actions := []
 	if id in _deck:
-		actions.append(["Take out of deck", _remove])
+		actions.append(["Remove", _remove])
 		if Progress.has_evolution(id) and _deck.find(id) >= Progress.evolution_slots():
 			actions.append(["Move to evolution slot", _to_evolution_slot])
 	else:
-		actions.append(["Add to deck" if _deck.size() < _size else "Swap into deck", _use])
+		actions.append(["Add" if _deck.size() < _size else "Swap into deck", _use])
 		if Progress.has_evolution(id):
 			actions.append(["Put in evolution slot", _to_evolution_slot])
 	if not Progress.has_evolution(id) and Progress.injections() > 0 and id in Progress.evolvable_cards():
@@ -333,9 +333,18 @@ func _inject() -> void:
 	_rebuild()
 
 
+## Spends wild cards on the card. When that levels it up, the level up celebration plays over the screen.
 func _wild() -> void:
-	Progress.use_wild_cards(_selected)
+	var id := _selected
+	var before := int(Progress.card(id).level)
+	var gold := Progress.gold()
+	Progress.use_wild_cards(id)
 	_rebuild()
+	var after := int(Progress.card(id).level)
+	if after > before:
+		add_child(LevelUp.new(id, before, after, Progress.gold() - gold))
+	else:
+		Nav.toast("Wild cards added to %s" % Data.table("cards").cards[id].name)
 
 
 func _save() -> void:

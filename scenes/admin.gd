@@ -12,6 +12,9 @@ var _query := ""
 var _category := ""
 var _found := Ui.label("", "MutedLabel")
 var _results := VBoxContainer.new()
+## The list stays empty until something is searched for, a category is picked, or Show all is pressed.
+var _show_all := false
+var _show_button: Button
 
 
 func build() -> void:
@@ -40,6 +43,8 @@ func build() -> void:
 	bulk.add_child(Ui.button("Neutralize shown", func() -> void: _neutralize_shown(true)))
 	bulk.add_child(Ui.button("Restore shown", func() -> void: _neutralize_shown(false)))
 	add(bulk)
+	_show_button = Ui.button("Show all", _toggle_show_all)
+	add(_show_button)
 	add(_found)
 	add(_results)
 
@@ -104,11 +109,27 @@ func _on_category(tag: String) -> void:
 	_show_results()
 
 
+func _toggle_show_all() -> void:
+	_show_all = not _show_all
+	_show_button.text = "Hide all" if _show_all else "Show all"
+	_show_results()
+
+
+## Cards listed right now: none until something is searched for, a category is picked, or Show all is on.
+func _listed() -> Array:
+	if not _show_all and _query.strip_edges() == "" and _category == "":
+		return []
+	return CardSearch.find(_query, _category)
+
+
 ## Lists every card that fits the search, each with its tags and its own switch.
 func _show_results() -> void:
 	for child in _results.get_children():
 		child.queue_free()
-	var ids := CardSearch.find(_query, _category)
+	var ids := _listed()
+	if ids.is_empty() and not _show_all and _query.strip_edges() == "" and _category == "":
+		_found.text = "Search, pick a category or press Show all to list cards."
+		return
 	var off := ids.filter(func(id: String) -> bool: return _is_neutralized(id)).size()
 	_found.text = "Showing %d of %d cards, %d of them neutralized." % [ids.size(), Data.table("cards").cards.size(), off]
 	for id in ids:
@@ -125,7 +146,7 @@ func _switch(id: String, on: bool) -> void:
 func _neutralize_shown(on: bool) -> void:
 	var count := 0
 	var refused := false
-	for id in CardSearch.find(_query, _category):
+	for id in _listed():
 		if _is_neutralized(id) == on:
 			continue
 		if _neutralize(id, on):

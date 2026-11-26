@@ -30,6 +30,12 @@ func _ready() -> void:
 		add_child(detail)
 		await get_tree().process_frame
 		detail.close()
+	# The level up celebration opens, runs a moment and closes.
+	var party := LevelUp.new("hobb", 1, 2, 40)
+	add_child(party)
+	for i in 10:
+		await get_tree().process_frame
+	party.queue_free()
 	# The advanced stats view is opened too, with some recorded results so every section has rows.
 	var stats_screen: Node = load("res://scenes/stats.tscn").instantiate()
 	add_child(stats_screen)
@@ -406,6 +412,10 @@ func _check_card_search() -> int:
 	# Neutralizing every card at once has to stop while enough playable cards are left for a hand.
 	var admin: Node = load("res://scenes/admin.tscn").instantiate()
 	add_child(admin)
+	if not (admin.call("_listed") as Array).is_empty():
+		print("Broken file: the Admin neutralize list shows cards before Show all is pressed")
+		return 1
+	admin.call("_toggle_show_all")
 	admin.call("_neutralize_shown", true)
 	var left := BattleSim.available_cards().size()
 	admin.call("_neutralize_shown", false)
