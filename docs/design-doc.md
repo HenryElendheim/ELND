@@ -196,8 +196,15 @@ An **Evolution** is an empowered version of a card.
 - **20-second cooldown** after use
 - If the evolved troop survives, the ability can be used again after the cooldown
 
-### Evolution slots
-- Max **2 evolutions** per deck
+### Evolution slot
+- The **first place in the deck is the evolution slot**
+- If you have the evolution for the card in that slot, it is the **only evolution in the deck**. Evolutions of cards in other places are not used.
+- The number of slots is in `battle.json` (`evolution.slots`, default **1**)
+
+### Showing evolutions in battle
+- Hand cards with an evolution show a purple tag: **one dot per play still needed** (filled as they are done), then **EVO** when it is ready
+- A line above the hand says how many plays are left (e.g. "Hobb evolves in 1 play"), even while the card waits in the queue
+- Evolved troops and buildings on the field have a **purple glow and ring**, which pulses gently unless reduced motion is on
 
 ### Unlocking evolutions
 - **Epic chests:** contain a **random evolution**

@@ -17,8 +17,12 @@ const LIFT := 14.0
 var card_id := ""
 ## Shows the level above the tile and the bar of copies toward the next level under it.
 var show_progress := false
-## Glows purple, which marks an evolution that is switched on or ready to come out.
+## Glows purple, which marks a card in the evolution slot with its evolution unlocked, or one ready to come out evolved.
 var evolution := false
+## On the Cards screen, marks a tile sitting in the deck's evolution slot.
+var evolution_slot := false
+## In battle, how many more normal plays the card needs before it comes out evolved. Zero means ready, and -1 means it has no evolution.
+var cycles_left := -1
 
 
 static func short_name(id: String) -> String:
@@ -85,6 +89,8 @@ func _draw() -> void:
 	draw_arc(drop, radius, 0, TAU, 24, COST_EDGE, 3.0)
 	_centred(font, str(int(card.cost)), drop + Vector2(0, radius * 0.38), int(radius * 1.15), Color.WHITE, radius * 2)
 
+	_draw_evolution_tag(font, inner, radius)
+
 	if button_pressed:
 		draw_rect(tile, Color.WHITE, false, 6.0)
 	if show_progress:
@@ -109,6 +115,31 @@ func _draw_progress(font: Font, bar: Rect2) -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * share, bar.size.y)), COST_EDGE if share < 1.0 else Color("#4CAF50"))
 	var label := "Max" if maxed else "%d/%d" % [int(progress.copies), needed]
 	_centred(font, label, Vector2(bar.get_center().x, bar.get_center().y + bar.size.y * 0.25), int(bar.size.y * 0.62), Color.WHITE, bar.size.x - 8)
+
+
+## A purple tag in the top right corner, beside the cost. On the Cards screen it marks the evolution slot.
+## In battle it shows one dot per play still needed before the evolution, filled as they are done, and says EVO once it is ready.
+func _draw_evolution_tag(font: Font, inner: Rect2, radius: float) -> void:
+	if not evolution_slot and cycles_left < 0:
+		return
+	var tag := Rect2(inner.position.x + radius * 2 + 12, inner.position.y + 4, inner.size.x - radius * 2 - 16, radius * 1.3)
+	var lit := cycles_left == 0 or (evolution_slot and evolution)
+	draw_rect(tag, Color(EVOLUTION_GLOW, 0.9 if lit else 0.55))
+	var middle := Vector2(tag.get_center().x, tag.get_center().y + tag.size.y * 0.25)
+	if evolution_slot:
+		_centred(font, "EVO" if evolution else "EVO SLOT", middle, int(tag.size.y * 0.7), Color.WHITE, tag.size.x - 6)
+		return
+	if lit:
+		_centred(font, "EVO", middle, int(tag.size.y * 0.7), Color.WHITE, tag.size.x - 6)
+		return
+	var total := Hand.cycles_needed(card_id)
+	var dot := minf(tag.size.y * 0.28, tag.size.x / (total * 3.0))
+	for i in total:
+		var at := Vector2(tag.get_center().x + (i - (total - 1) / 2.0) * dot * 3.0, tag.get_center().y)
+		if i < total - cycles_left:
+			draw_circle(at, dot, Color.WHITE)
+		else:
+			draw_arc(at, dot, 0, TAU, 16, Color.WHITE, 3.0)
 
 
 ## Draws text centred on a point with a dark outline, shrinking the font until it fits the given width.

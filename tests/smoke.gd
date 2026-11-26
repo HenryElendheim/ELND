@@ -191,6 +191,18 @@ func _check_evolutions() -> int:
 	if evolved_plays == 0:
 		print("Broken file: an evolution card never came out evolved")
 		broken += 1
+	# A fresh hand shows Hobb needing one more play, and the evolution slot only ever gives the first card.
+	var fresh := Hand.new(["hobb", "editor"], Data.table("battle"), ["hobb"])
+	if fresh.cycles_left("hobb") != 1 or fresh.cycles_left("editor") != -1:
+		print("Broken file: cycles left are wrong")
+		broken += 1
+	var owned: Array = Save.get_value("evolutions") if Save.get_value("evolutions") is Array else []
+	Save.set_value("evolutions", Progress.evolvable_cards())
+	var slotted := Progress.evolutions_in(["hobb", "john_arms", "gasket"])
+	Save.set_value("evolutions", owned)
+	if slotted != ["hobb"]:
+		print("Broken file: the evolution slot gave %s" % [slotted])
+		broken += 1
 	sim.clear()
 	return broken
 

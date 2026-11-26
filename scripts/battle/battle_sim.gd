@@ -40,7 +40,7 @@ func _init(match_mode := "battle") -> void:
 	tick = 1.0 / float(_battle.tick_rate)
 	_place_towers()
 	hands.append(Hand.new(starting_deck(), _battle, Progress.deck_evolutions()))
-	# The bot gets as many evolutions as the player has switched on, which keeps the match fair.
+	# The bot gets as many evolutions as the player has in their evolution slot, which keeps the match fair.
 	var bot_deck := bot.pick_deck_for(available_cards(), int(_battle.deck.size), Bot.knobs())
 	var bot_evolutions := bot_deck.filter(func(id: String) -> bool: return id in Progress.evolvable_cards())
 	hands.append(Hand.new(bot_deck, _battle, bot_evolutions.slice(0, hands[0].evolutions.size())))

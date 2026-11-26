@@ -261,28 +261,22 @@ static func _unlock_evolution(id: String) -> void:
 	_write("evolutions", unlocked)
 
 
-## The evolutions switched on for the current deck: only unlocked ones, only cards in the deck, and never more than the limit.
-static func deck_evolutions() -> Array:
-	var limit := int(Data.table("battle").evolution.max_per_deck)
-	var deck := BattleSim.starting_deck()
+## How many evolution slots a deck has. They are the first places in the deck.
+static func evolution_slots() -> int:
+	return int(Data.table("battle").evolution.slots)
+
+
+## The evolutions a deck plays with: the cards in its evolution slots whose evolution is unlocked, and no others.
+static func evolutions_in(deck: Array) -> Array:
 	var picked := []
-	for id in _read("deck_evolutions", []):
-		if id in deck and has_evolution(id) and picked.size() < limit:
+	for id in deck.slice(0, evolution_slots()):
+		if has_evolution(id):
 			picked.append(id)
 	return picked
 
 
-## Switches a card's evolution on or off for the deck. Switching on when the deck is already full of evolutions does nothing.
-static func set_deck_evolution(id: String, on: bool) -> bool:
-	var picked := deck_evolutions()
-	if on and not id in picked:
-		if picked.size() >= int(Data.table("battle").evolution.max_per_deck):
-			return false
-		picked.append(id)
-	elif not on:
-		picked.erase(id)
-	_write("deck_evolutions", picked)
-	return true
+static func deck_evolutions() -> Array:
+	return evolutions_in(BattleSim.starting_deck())
 
 
 ## Adds copies of a card and levels it up as far as they allow. Copies of a maxed card become wild cards.

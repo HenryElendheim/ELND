@@ -52,7 +52,7 @@
 	},
 	"melee_range_tiles": 1.0,
 	"evolution": {
-		"max_per_deck": 2,
+		"slots": 1,
 		"cooldown": 20.0,
 		"ability_cost": {
 			"base": 1,

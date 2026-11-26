@@ -2,7 +2,8 @@ extends Screen
 ## The Cards screen. Your deck sits at the top as two rows of four tiles, each with its level above it and its copies bar below,
 ## then the average Ephrocity cost and tower level, then the rest of your collection.
 ## Tap a card to open its details, with its stats, how it works and its Codex entry,
-## and the buttons to add it, swap it in, take it out, switch its evolution or spend wild cards.
+## and the buttons to add it, swap it in, take it out, put it in the evolution slot or spend wild cards.
+## The first place in the deck is the evolution slot. A card there whose evolution is unlocked is the deck's only evolution.
 ## The deck is saved whenever it has exactly the right number of cards.
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
@@ -23,7 +24,8 @@ func build() -> void:
 	add(Ui.label("Cards", "TitleLabel"))
 
 	add(Ui.label("Deck  %d of %d" % [_deck.size(), _size], "HeadingLabel"))
-	add(_grid(_deck))
+	add(Ui.label("The first card sits in the evolution slot. If you have its evolution, it is the only evolution in your deck.", "MutedLabel"))
+	add(_grid(_deck, true))
 	var costs := 0.0
 	for id in _deck:
 		costs += Hand.cost_of(id)
@@ -35,18 +37,21 @@ func build() -> void:
 	if not rest.is_empty():
 		add(Ui.spacer(12))
 		add(Ui.label("Collection", "HeadingLabel"))
-		add(_grid(rest))
+		add(_grid(rest, false))
 	add_back_button()
 
 
-func _grid(ids: Array) -> GridContainer:
+func _grid(ids: Array, in_deck: bool) -> GridContainer:
 	var grid := GridContainer.new()
 	grid.columns = COLUMNS
-	for id in ids:
+	var evolutions := Progress.evolutions_in(_deck)
+	for i in ids.size():
+		var id: String = ids[i]
 		var tile := CardTile.new(id, true)
 		tile.toggle_mode = true
 		tile.set_pressed_no_signal(id == _selected)
-		tile.evolution = id in Progress.deck_evolutions() and id in _deck
+		tile.evolution_slot = in_deck and i < Progress.evolution_slots()
+		tile.evolution = id in evolutions
 		tile.pressed.connect(func() -> void: _tapped(id))
 		grid.add_child(tile)
 	return grid
@@ -57,11 +62,12 @@ func _actions(id: String) -> Array:
 	var actions := []
 	if id in _deck:
 		actions.append(["Take out of deck", _remove])
-		if Progress.has_evolution(id):
-			var on := id in Progress.deck_evolutions()
-			actions.append(["Evolution off" if on else "Evolution on", func() -> void: _toggle_evolution(not on)])
+		if Progress.has_evolution(id) and _deck.find(id) >= Progress.evolution_slots():
+			actions.append(["Move to evolution slot", _to_evolution_slot])
 	else:
 		actions.append(["Add to deck" if _deck.size() < _size else "Swap into deck", _use])
+		if Progress.has_evolution(id):
+			actions.append(["Put in evolution slot", _to_evolution_slot])
 	if not Progress.has_evolution(id) and Progress.injections() > 0 and id in Progress.evolvable_cards():
 		actions.append(["Use an Evolution Injection", _inject])
 	if Progress.wild_cards() > 0 and int(Progress.card(id).level) < Progress.max_card_level():
@@ -100,9 +106,19 @@ func _remove() -> void:
 	_rebuild()
 
 
-func _toggle_evolution(on: bool) -> void:
-	if not Progress.set_deck_evolution(_selected, on):
-		Nav.toast("Only %d evolutions per deck" % int(Data.table("battle").evolution.max_per_deck))
+## A deck card trades places with the card in the evolution slot. A collection card takes the slot,
+## and the card it replaces goes back to the collection, unless the deck still has room for it.
+func _to_evolution_slot() -> void:
+	var at := _deck.find(_selected)
+	if at >= 0:
+		_deck[at] = _deck[0]
+		_deck[0] = _selected
+	elif _deck.size() < _size:
+		_deck.push_front(_selected)
+	else:
+		_deck[0] = _selected
+	_selected = ""
+	_save()
 	_rebuild()
 
 

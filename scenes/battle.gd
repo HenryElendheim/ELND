@@ -34,6 +34,8 @@ var _speed_before := 1.0
 ## which means it never covers the cards, the Ephrocity meter or the towers.
 var _evo_row := HBoxContainer.new()
 var _evo_units: Array[Unit] = []
+## Says which card is the deck's evolution and how many more plays it needs, even while that card waits in the queue.
+var _evo_status := Ui.label("", "MutedLabel")
 
 
 func _ready() -> void:
@@ -69,8 +71,13 @@ func _ready() -> void:
 	_view.touch_ended.connect(_on_release)
 	column.add_child(_view)
 	_evo_row.alignment = BoxContainer.ALIGNMENT_END
-	_evo_row.custom_minimum_size.y = 110
-	column.add_child(_evo_row)
+	var evo_bar := HBoxContainer.new()
+	evo_bar.custom_minimum_size.y = 110
+	_evo_status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_evo_status.add_theme_color_override("font_color", CardTile.EVOLUTION_GLOW)
+	evo_bar.add_child(_evo_status)
+	evo_bar.add_child(_evo_row)
+	column.add_child(evo_bar)
 	column.add_child(_build_hand())
 	_meter.hand = sim.hands[Unit.Team.PLAYER]
 	column.add_child(_meter)
@@ -180,11 +187,25 @@ func _refresh_hand() -> void:
 			continue
 		card.card_id = cards[slot]
 		card.evolution = hand.evolution_ready(slot)
+		card.cycles_left = hand.cycles_left(cards[slot])
 		card.modulate.a = 1.0 if hand.can_afford(slot) else 0.5
 		card.queue_redraw()
 	_next_tile.card_id = hand.next_card()
+	_next_tile.cycles_left = hand.cycles_left(hand.next_card())
+	_evo_status.text = _evolution_status(hand)
 	_next_tile.modulate.a = 0.6
 	_next_tile.queue_redraw()
+
+
+## For example "Hobb evolves in 1 play" or "Hobb evolution ready". Empty when the deck has no evolution.
+static func _evolution_status(hand: Hand) -> String:
+	if hand.evolutions.is_empty():
+		return ""
+	var id: String = hand.evolutions[0]
+	var left := hand.cycles_left(id)
+	if left == 0:
+		return "%s evolution ready" % CardTile.short_name(id)
+	return "%s evolves in %d %s" % [CardTile.short_name(id), left, "play" if left == 1 else "plays"]
 
 
 ## Keeps one button per evolved group of yours on the field. Each shows the troop, the cost, or the seconds of cooldown left,
