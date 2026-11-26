@@ -445,6 +445,8 @@ func step() -> void:
 			_update(unit)
 	_move_projectiles()
 	_keep_apart()
+	for unit in units:
+		unit.last_step = unit.pos - unit.prev_pos
 	drop_dead()
 	var waiting := _after_tick
 	_after_tick = []
@@ -539,6 +541,7 @@ func _update(unit: Unit) -> void:
 		unit.stun_left -= tick
 		return
 	var step_length := unit.speed * unit.move_speed * tick
+	# Forced moves, such as being lured into The Gasket or carried off, go straight to their spot.
 	if unit.goal_override != null:
 		unit.pos = unit.pos.move_toward(unit.goal_override, step_length)
 		return
@@ -560,7 +563,7 @@ func _update(unit: Unit) -> void:
 		if goal == unit.target and unit.can_attack and unit.cooldown <= 0.0 and unit.damage > 0.0:
 			_hit(unit, goal)
 	elif unit.speed > 0.0:
-		unit.pos = unit.pos.move_toward(_waypoint(unit, goal.pos), step_length)
+		unit.pos = _steer(unit, _waypoint(unit, _approach_spot(unit, goal)), step_length, goal)
 
 
 ## The main tower sleeps until it takes damage or one of its side towers falls.
@@ -752,6 +755,96 @@ func _in_range(unit: Unit, other: Unit) -> bool:
 	if other.charming and unit.kind == "troop" and unit.ranged and not unit.eyes_closed():
 		reach = minf(reach, float(_battle.melee_range_tiles))
 	return _gap(unit, other) <= reach
+
+
+## Where a unit should head to attack its goal. Far away, that is simply the goal. Close by, it is a free spot
+## on a ring around the goal at attacking distance, starting from the side the unit comes from and trying further round
+## each way until one is open. That way attackers spread around a tower or a big troop instead of queuing behind each other.
+func _approach_spot(unit: Unit, goal: Unit) -> Vector2:
+	if not unit.flying and not same_river_side(unit.pos, goal.pos):
+		return goal.pos
+	var reach := unit.attack_range
+	if _gap(unit, goal) > reach + float(_battle.steering.approach_tiles):
+		return goal.pos
+	var standoff := goal.radius + unit.radius + reach * 0.8
+	var base := (unit.pos - goal.pos).angle() if unit.pos != goal.pos else PI / 2.0
+	var turn := float(_battle.steering.approach_turn)
+	var tries := int(PI / turn)
+	for i in tries * 2 + 1:
+		var side := 1.0 if i % 2 == 1 else -1.0
+		var spot := goal.pos + Vector2.from_angle(base + side * turn * ceilf(i / 2.0)) * standoff
+		if _spot_free(unit, goal, spot):
+			return spot
+	return goal.pos
+
+
+## A spot is free when no other unit on the same layer already stands there, it is inside the arena,
+## and a ground unit would not be standing in the river.
+func _spot_free(unit: Unit, goal: Unit, spot: Vector2) -> bool:
+	if spot != _clamp_to_arena(spot) or (not unit.flying and in_river(spot)):
+		return false
+	for other in units:
+		if other == unit or other == goal or other.flying != unit.flying or other.is_spell() or other.carrier != null or not other.alive():
+			continue
+		if other.pos.distance_to(spot) < (unit.radius + other.radius) * 0.9:
+			return false
+	return true
+
+
+## Moves a unit one step toward a spot, stepping around anything standing in its way.
+## Units walking on ahead in the same direction are not in the way, so groups still move together.
+## When something blocks the path, the unit sidesteps to the more open side and keeps that side for a moment.
+func _steer(unit: Unit, toward: Vector2, step_length: float, goal: Unit) -> Vector2:
+	if unit.pos.distance_to(toward) <= step_length:
+		return toward
+	var heading := (toward - unit.pos).normalized()
+	var blocker := _blocker(unit, heading, step_length, goal)
+	if blocker == null:
+		if time >= unit.steer_until:
+			unit.steer_side = 0.0
+		return unit.pos + heading * step_length
+	if unit.steer_side == 0.0 or time >= unit.steer_until:
+		unit.steer_side = _open_side(unit, heading, blocker, step_length, goal)
+		unit.steer_until = time + float(_battle.steering.keep_side_seconds)
+	var side := Vector2(-heading.y, heading.x) * unit.steer_side
+	var around := (heading * float(_battle.steering.forward_share) + side).normalized()
+	return unit.pos + around * step_length
+
+
+## The closest unit just ahead that would bump into this one, leaving out the goal itself and anything moving on
+## in the same direction at a similar pace.
+func _blocker(unit: Unit, heading: Vector2, step_length: float, goal: Unit) -> Unit:
+	var best: Unit = null
+	var best_ahead := INF
+	var look := float(_battle.steering.look_ahead_tiles)
+	for other in units:
+		if other == unit or other == goal or other.flying != unit.flying or other.is_spell() or other.carrier != null or not other.alive():
+			continue
+		var offset := other.pos - unit.pos
+		var ahead := offset.dot(heading)
+		var room := unit.radius + other.radius
+		if ahead <= 0.0 or ahead > room + look or absf(offset.cross(heading)) >= room * 0.95:
+			continue
+		if not other.is_building() and other.last_step.dot(heading) >= step_length * 0.6:
+			continue
+		if ahead < best_ahead:
+			best = other
+			best_ahead = ahead
+	return best
+
+
+## Picks which way to go around a blocker: away from the side it leans to, unless that side is blocked too
+## or would walk into the river. A blocker dead ahead is passed on a side that depends on the unit's group,
+## which spreads a crowd out both ways.
+func _open_side(unit: Unit, heading: Vector2, blocker: Unit, step_length: float, goal: Unit) -> float:
+	var lean := (blocker.pos - unit.pos).cross(heading)
+	var first := 1.0 if lean > 0.05 else (-1.0 if lean < -0.05 else (1.0 if unit.group % 2 == 0 else -1.0))
+	for side in [first, -first]:
+		var perpendicular := Vector2(-heading.y, heading.x) * side
+		var probe := unit.pos + perpendicular * (unit.radius + blocker.radius)
+		if (unit.flying or not in_river(probe)) and probe == _clamp_to_arena(probe) and _blocker(unit, perpendicular, step_length, goal) == null:
+			return side
+	return first
 
 
 ## Ground troops cannot cross the river, so they head for the nearest bridge first, walk over it, then go straight for the goal.

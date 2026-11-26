@@ -307,6 +307,12 @@ func _check_new_cards() -> int:
 	_run(sim, 1.0)
 	broken += _expect(friend.hp > friend.max_hp * 0.5 and is_equal_approx(patient.hp, patient.max_hp * 0.5), "Mrs. Give & Take healed the wrong troop")
 
+	# A troop placed right behind its own side tower walks around it instead of getting stuck.
+	sim = _quiet_sim()
+	var walker: Unit = sim.spawn("hobb", player, Vector2(3.5, 28.5))[0]
+	_run(sim, 6.0)
+	broken += _expect(walker.pos.y < 23.0, "a troop got stuck behind its own tower at %s" % [walker.pos])
+
 	for each in _sims:
 		each.clear()
 	_sims.clear()

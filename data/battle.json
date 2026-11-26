@@ -68,6 +68,13 @@
 		}
 	},
 	"sight_range_tiles": 5.5,
+	"steering": {
+		"approach_tiles": 3.0,
+		"approach_turn": 0.35,
+		"look_ahead_tiles": 0.4,
+		"forward_share": 0.35,
+		"keep_side_seconds": 0.6
+	},
 	"unit_radius_tiles": 0.45,
 	"default_hit_speed": 1.0,
 	"swarm_spread_tiles": 0.6,

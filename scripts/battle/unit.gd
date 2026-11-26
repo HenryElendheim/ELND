@@ -52,6 +52,13 @@ var strength := 1.0
 ## which means an ability scales with levels the same way normal hits do.
 var power := 1.0
 
+## How far the unit moved during the last tick, which tells others whether it is walking on or standing in the way.
+var last_step := Vector2.ZERO
+## Which way the unit is stepping around something in its path: 1 or -1, or 0 when nothing is in the way.
+## It keeps the same side for a moment, which stops it from wobbling back and forth.
+var steer_side := 0.0
+var steer_until := 0.0
+
 var deploy_left := 0.0
 var cooldown := 0.0
 var awake := true

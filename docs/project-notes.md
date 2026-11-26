@@ -66,6 +66,13 @@ Keep this file up to date whenever something important changes.
 - `BattleSim.clone_unit()` makes half-strength copies, which are `is_clone`. `spawn()` hands back the units it made, and big swarms spawn in two rings.
 - Targets `"living"` (The Blinker) only hits living troops. Speed `very_fast` is 2 tiles a second.
 
+## Troop movement
+
+- Close to its goal (within `steering.approach_tiles` of attack range), a troop heads for a free spot on a ring around the goal at attacking distance, trying further round each way until one is open. Attackers spread around towers and big troops instead of queuing.
+- On the way, `_steer` checks for a unit just ahead. Allies walking on in the same direction do not count, so groups still move together. Anything standing in the way (a busy ally, a tower, a building, a troop it cannot hit) is passed on the more open side, and the side is kept for `keep_side_seconds` so it does not wobble.
+- Forced moves (being lured into The Gasket, carried off) still go straight to their spot.
+- The numbers live in `battle.json` under `steering`.
+
 ## Gotchas learned the hard way
 
 - Never name functions `_get`, `_set` or other built-in Object methods. It breaks the script.
