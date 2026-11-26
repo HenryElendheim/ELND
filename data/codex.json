@@ -19,7 +19,12 @@
 		"clone": "A clone from the future that can duplicate itself at will. The Foundation used its DNA to build its own cloning machines and injections, the source of the clones used to feed ELND-012 and ELND-015. Its cells clone anything they touch, so the Foundation turned it into an almost-grenade: thrown onto their strongest warriors, the clones fight alongside them. Clones are about 50% weaker, but fantastic decoys. Happy as long as it is treated kindly.",
 		"give_and_take": "A human woman who drains the life from one creature to give it to another. Take: she drains one creature at a time, and it empowers her. Give: she gives life force to the most hurt creature she can find. She can give more than she took, but only by draining her own life. Contained with lots of animal pets to look after. She drains every predatory animal sent in, to keep her pets safe and full of life.",
 		"blinker": "A mass of flesh that can speed past you in less than a second and consumes your flesh quicker than you can blink. Zoom: it speeds itself forward, but every skip shortens its lifespan by the time it skipped, so it has to be careful. If it Zooms more than 4 times in a row without a recharge, it dies.",
-		"swarm": "A group of 15 short humanoids with sharp swords."
+		"swarm": "A group of 15 short humanoids with sharp swords.",
+		"weight": "Draft. A smooth grey stone the size of a fist, impossibly heavy for its size. Anything airborne near it feels its own weight multiply: birds drop, drones fall, and a thrown ball comes straight down. It has no effect on anything already touching the ground. Contained on a padded floor, three storeys down.",
+		"moth_choir": "Draft. A cloud of pale moths that hum in perfect harmony. They gather around any light and slowly eat through fabric, then skin. Turn the lights off and they go silent and settle. Contained in a dark room with a single dim bulb they are allowed to sing to.",
+		"toll": "Draft. A cracked bronze bell that rings by itself. Everyone who hears it freezes in place for a moment, as if remembering something. It rings more often when people are near. Contained in a soundproof vault, and never rung on purpose.",
+		"brood": "Draft. A warm, fleshy mass grown into a wall. Every few minutes something small and hungry crawls out of it and goes looking for food. Removing the mass only makes it grow back larger. Contained by feeding the young before they leave the cell.",
+		"splitter": "Draft. A grey, rubbery humanoid that does not die so much as divide. Each wound that would kill it splits it into two smaller copies, and those split once more. The pieces always try to find each other again. Contained whole, in one piece, and never shot."
 	},
 	"tags": {
 		"devil": [

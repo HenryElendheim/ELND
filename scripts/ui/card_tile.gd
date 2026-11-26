@@ -28,7 +28,7 @@ var _down_at: Variant = null
 var _down_ms := 0
 var _moved := false
 var _held := false
-## A card the player cannot get yet. It is drawn dimmed, with the arena that unlocks it where the level would be.
+## A card the player cannot get yet. It is drawn in grey, with the Lab or Site that unlocks it where the level would be.
 var locked := false
 ## Glows purple, which marks a card in the evolution slot with its evolution unlocked, or one ready to come out evolved.
 var evolution := false
@@ -107,6 +107,13 @@ func _draw() -> void:
 	if show_progress:
 		_draw_level(font, frame)
 	var class_colour := Color(cards.classes.get(card.get("class", ""), "#8A8A8A"))
+	var cost_fill := COST_FILL
+	var cost_edge := COST_EDGE
+	if locked:
+		frame = _grey(frame)
+		class_colour = _grey(class_colour)
+		cost_fill = _grey(cost_fill)
+		cost_edge = _grey(cost_edge)
 
 	if evolution:
 		# In the hand the evolution glow pulses, since the hand is redrawn every frame.
@@ -131,8 +138,8 @@ func _draw() -> void:
 
 	var radius := minf(inner.size.x, inner.size.y) * 0.17
 	var drop := inner.position + Vector2(radius + 4, radius + 4)
-	draw_circle(drop, radius, COST_FILL)
-	draw_arc(drop, radius, 0, TAU, 24, COST_EDGE, 3.0)
+	draw_circle(drop, radius, cost_fill)
+	draw_arc(drop, radius, 0, TAU, 24, cost_edge, 3.0)
 	_centred(font, str(int(card.cost)), drop + Vector2(0, radius * 0.38), int(radius * 1.15), Color.WHITE, radius * 2)
 
 	_draw_evolution_tag(font, inner, radius)
@@ -140,7 +147,7 @@ func _draw() -> void:
 	if button_pressed:
 		draw_rect(tile, Color.WHITE, false, 6.0)
 	if locked:
-		draw_rect(tile, Color(0, 0, 0, 0.55))
+		draw_rect(tile, Color(0, 0, 0, 0.3))
 	if show_progress:
 		_draw_progress(font, Rect2(0, tile.end.y + GAP, size.x, BAR_HEIGHT))
 
@@ -151,7 +158,7 @@ func _draw_level(font: Font, colour: Color) -> void:
 	var level := int(Progress.card(card_id).level)
 	var text_value := "Max level" if level >= Progress.max_card_level() else "Level %d" % level
 	if locked:
-		text_value = "Arena %d" % int(Data.table("cards").cards[card_id].get("unlock_arena", 1))
+		text_value = Progress.arena_name(int(Data.table("cards").cards[card_id].get("unlock_arena", 1)))
 		colour = Color(0.75, 0.75, 0.8)
 	_centred(font, text_value, Vector2(size.x / 2.0, LEVEL_HEIGHT * 0.8), int(LEVEL_HEIGHT * 0.8), colour.lightened(0.2), size.x - 8)
 
@@ -196,6 +203,12 @@ func _draw_evolution_tag(font: Font, inner: Rect2, radius: float) -> void:
 			draw_circle(at, dot, Color.WHITE)
 		else:
 			draw_arc(at, dot, 0, TAU, 16, Color.WHITE, 3.0)
+
+
+## The same colour with its colour taken out, keeping how light it is.
+static func _grey(colour: Color) -> Color:
+	var light := colour.get_luminance()
+	return Color(light, light, light, colour.a)
 
 
 ## Draws text centred on a point with a dark outline, shrinking the font until it fits the given width.

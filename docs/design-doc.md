@@ -223,9 +223,11 @@ An **Evolution** is an empowered version of a card.
 - **Rare (2):** John Arms, The Gasket
 - **Epic (2):** The Hobb, Kardemosh
 - **Legendary (1):** The Creeler
-- **Arena 2 unlocks:** The Spiker (Legendary spell), The Cloud, The Hanged One, The Swarm
-- **Arena 3 unlocks:** The Devil In The Forest, Mrs. Give & Take, The Clone
-- **Arena 4 unlocks:** The Danger Zone, The Blinker, The Pardoned One
+- **Lab 5 unlocks:** The Spiker (Legendary spell), The Cloud, The Hanged One, The Swarm
+- **Site 12 unlocks:** The Devil In The Forest, Mrs. Give & Take, The Clone
+- **Site 49 unlocks:** The Danger Zone, The Blinker, The Pardoned One, The Weight
+- **Lab 17 unlocks:** The Moth Choir, The Toll
+- **Site 88 unlocks:** The Brood, The Splitter
 
 **Rarity rule:** rarity follows the Codex threat level.
 Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 → Legendary
@@ -765,13 +767,104 @@ No special ability: pure numbers. Fifteen sharp swords shred tanks and single-ta
 
 ---
 
+### ELND-021 — The Weight *(draft by Claude, rename or rewrite freely)*
+**Codex (draft):** Class CLAM · Threat 3/5. A smooth grey stone the size of a fist, impossibly heavy for its size. Anything airborne near it feels its own weight multiply: birds drop, drones fall, and a thrown ball comes straight down. No effect on anything already on the ground.
+
+| Stat | Draft |
+|---|---|
+| Type | Spell (anti-air) |
+| Rarity | Rare (Threat 3) |
+| Ephrocity cost | 3 |
+| Radius | ~4 tiles |
+| Unlock | Site 49 (with The Pardoned One) |
+
+**Ability: Gravity**
+- Every enemy flyer in the area, hovering buildings included (The Cloud), slams to the ground for **4 s** and takes ~60 impact damage
+- While grounded, melee ground troops can hit it. The Pardoned One killed while grounded is gone for good.
+- Ground troops are not affected. This is the answer to all flyers that the Birdfeed idea was meant to be.
+
+**Evolution:** spells don't evolve.
+
+---
+
+### ELND-022 — The Moth Choir *(draft by Claude)*
+**Codex (draft):** Class CLAM · Threat 1/5. A cloud of pale moths that hum in perfect harmony. They gather around any light and slowly eat through fabric, then skin. Turn the lights off and they go silent and settle.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Flying · Melee · Swarm (x5) |
+| Targets | Air & ground |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 3 |
+| Health | ~45 each |
+| Damage | ~12 per hit each · 0.8 s hit speed |
+| Speed | Fast |
+| Unlock | Lab 17 |
+
+Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:** button smothers every enemy within 3 tiles, and they can't attack for 1.5 s.
+
+---
+
+### ELND-023 — The Toll *(draft by Claude)*
+**Codex (draft):** Class REKNA · Threat 3/5. A cracked bronze bell that rings by itself. Everyone who hears it freezes for a moment, as if remembering something. It rings more often when people are near.
+
+| Stat | Draft |
+|---|---|
+| Type | Building |
+| Rarity | Rare (Threat 3) |
+| Ephrocity cost | 4 |
+| Health / lifetime | ~500 · drains over ~25 s |
+| Unlock | Lab 17 |
+
+**Ability: Toll:** every 6 s it rings: every enemy troop within 3 tiles (flying too) is stunned for 0.6 s and takes ~20 damage. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest. **Evolution idea: Last Toll:** button rings straight away with a double-length stun.
+
+---
+
+### ELND-024 — The Brood *(draft by Claude)*
+**Codex (draft):** Class RINNER · Threat 4/5. A warm, fleshy mass grown into a wall. Every few minutes something small and hungry crawls out of it and goes looking for food. Removing the mass only makes it grow back larger.
+
+| Stat | Draft |
+|---|---|
+| Type | Building (spawner) |
+| Rarity | Epic (Threat 4) |
+| Ephrocity cost | 4 |
+| Health / lifetime | ~550 · drains over ~30 s |
+| Unlock | Site 88 |
+
+**Ability: Brood:** every 4 s a **Broodling** crawls out (ground, melee, fast, ~60 health, ~15 damage) and fights on its own. Broodlings are tokens: they never appear in chests or decks. **Evolution idea: Swarming Season:** button lets 3 Broodlings out at once.
+
+---
+
+### ELND-025 — The Splitter *(draft by Claude)*
+**Codex (draft):** Class HEIMER · Threat 4/5. A grey, rubbery humanoid that does not die so much as divide. Each wound that would kill it splits it into two smaller copies, and those split once more. The pieces always try to find each other again.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Ground · Melee · Tank |
+| Targets | Ground |
+| Rarity | Epic (Threat 4) |
+| Ephrocity cost | 5 |
+| Health | ~900 |
+| Damage | ~40 per hit · 1.3 s hit speed |
+| Speed | Medium |
+| Unlock | Site 88 |
+
+**Passive: Divide:** when it dies it splits into 2 halves (~400 health), and each half splits into 2 quarters (~180 health). Seven bodies in total. A clone never splits. **Evolution idea: Mitosis:** button splits it straight away.
+
+**Counter:** area damage, and The Gasket (it takes one body at a time, but there are seven).
+
+
+---
+
 ## 6. Progression
 
-### 6.1 Reputation Road & Arenas
+### 6.1 Reputation Road: Labs & Sites
 - **Reputation** is your standing around the ELND Foundation
 - **+30 reputation** per win, **−15** per loss
-- Reputation moves you along the **road**; a **new arena every 400 reputation**
-- New arenas unlock new cards for chests
+- Reputation moves you along the **road**; a **new Lab or Site every 400 reputation** (they replace "arenas")
+- In order: Lab 1, Lab 5, Site 12, Site 49, Lab 17, Site 88, Lab 23, Site 113, Lab 42, Site 120, Site 0 (names in `progression.json`, rename freely)
+- New Labs and Sites unlock new cards for chests
+- **Foundation road screen** (from the Battle page): every Lab and Site, the reputation it needs and the cards it unlocks, with your place marked. Cards from places not reached yet are greyed out and can be tapped for details.
 
 ### 6.2 Player Level
 - **No max player level** (effectively infinite)
@@ -993,7 +1086,8 @@ Saved locally. Ideas:
 - [ ] Can spells evolve? (suggested: no)
 - [x] Cards for Arena 3 and 4 (ELND-012 to 020)
 - [ ] Cards for Arena 5+
-- [ ] Birdfeed spell (pacifies flyers for a few seconds, a hard counter to The Pardoned One)
+- [x] An answer to all flyers: The Weight (replaces the Birdfeed idea)
+- [ ] Rewrite the draft codex entries for ELND-021 to 025, or swap in your own anomalies
 - [ ] Full codex entries (abilities and containment) for The Hanged One and The Swarm
 - [ ] Which cards can evolve, and each one's cycle requirement
 - [ ] Pixel art colour palette

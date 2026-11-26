@@ -74,9 +74,15 @@ static func available_cards() -> Array:
 	for id in cards:
 		if cards[id].get("neutralized", false):
 			continue
-		if cards[id].get("type") in battle.playable_types and int(cards[id].get("unlock_arena", 1)) <= Progress.arena():
+		if is_collectable(cards[id]) and int(cards[id].get("unlock_arena", 1)) <= Progress.arena():
 			found.append(id)
 	return found
+
+
+## True for a card that can be collected and played. Tokens, such as the Broodlings The Brood spawns,
+## only ever appear on the field and never in chests, decks or the collection.
+static func is_collectable(card: Dictionary) -> bool:
+	return card.get("type") in Data.table("battle").playable_types and not card.get("token", false)
 
 
 ## The player's saved deck when it is still valid, and otherwise the first cards that are available.
@@ -435,6 +441,9 @@ func step() -> void:
 	for unit in units:
 		unit.prev_pos = unit.pos
 		unit.reset_effects()
+		# A flyer pulled down by The Weight walks on the ground until it wears off, but never over the river.
+		unit.grounded_left = maxf(unit.grounded_left - tick, 0.0)
+		unit.flying = unit.base_flying and not (unit.grounded_left > 0.0 and not in_river(unit.pos))
 		unit.calm_left = maxf(unit.calm_left - tick, 0.0)
 		unit.hidden_left = maxf(unit.hidden_left - tick, 0.0)
 		if unit.calm_left > 0.0:

@@ -159,7 +159,10 @@ static func counter_score(card: Dictionary, threats: Array[Unit]) -> float:
 		return -50.0
 	var score := 0.0
 	var flying := threats.any(func(t: Unit) -> bool: return t.flying)
-	var hits_air: bool = card.get("targets") == "air_ground" and (card.get("attack") == "ranged" or card.get("movement") == "flying")
+	# A card that only works on flyers, such as The Weight, is a great answer to them and no answer to anything else.
+	if card.get("only_flyers", false):
+		return 20.0 - float(card.get("cost", 0)) if flying else -50.0
+	var hits_air: bool = card.get("type") == "spell" or (card.get("targets") == "air_ground" and (card.get("attack") == "ranged" or card.get("movement") == "flying"))
 	if flying and not hits_air:
 		return -100.0
 	if card.get("targets") in ["buildings", "none"]:

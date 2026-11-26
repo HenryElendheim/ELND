@@ -37,7 +37,7 @@ func _ready() -> void:
 	stats_screen.call("_switch")
 	await get_tree().process_frame
 	stats_screen.queue_free()
-	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin"]:
+	for scene in ["splash", "main_menu", "home", "settings_menu", "deck", "chest", "shop", "stats", "admin", "road"]:
 		var screen: Node = load("res://scenes/%s.tscn" % scene).instantiate()
 		add_child(screen)
 		await get_tree().process_frame
@@ -308,6 +308,39 @@ func _check_new_cards() -> int:
 	_run(sim, 1.0)
 	broken += _expect(friend.hp > friend.max_hp * 0.5 and is_equal_approx(patient.hp, patient.max_hp * 0.5), "Mrs. Give & Take healed the wrong troop")
 
+	# The Weight pulls a flyer down so a melee ground troop can hit it, and it flies again once it wears off.
+	sim = _quiet_sim()
+	var flyer: Unit = sim.spawn("creeler", enemy, Vector2(9, 20))[0]
+	_run(sim, 1.2)
+	sim.spawn("weight", player, Vector2(9, 20))
+	_run(sim, 0.2)
+	var pulled := not flyer.flying and flyer.hp < flyer.max_hp
+	_run(sim, 4.5)
+	broken += _expect(pulled and flyer.flying, "The Weight did not pull a flyer down and let it go again")
+
+	# The Toll stuns troops near it when it rings.
+	sim = _quiet_sim()
+	sim.spawn("toll", player, Vector2(9, 21))
+	var rung: Unit = sim.spawn("hobb", enemy, Vector2(9, 19.5))[0]
+	_run(sim, 2.4)
+	broken += _expect(rung.stun_left > 0.0 and rung.hp < rung.max_hp, "The Toll did not stun a troop next to it")
+
+	# The Brood lets out Broodlings, which never show up in the collection.
+	sim = _quiet_sim()
+	sim.spawn("brood", player, Vector2(9, 22))
+	_run(sim, 2.5)
+	var young := sim.units.filter(func(u: Unit) -> bool: return u.id == "broodling").size()
+	broken += _expect(young >= 1 and not "broodling" in BattleSim.available_cards(), "The Brood did not spawn, or Broodlings are collectable")
+
+	# The Splitter splits into two halves when it dies.
+	sim = _quiet_sim()
+	var splitter: Unit = sim.spawn("splitter", player, Vector2(9, 22))[0]
+	_run(sim, 1.2)
+	sim.deal_damage(null, splitter, splitter.hp + 1.0)
+	_run(sim, 0.1)
+	var halves := sim.units.filter(func(u: Unit) -> bool: return u.id == "splitter_half").size()
+	broken += _expect(halves == 2, "The Splitter split into %d halves" % halves)
+
 	# A troop placed right behind its own side tower walks around it instead of getting stuck.
 	sim = _quiet_sim()
 	var walker: Unit = sim.spawn("hobb", player, Vector2(3.5, 28.5))[0]
@@ -360,10 +393,10 @@ func _expect(ok: bool, problem: String) -> int:
 ## The Admin Mode card search finds cards by name, by tag, and by a picked category.
 func _check_card_search() -> int:
 	var cases := [
-		[CardSearch.find("", "flying"), ["creeler", "pardoned", "cloud"]],
+		[CardSearch.find("", "flying"), ["creeler", "pardoned", "cloud", "moth_choir"]],
 		[CardSearch.find("the chain", "spell"), ["chain"]],
 		[CardSearch.find("ranged troop", ""), ["spacefarer", "pardoned", "give_and_take"]],
-		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take"]],
+		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take", "moth_choir"]],
 		[CardSearch.find("legendary", "spell"), ["spiker"]],
 	]
 	for entry in cases:

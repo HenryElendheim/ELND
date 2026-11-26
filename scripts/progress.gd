@@ -16,6 +16,23 @@ static func arena() -> int:
 	return 1 + reputation() / int(_table("progression").reputation.per_arena)
 
 
+## The name of a Lab or Site on the reputation road, such as "Site 49". Past the named ones they are numbered Sites.
+static func arena_name(index: int) -> String:
+	var names: Array = _table("progression").get("arena_names", [])
+	return String(names[index - 1]) if index >= 1 and index <= names.size() else "Site %d" % index
+
+
+## How many Labs and Sites the reputation road has.
+static func arena_count() -> int:
+	var names: Array = _table("progression").get("arena_names", [])
+	return maxi(names.size(), 1 + int(_table("progression").road_top_reputation) / int(_table("progression").reputation.per_arena))
+
+
+## The reputation needed to reach a Lab or Site.
+static func reputation_for(index: int) -> int:
+	return (index - 1) * int(_table("progression").reputation.per_arena)
+
+
 static func player_level() -> int:
 	return int(_read("player_level", 1))
 
@@ -357,7 +374,7 @@ static func _unlocked_by_rarity() -> Dictionary:
 	var groups := {}
 	for id in cards_table.cards:
 		var entry: Dictionary = cards_table.cards[id]
-		if int(entry.get("unlock_arena", 1)) > arena() or not entry.get("type") in Data.table("battle").playable_types:
+		if int(entry.get("unlock_arena", 1)) > arena() or not BattleSim.is_collectable(entry):
 			continue
 		groups.get_or_add(card_rarity(id), []).append(id)
 	return groups

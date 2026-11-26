@@ -23,8 +23,8 @@ func tick(sim: BattleSim) -> void:
 	out = still_out
 	var grounded := out.size() > int(number("grounded_above")) or sim.time < grounded_until
 	# She never lands in the river. She waits until she is over ground or a bridge.
-	if not grounded or not sim.in_river(unit.pos):
-		unit.flying = not grounded
+	if grounded and not sim.in_river(unit.pos):
+		unit.flying = false
 	if out.size() >= int(number("feathers")):
 		unit.can_attack = false
 

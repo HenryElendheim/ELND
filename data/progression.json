@@ -19,5 +19,18 @@
 		"copies_per_level_step": 3,
 		"starting_copies": 1
 	},
-	"road_top_reputation": 4000
+	"road_top_reputation": 4000,
+	"arena_names": [
+		"Lab 1",
+		"Lab 5",
+		"Site 12",
+		"Site 49",
+		"Lab 17",
+		"Site 88",
+		"Lab 23",
+		"Site 113",
+		"Lab 42",
+		"Site 120",
+		"Site 0"
+	]
 }

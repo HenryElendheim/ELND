@@ -650,6 +650,205 @@
 			},
 			"short_name": "Swarm",
 			"how_it_works": "Fifteen short humanoids with sharp swords. No special ability, just numbers: they shred tanks and anything that can only handle one troop at a time."
+		},
+		"weight": {
+			"number": 21,
+			"name": "The Weight",
+			"class": "CLAM",
+			"threat": 3,
+			"unlock_arena": 4,
+			"type": "spell",
+			"cost": 3,
+			"radius": 4.0,
+			"only_flyers": true,
+			"abilities": [
+				{
+					"id": "gravity",
+					"grounded_time": 4.0,
+					"impact_damage": 60
+				}
+			],
+			"short_name": "Weight",
+			"how_it_works": "Gravity: every enemy flyer within 4 tiles, hovering buildings included, slams to the ground for 4 seconds and takes 60 damage. While grounded, melee ground troops can hit it, and The Pardoned One killed while grounded is gone for good. Ground troops are not affected."
+		},
+		"moth_choir": {
+			"number": 22,
+			"name": "The Moth Choir",
+			"class": "CLAM",
+			"threat": 1,
+			"unlock_arena": 5,
+			"type": "troop",
+			"cost": 3,
+			"count": 5,
+			"health": 45,
+			"damage": 12,
+			"hit_speed": 0.8,
+			"speed": "fast",
+			"movement": "flying",
+			"attack": "melee",
+			"targets": "air_ground",
+			"size": 0.6,
+			"abilities": [],
+			"evolution": {
+				"name": "Lights Out",
+				"ability": "cuddle",
+				"radius": 3.0,
+				"duration": 1.5,
+				"how_it_works": "Lights Out: their button smothers every enemy within 3 tiles in wings, and they cannot attack for 1.5 seconds."
+			},
+			"short_name": "Moths",
+			"how_it_works": "Five humming moths that fly and bite anything, in the air or on the ground. Cheap air cover that can chase down other flyers."
+		},
+		"toll": {
+			"number": 23,
+			"name": "The Toll",
+			"class": "REKNA",
+			"threat": 3,
+			"unlock_arena": 5,
+			"type": "building",
+			"cost": 4,
+			"health": 500,
+			"lifetime": 25.0,
+			"abilities": [
+				{
+					"id": "toll",
+					"radius": 3.0,
+					"interval": 6.0,
+					"first_ring": 1.0,
+					"stun": 0.6,
+					"damage": 20
+				}
+			],
+			"evolution": {
+				"name": "Last Toll",
+				"ability": "last_toll",
+				"strength": 2.0,
+				"how_it_works": "Last Toll: its button rings the bell straight away, and that stun lasts twice as long."
+			},
+			"short_name": "Toll",
+			"how_it_works": "Toll: every 6 seconds the bell rings. Every enemy troop within 3 tiles, flying or not, is stunned for 0.6 seconds and takes 20 damage. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
+		},
+		"brood": {
+			"number": 24,
+			"name": "The Brood",
+			"class": "RINNER",
+			"threat": 4,
+			"unlock_arena": 6,
+			"type": "building",
+			"cost": 4,
+			"health": 550,
+			"lifetime": 30.0,
+			"abilities": [
+				{
+					"id": "spawner",
+					"spawns": "broodling",
+					"interval": 4.0,
+					"first_spawn": 1.0,
+					"crawl_out": 0.4
+				}
+			],
+			"evolution": {
+				"name": "Swarming Season",
+				"ability": "swarming_season",
+				"count": 3,
+				"how_it_works": "Swarming Season: its button lets 3 Broodlings out at once."
+			},
+			"short_name": "Brood",
+			"how_it_works": "Brood: every 4 seconds a Broodling crawls out toward the enemy. Broodlings are small, fast biters with 60 health that fight on their own."
+		},
+		"broodling": {
+			"number": 0,
+			"name": "Broodling",
+			"class": "RINNER",
+			"threat": 1,
+			"token": true,
+			"type": "troop",
+			"cost": 0,
+			"health": 60,
+			"damage": 15,
+			"hit_speed": 1.0,
+			"speed": "fast",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"size": 0.6,
+			"abilities": [],
+			"short_name": "Broodling"
+		},
+		"splitter": {
+			"number": 25,
+			"name": "The Splitter",
+			"class": "HEIMER",
+			"threat": 4,
+			"unlock_arena": 6,
+			"type": "troop",
+			"cost": 5,
+			"health": 900,
+			"damage": 40,
+			"hit_speed": 1.3,
+			"speed": "medium",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"size": 1.2,
+			"abilities": [
+				{
+					"id": "split",
+					"into": "splitter_half",
+					"count": 2
+				}
+			],
+			"evolution": {
+				"name": "Mitosis",
+				"ability": "mitosis",
+				"how_it_works": "Mitosis: its button splits it straight away, wherever it stands, whatever health it has left."
+			},
+			"short_name": "Splitter",
+			"how_it_works": "Divide: when it dies it splits into 2 halves (400 health each), and each half splits once more into 2 quarters (180 health each). Kill all seven to be rid of it."
+		},
+		"splitter_half": {
+			"number": 0,
+			"name": "Splitter Half",
+			"class": "HEIMER",
+			"threat": 4,
+			"token": true,
+			"type": "troop",
+			"cost": 0,
+			"health": 400,
+			"damage": 22,
+			"hit_speed": 1.1,
+			"speed": "medium",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"size": 0.9,
+			"abilities": [
+				{
+					"id": "split",
+					"into": "splitter_quarter",
+					"count": 2
+				}
+			],
+			"short_name": "Half"
+		},
+		"splitter_quarter": {
+			"number": 0,
+			"name": "Splitter Quarter",
+			"class": "HEIMER",
+			"threat": 4,
+			"token": true,
+			"type": "troop",
+			"cost": 0,
+			"health": 180,
+			"damage": 12,
+			"hit_speed": 1.0,
+			"speed": "fast",
+			"movement": "ground",
+			"attack": "melee",
+			"targets": "ground",
+			"size": 0.6,
+			"abilities": [],
+			"short_name": "Quarter"
 		}
 	},
 	"spell_kinds": {

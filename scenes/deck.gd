@@ -77,7 +77,7 @@ func build() -> void:
 	if not locked.is_empty():
 		add(Ui.spacer(12))
 		add(Ui.label("Locked", "HeadingLabel"))
-		add(Ui.label("These turn up in chests once you reach their arena. Tap one to see what it does.", "MutedLabel"))
+		add(Ui.label("These turn up in chests once you reach their Lab or Site. The Foundation road on the Battle page shows where each one is.", "MutedLabel"))
 		var grid := _new_grid()
 		for id in locked:
 			var tile := CardTile.new(id, true)
@@ -164,14 +164,13 @@ func _pick_deck(index: int) -> void:
 	_rebuild()
 
 
-## Cards from later arenas, soonest first. Neutralized cards stay hidden.
+## Cards from later Labs and Sites. Neutralized cards stay hidden.
 static func _locked_cards() -> Array:
 	var cards: Dictionary = Data.table("cards").cards
-	var playable: Array = Data.table("battle").playable_types
 	var found := []
 	for id in cards:
 		var card: Dictionary = cards[id]
-		if card.get("type") in playable and not card.get("neutralized", false) and int(card.get("unlock_arena", 1)) > Progress.arena():
+		if BattleSim.is_collectable(card) and not card.get("neutralized", false) and int(card.get("unlock_arena", 1)) > Progress.arena():
 			found.append(id)
 	return found
 

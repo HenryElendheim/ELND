@@ -23,7 +23,11 @@ var hit_speed := 1.0
 var attack_range := 1.0
 var ranged := false
 var speed := 0.0
+## Whether the unit flies right now, and whether its card flies at all. Being pulled down only changes the first.
 var flying := false
+var base_flying := false
+## Seconds left of being pulled out of the air, as The Weight does.
+var grounded_left := 0.0
 var targets := "ground"
 
 var area := false
@@ -158,7 +162,8 @@ func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
 	ranged = stats.get("attack", "ranged") == "ranged"
 	attack_range = float(stats.get("range", battle.melee_range_tiles))
 	speed = float(battle.speeds_tiles_per_second.get(stats.get("speed", ""), 0.0))
-	flying = stats.get("movement", "ground") == "flying"
+	base_flying = stats.get("movement", "ground") == "flying"
+	flying = base_flying
 	targets = stats.get("targets", "air_ground" if is_spell() else "ground")
 	area = stats.get("area", false)
 	projectile = stats.get("projectile", battle.default_projectile) if ranged else {}

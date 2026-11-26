@@ -63,6 +63,8 @@ func take_events(delta: float) -> void:
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
 			"cast":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "cast": true, "radius": event.radius, "card": event.card})
+			"toll":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "toll": true, "radius": event.radius})
 			"backlash":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "backlash": true})
 			"cloned":
@@ -219,6 +221,11 @@ func _draw_status(unit: Unit, at: Vector2, r: float, motion: bool, front: bool) 
 		draw_circle(at, r * 1.2, Color(0.25, 0.1, 0.35, 0.35))
 	if unit.link_until > sim.time:
 		draw_arc(at, r * 1.15, 0, TAU, 24, Color("#C8C8D0"), 3.0)
+	# A flyer pulled down by The Weight has heavy grey bars pressing down on it.
+	if unit.grounded_left > 0.0 and unit.base_flying:
+		for i in 3:
+			var x := (i - 1) * r * 0.6
+			draw_line(at + Vector2(x, -r * 1.7), at + Vector2(x, -r * 1.15), Color(0.6, 0.6, 0.65, 0.9), maxf(r * 0.15, 3.0))
 
 
 ## An evolved unit sits in a soft purple glow with a bright purple ring, which pulses gently unless reduced motion is on.
@@ -277,6 +284,11 @@ func _draw_effect(effect: Dictionary) -> void:
 		var reach: float = effect.radius * _tile
 		draw_circle(at, reach, Color(colour.lightened(0.3), 0.35 * (1.0 - share)))
 		draw_arc(at, reach * (0.3 + 0.7 * share if motion else 1.0), 0, TAU, 48, Color(Color.WHITE, 1.0 - share), 5.0)
+		return
+	# The Toll's ring is a bronze wave that spreads out to the edge of its reach.
+	if effect.get("toll", false):
+		var reach: float = effect.radius * _tile * (share if motion else 1.0)
+		draw_arc(at, maxf(reach, _tile * 0.3), 0, TAU, 48, Color(0.85, 0.6, 0.25, 1.0 - share), 6.0)
 		return
 	# The Danger Zone's backlash cracks each troop it enraged, with short red lines bursting out.
 	if effect.get("backlash", false):

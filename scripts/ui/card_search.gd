@@ -68,7 +68,7 @@ static func find(query: String, category: String) -> Array:
 	var cards: Dictionary = Data.table("cards").cards
 	var ids := []
 	for id in cards:
-		if matches(id, query, category):
+		if BattleSim.is_collectable(cards[id]) and matches(id, query, category):
 			ids.append(id)
 	ids.sort_custom(func(a: String, b: String) -> bool: return _by_number(a, b))
 	return ids

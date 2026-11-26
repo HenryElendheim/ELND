@@ -121,6 +121,10 @@ Keep this file up to date whenever something important changes.
 - The bot gets as many evolutions as the player has in their evolution slot.
 - In battle, hand cards with an evolution show dots for the plays still needed, then EVO. A purple line above the hand names the evolution card and the plays left. Evolved units glow purple on the field.
 - Every placement snaps to tile centres, and tower tiles can never be used.
+- Arenas are called Labs and Sites in the game (`arena_names` in `progression.json`, read with `Progress.arena_name`). The code still says arena for the number.
+- Cards ELND-021 to 025 (The Weight, The Moth Choir, The Toll, The Brood, The Splitter) are Claude's drafts, made when Henry asked for more cards and an answer to all flyers. Henry may rewrite their lore and names.
+- Tokens (`"token": true`, such as Broodlings and the Splitter's halves and quarters) only appear on the field. `BattleSim.is_collectable` keeps them out of chests, decks, the collection and search.
+- `Unit.base_flying` is what the card says, and `flying` is what it is right now. `grounded_left` (The Weight) keeps a flyer on the ground, except over the river.
 - Cards ELND-012 to 020 unlock across arenas: Arena 2 gets The Cloud, The Hanged One and The Swarm, Arena 3 The Devil In The Forest, Mrs. Give & Take and The Clone, and Arena 4 The Danger Zone, The Blinker and The Pardoned One (chosen with Henry on 26 Nov 2026).
 - Spells don't evolve. The Danger Zone and The Clone have `"cast_on": "allies"`, so the bot only casts them on its own push and never as an answer to a threat.
 

@@ -7,6 +7,8 @@ const SIDE_MARGIN := 56
 const TOP_MARGIN := 120
 
 var content := VBoxContainer.new()
+## The scrolling area around the content, so a screen can scroll to a part of itself.
+var scroll_box: ScrollContainer
 ## True when the screen sits inside a page of the main menu, which has its own tabs, so it needs no Back button.
 var embedded := false
 
@@ -22,6 +24,7 @@ func _ready() -> void:
 	add_child(margin)
 
 	var scroll := ScrollContainer.new()
+	scroll_box = scroll
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	margin.add_child(scroll)
 	DragScroll.attach(scroll)
