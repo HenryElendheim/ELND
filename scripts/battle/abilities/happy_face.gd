@@ -1,5 +1,5 @@
 extends Ability
-## The Devil In The Forest drains one enemy troop at a time that stands close to it, and heals itself by the same amount.
+## The Devil In The Forest drains one enemy troop at a time that stands close to it, and heals itself by a share of it.
 ## The troop being drained barely hurts it back. A troop with its eyes closed, because it is stunned or blinking,
 ## is safe from the drain, and lifeless troops have nothing to drain. When the victim dies, the next closest one is picked.
 
@@ -17,7 +17,7 @@ func tick(sim: BattleSim) -> void:
 	var before := victim.hp + victim.shield
 	sim.deal_damage(unit, victim, rate * sim.tick, false)
 	var taken := before - maxf(victim.hp, 0.0) - victim.shield
-	unit.hp = minf(unit.hp + taken, unit.max_hp)
+	unit.hp = minf(unit.hp + taken * number("heal_share", 1.0), unit.max_hp)
 
 
 func on_hurt(_sim: BattleSim, attacker: Unit, amount: float) -> float:

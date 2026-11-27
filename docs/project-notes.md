@@ -97,7 +97,10 @@ Keep this file up to date whenever something important changes.
 
 - `CardEditor` (`scripts/ui/card_editor.gd`) is shared by the Admin screen ("Edit cards") and the in-battle Admin panel. Search or Show all, tap a card or tower (side, main, Defense core), and edit its numbers (cost, health, damage, seconds per hit, range, group size, unit size, lifetime, area, unlock place), its type, movement, attack, targets and speed, and every ability and evolution number.
 - Edits go through `Data.set_override`, so they save straight away and reach running battles. A changed value shows its default and has its own reset, and there are resets for abilities, the evolution and the whole card.
-- A troop whose type is edited to spell becomes a still green circle that never leaves (a spell with an ability stays on the field). So a type change in the editor needs a second tap, number boxes only save a value that actually changed, and edited cards and towers are listed at the top of the editor.
+- Every ability number the game uses lives in the data, including The Pardoned One's lifesteal (`sharp_wings.heal_share`), The Devil's self heal (`happy_face.heal_share`) and The Clone's separate `health_share` and `damage_share`. `Ability.number` takes a fallback, so older saved edits without a new number keep working.
+- The editor also edits names, short names, descriptions, Codex entries, class and threat (rarity), and tokens. Edited cards and towers have a star after their name in the picker.
+- Any card can be copied into a brand new card (`custom_1`, `custom_2` and so on) with the next card number. It lives only in the Admin overrides, works like any other card (decks, chests, the road), and can be deleted again.
+- A troop whose type is edited to spell becomes a still green circle that never leaves (a spell with an ability stays on the field). So a type change in the editor needs a second tap, number boxes only save a value that actually changed, and edited cards and towers have a star after their name.
 - The in-battle spawn tool lists every collectable card in a sideways row, locked ones included.
 
 ## Items, injections and gold

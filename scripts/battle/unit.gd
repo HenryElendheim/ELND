@@ -50,9 +50,11 @@ var group := 0
 var living := true
 ## True for a copy made by The Clone. It is weaker, and some abilities treat it differently.
 var is_clone := false
-## Multiplies health and damage on top of the level, which is how clones come out at half strength.
+## Multiply health and damage on top of the level, which is how clones come out weaker. They can differ,
+## so a clone can keep more of its health than its damage or the other way round.
 var strength := 1.0
-## The unit's level, growth and strength together. Abilities multiply their damage and healing by it,
+var damage_strength := 1.0
+## The unit's level, growth and damage strength together. Abilities multiply their damage and healing by it,
 ## which means an ability scales with levels the same way normal hits do.
 var power := 1.0
 
@@ -153,9 +155,10 @@ func reset_effects() -> void:
 ## Reads the unit's numbers from its data entry. Health keeps the same share it had,
 ## which means changing max health in Admin Mode mid-match does not heal or kill anything.
 func apply_stats(stats: Dictionary, battle: Dictionary) -> void:
-	power = pow(1.0 + float(battle.level_scaling.per_level), level - 1) * growth * strength
+	var levelled := pow(1.0 + float(battle.level_scaling.per_level), level - 1) * growth
+	power = levelled * damage_strength
 	var share := hp / max_hp if max_hp > 0.0 else 1.0
-	max_hp = float(stats.get("health", 1)) * power
+	max_hp = float(stats.get("health", 1)) * levelled * strength
 	hp = max_hp * share
 	damage = float(stats.get("damage", 0)) * power
 	living = bool(stats.get("living", true))

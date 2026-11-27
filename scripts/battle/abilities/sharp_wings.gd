@@ -1,6 +1,6 @@
 extends Ability
 ## The Pardoned One shoots razor feathers. Each feather comes back to her a moment later carrying the victim's nutrients,
-## which heals her for the damage of the shot. With too many feathers out at once she cannot fly,
+## which heals her for a share of the damage of the shot. With too many feathers out at once she cannot fly,
 ## which means melee ground troops can reach her until enough feathers return. With every feather out she cannot shoot.
 
 ## Feathers that are out, each with the time it comes back and how much it heals.
@@ -29,9 +29,9 @@ func tick(sim: BattleSim) -> void:
 		unit.can_attack = false
 
 
-## Sends out one feather that will come back and heal her.
-func launch(sim: BattleSim, heal: float) -> void:
-	out.append({"back_at": sim.time + number("return_time"), "heal": heal})
+## Sends out one feather that will come back and heal her for her share of the damage it carried.
+func launch(sim: BattleSim, damage: float) -> void:
+	out.append({"back_at": sim.time + number("return_time"), "heal": damage * number("heal_share", 1.0)})
 
 
 func feathers_left() -> int:

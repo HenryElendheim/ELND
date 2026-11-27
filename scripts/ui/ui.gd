@@ -129,6 +129,24 @@ static func search(hint: String, on_change: Callable) -> LineEdit:
 	return field
 
 
+## A label with a text box under it. The text is only used once it is confirmed and differs from what it started as.
+static func text(title: String, value: String, on_change: Callable) -> Control:
+	var field := LineEdit.new()
+	field.text = value
+	field.set_meta("value", value)
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	field.text_submitted.connect(func(entered: String) -> void: _text_entered(field, entered, on_change))
+	field.focus_exited.connect(func() -> void: _text_entered(field, field.text, on_change))
+	return _stack(title, field)
+
+
+static func _text_entered(field: LineEdit, entered: String, on_change: Callable) -> void:
+	if entered.strip_edges() != "" and entered != String(field.get_meta("value", "")):
+		field.set_meta("value", entered)
+		on_change.call(entered)
+	field.release_focus()
+
+
 static func spacer(height: float) -> Control:
 	var node := Control.new()
 	node.custom_minimum_size.y = height

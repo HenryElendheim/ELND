@@ -445,7 +445,14 @@ func _check_editor() -> int:
 	editor.call("_change", "damage", 99.0)
 	changed = changed and int(Data.table("towers").side.damage) == 99
 	editor.call("_reset", "")
-	var restored: bool = int(Data.table("cards").cards.hobb.health) == 250 and Data.table("cards").cards.hobb.movement == "ground" and int(Data.table("towers").side.damage) == 15
+	# A new card made from The Hobb exists, can be collected, and goes away again when deleted.
+	editor.call("_pick", "cards/hobb")
+	editor.call("_make_copy")
+	var made: bool = Data.table("cards").cards.has("custom_1") and "custom_1" in BattleSim.available_cards() and CardText.complete("custom_1", Data.table("cards").cards.custom_1.how_it_works)
+	editor.call("_delete")
+	made = made and not Data.table("cards").cards.has("custom_1")
+	editor.call("_pick", "cards/hobb")
+	var restored: bool = made and int(Data.table("cards").cards.hobb.health) == 250 and Data.table("cards").cards.hobb.movement == "ground" and int(Data.table("towers").side.damage) == 15
 	editor.queue_free()
 	print("Card editor checked")
 	return _expect(changed and restored and type_kept, "the card editor did not change or reset values, or changed a type on one tap")

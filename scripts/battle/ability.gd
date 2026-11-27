@@ -23,8 +23,10 @@ static func create(entry: Dictionary, owner: Unit) -> Ability:
 	return ability
 
 
-func number(key: String) -> float:
-	return float(param_overrides.get(key, params.get(key, 0.0)))
+## One of the ability's numbers. A number missing from the data, such as one added after an Admin edit was saved,
+## falls back to the value given, which keeps older balance edits working.
+func number(key: String, fallback := 0.0) -> float:
+	return float(param_overrides.get(key, params.get(key, fallback)))
 
 
 ## Runs once when the unit enters the field, after all its abilities exist.

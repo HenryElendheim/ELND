@@ -396,7 +396,8 @@
 					"id": "happy_face",
 					"drain_per_second": 20,
 					"range": 1.5,
-					"drained_damage_taken": 0.5
+					"drained_damage_taken": 0.5,
+					"heal_share": 1.0
 				}
 			],
 			"evolution": {
@@ -407,7 +408,7 @@
 				"how_it_works": "Deeper Into the Woods: its button switches the drain to a new troop straight away and drains {evolution.boost} times as fast for {evolution.boost_time} seconds."
 			},
 			"short_name": "Devil",
-			"how_it_works": "Smile: the {smile.max_charmed} closest enemy ranged troops within {smile.sight} tiles walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within {happy_face.range} tiles at a time, {happy_face.drain_per_second|lvl} a second, and heals itself by the same amount. The troop it drains deals {happy_face.drained_damage_taken|less}% less damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
+			"how_it_works": "Smile: the {smile.max_charmed} closest enemy ranged troops within {smile.sight} tiles walk right up to it instead of shooting from afar. Happy Face: it drains one enemy troop within {happy_face.range} tiles at a time, {happy_face.drain_per_second|lvl} a second, and heals itself by {happy_face.heal_share|pct}% of it. The troop it drains deals {happy_face.drained_damage_taken|less}% less damage to it. Towers, buildings and spells hit it at full damage, and a troop that is stunned or blinking has its eyes closed and is safe."
 		},
 		"pardoned": {
 			"number": 13,
@@ -431,7 +432,8 @@
 					"id": "sharp_wings",
 					"feathers": 12,
 					"grounded_above": 8,
-					"return_time": 1.5
+					"return_time": 1.5,
+					"heal_share": 1.0
 				},
 				{
 					"id": "pardoned",
@@ -451,7 +453,7 @@
 				"colour": "#E8E8F0"
 			},
 			"short_name": "Pardoned",
-			"how_it_works": "Sharp Wings: every shot is a feather that comes back after {sharp_wings.return_time} seconds and heals her for the damage it dealt. She has {sharp_wings.feathers}. With more than {sharp_wings.grounded_above} out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with {pardoned.reborn_health|pct}% health. Killed while grounded, she is gone for good."
+			"how_it_works": "Sharp Wings: every shot is a feather that comes back after {sharp_wings.return_time} seconds and heals her for {sharp_wings.heal_share|pct}% of the damage it dealt. She has {sharp_wings.feathers}. With more than {sharp_wings.grounded_above} out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with {pardoned.reborn_health|pct}% health. Killed while grounded, she is gone for good."
 		},
 		"cloud": {
 			"number": 14,
@@ -551,11 +553,12 @@
 			"abilities": [
 				{
 					"id": "clone",
-					"strength": 0.5
+					"health_share": 0.5,
+					"damage_share": 0.5
 				}
 			],
 			"short_name": "Clone",
-			"how_it_works": "Clone: every troop of yours within {radius} tiles gets a copy next to it with {clone.strength|pct}% of its health and damage and the same abilities, in the base form. Buildings are not copied. Clones count as living, and a clone of The Pardoned One cannot be born anew."
+			"how_it_works": "Clone: every troop of yours within {radius} tiles gets a copy next to it with {clone.health_share|pct}% of its health, {clone.damage_share|pct}% of its damage and the same abilities, in the base form. Buildings are not copied. Clones count as living, and a clone of The Pardoned One cannot be born anew."
 		},
 		"give_and_take": {
 			"number": 18,

@@ -263,8 +263,8 @@ func _give_abilities(unit: Unit, card: Dictionary, evolved: bool) -> void:
 
 
 ## Makes a weaker copy of a troop next to it, as The Clone does. The copy has the same abilities in their base form,
-## with health and damage cut by the strength given, and it is never evolved.
-func clone_unit(original: Unit, at: Vector2, strength: float) -> Unit:
+## with its health and its damage each cut by their own share, and it is never evolved.
+func clone_unit(original: Unit, at: Vector2, health_share: float, damage_share: float) -> Unit:
 	_next_group += 1
 	var copy := Unit.new()
 	copy.id = original.id
@@ -272,7 +272,8 @@ func clone_unit(original: Unit, at: Vector2, strength: float) -> Unit:
 	copy.label = original.label
 	copy.team = original.team
 	copy.level = original.level
-	copy.strength = strength
+	copy.strength = health_share
+	copy.damage_strength = damage_share
 	copy.is_clone = true
 	copy.pos = _clamp_to_arena(at)
 	copy.prev_pos = copy.pos
