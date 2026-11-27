@@ -13,13 +13,13 @@ extends Screen
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const COLUMNS := 4
 const SORTS := [["cost", "Cost"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "ELND"]]
-## How each order reads, first for highest first and then for lowest first.
+## How the picked sort says which way it goes, first for highest first and then for lowest first.
 const ORDER_NAMES := {
-	"cost": ["Most expensive first", "Cheapest first"],
-	"rarity": ["Rarest first", "Commonest first"],
-	"type": ["Spells, then buildings, then troops", "Troops, then buildings, then spells"],
-	"name": ["Z to A", "A to Z"],
-	"number": ["Highest ELND number first", "Lowest ELND number first"],
+	"cost": ["high first", "low first"],
+	"rarity": ["rarest first", "commonest first"],
+	"type": ["spells first", "troops first"],
+	"name": ["Z first", "A first"],
+	"number": ["high first", "low first"],
 }
 const TYPE_ORDER := ["troop", "building", "spell"]
 
@@ -63,9 +63,7 @@ func build() -> void:
 	add(Ui.spacer(12))
 	add(Ui.label("Collection", "HeadingLabel"))
 	add(Ui.label("Sort by", "MutedLabel"))
-	_sort_row = add(Ui.strip(SORTS, Settings.get_value("collection_sort"), _on_sort)) as ScrollContainer
-	var names: Array = ORDER_NAMES.get(Settings.get_value("collection_sort"), ["", ""])
-	add(Ui.label("%s. Tap again to flip." % names[0 if Settings.get_value("collection_descending") else 1], "MutedLabel"))
+	_sort_row = add(Ui.strip(_sort_options(), Settings.get_value("collection_sort"), _on_sort)) as ScrollContainer
 	add(_filter_row())
 	var rest := _shown(BattleSim.available_cards().filter(func(id: String) -> bool: return not id in _deck))
 	if rest.is_empty():
@@ -113,6 +111,14 @@ static func _picked_filters() -> Array:
 func _on_filters(picked: Array) -> void:
 	Settings.set_value("collection_filters", picked)
 	_rebuild()
+
+
+## The sort buttons. The one in use says which way it goes, such as "Cost: high first", and tapping it flips it.
+static func _sort_options() -> Array:
+	var current: String = Settings.get_value("collection_sort")
+	var ways: Array = ORDER_NAMES.get(current, ["", ""])
+	var way: String = ways[0 if Settings.get_value("collection_descending") else 1]
+	return SORTS.map(func(option: Array) -> Array: return [option[0], "%s: %s" % [option[1], way] if option[0] == current else option[1]])
 
 
 ## Cards that fit the picked filters, in the picked order.

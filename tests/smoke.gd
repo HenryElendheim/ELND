@@ -24,6 +24,7 @@ func _ready() -> void:
 	broken += _check_card_search()
 	broken += await _check_new_cards()
 	broken += _check_decks()
+	broken += _check_sort_flip()
 	broken += _check_items()
 	broken += _check_editor()
 	broken += _check_taps()
@@ -404,6 +405,21 @@ func _check_new_cards() -> int:
 	_sims.clear()
 	print("New cards checked")
 	return broken
+
+
+## Tapping the sort in use flips it, and a new sort starts highest first.
+func _check_sort_flip() -> int:
+	var cards: Node = load("res://scenes/deck.tscn").instantiate()
+	add_child(cards)
+	cards.call("_on_sort", "cost")
+	var first: bool = Settings.get_value("collection_descending")
+	cards.call("_on_sort", "cost")
+	var flipped: bool = Settings.get_value("collection_descending") != first
+	cards.call("_on_sort", "rarity")
+	var fresh: bool = Settings.get_value("collection_descending") == true
+	cards.queue_free()
+	print("Sort flip checked")
+	return _expect(flipped and fresh, "tapping the sort in use did not flip it")
 
 
 ## Three decks: saving one, switching to another, and battles always using the deck picked last.
