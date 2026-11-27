@@ -5,7 +5,7 @@ extends Screen
 ## which you can sort and filter by cost, rarity, kind and more. Tapping the sort in use again flips its order.
 ## Tap a card to open its details, with its stats, how it works and its Codex entry,
 ## and the buttons to add it, swap it in, take it out, put it in the evolution slot or spend wild cards.
-## Hold a card still for a moment to pick it up, then drop it on a deck card to swap them.
+## Hold a deck card still for a moment to pick it up, then drop it on another deck card to swap them.
 ## Swiping that starts on a card still scrolls the list.
 ## The first place in the deck is the evolution slot. A card there whose evolution is unlocked is the deck's only evolution.
 ## A deck is saved whenever it has exactly the right number of cards.
@@ -196,8 +196,9 @@ func _grid(ids: Array, in_deck: bool) -> GridContainer:
 		tile.evolution_slot = in_deck and i < Progress.evolution_slots()
 		tile.evolution = id in evolutions
 		tile.tapped.connect(func() -> void: _tapped(id))
-		tile.held.connect(func() -> void: _pick_up(tile))
+		# Only deck cards can be held and moved. Collection cards go in with Add or Swap into deck.
 		if in_deck:
+			tile.held.connect(func() -> void: _pick_up(tile))
 			_deck_tiles.append(tile)
 		grid.add_child(tile)
 	return grid
