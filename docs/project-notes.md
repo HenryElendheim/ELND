@@ -164,6 +164,7 @@ Keep this file up to date whenever something important changes.
 - Every placement snaps to tile centres, and tower tiles can never be used.
 - Arenas are called Labs and Sites in the game (`arena_names` in `progression.json`, read with `Progress.arena_name`). The code still says arena for the number.
 - Cards ELND-021 to 025 (The Weight, The Moth Choir, The Toll, The Brood, The Splitter) are Claude's drafts, made when Henry asked for more cards and an answer to all flyers. Henry may rewrite their lore and names.
+- The Zap (ELND-026) and The Gazers (ELND-027) were asked for by Henry: Zap costs 2, deals 40 and stuns for 1 s, and the Gazers are four flying heads shooting every 0.25 s that one Zap kills. Both unlock at Lab 5, and their codex entries are drafts.
 - Tokens (`"token": true`, such as Broodlings and the Splitter's halves and quarters) only appear on the field. `BattleSim.is_collectable` keeps them out of chests, decks, the collection and search.
 - `Unit.base_flying` is what the card says, and `flying` is what it is right now. `grounded_left` (The Weight) keeps a flyer on the ground, except over the river.
 - Cards ELND-012 to 020 unlock across arenas: Arena 2 gets The Cloud, The Hanged One and The Swarm, Arena 3 The Devil In The Forest, Mrs. Give & Take and The Clone, and Arena 4 The Danger Zone, The Blinker and The Pardoned One (chosen with Henry on 26 Nov 2026).

@@ -24,7 +24,9 @@
 		"moth_choir": "Draft. A cloud of pale moths that hum in perfect harmony. They gather around any light and slowly eat through fabric, then skin. Turn the lights off and they go silent and settle. Contained in a dark room with a single dim bulb they are allowed to sing to.",
 		"toll": "Draft. A cracked bronze bell that rings by itself. Everyone who hears it freezes in place for a moment, as if remembering something. It rings more often when people are near. Contained in a soundproof vault, and never rung on purpose.",
 		"brood": "Draft. A warm, fleshy mass grown into a wall. Every few minutes something small and hungry crawls out of it and goes looking for food. Removing the mass only makes it grow back larger. Contained by feeding the young before they leave the cell.",
-		"splitter": "Draft. A grey, rubbery humanoid that does not die so much as divide. Each wound that would kill it splits it into two smaller copies, and those split once more. The pieces always try to find each other again. Contained whole, in one piece, and never shot."
+		"splitter": "Draft. A grey, rubbery humanoid that does not die so much as divide. Each wound that would kill it splits it into two smaller copies, and those split once more. The pieces always try to find each other again. Contained whole, in one piece, and never shot.",
+		"zap": "Draft. A jar of what looks like captured static, crackling against the glass. Opened, it leaps to the nearest metal or flesh and freezes everything it touches for a heartbeat. It recharges by itself in the dark. Contained in a rubber lined cabinet, lid taped shut.",
+		"gazers": "Draft. A floating subspecies of ELND-010, The Individuals. Where their cousins slide along the ground, Gazers drift at head height in pairs, staring without blinking and spitting tiny bolts of something sharp at whatever they look at. They are fragile, and a single jolt of static scatters them. Never found alone, always as two pairs."
 	},
 	"tags": {
 		"devil": [

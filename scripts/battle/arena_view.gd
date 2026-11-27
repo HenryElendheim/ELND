@@ -61,6 +61,11 @@ func take_events(delta: float) -> void:
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "burst": true, "team": event.team})
 			"death":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "puff": true})
+			"zap":
+				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "zap": true, "radius": event.radius, "hits": event.hits, "seed": randi()})
+				Sfx.play("zap")
+				if Settings.get_value("vibration"):
+					Input.vibrate_handheld(60)
 			"cast":
 				_effects.append({"pos": event.pos, "amount": 0.0, "age": 0.0, "cast": true, "radius": event.radius, "card": event.card})
 			"toll":
@@ -272,6 +277,26 @@ func _draw_effect(effect: Dictionary) -> void:
 		var reach := share if motion else 0.6
 		draw_arc(at, _tile * (0.3 + 1.2 * reach), 0, TAU, 32, Color(team_colour, 0.9 * (1.0 - share)), 5.0)
 		return
+	# The Zap: a blue white flash over the area, a jagged bolt striking down on every enemy it hit, crackling arcs from
+	# the middle out to each of them, and a ring of sparks at the edge. Reduced motion keeps the bolts still and only fades them.
+	if effect.get("zap", false):
+		var fade := 1.0 - share
+		var electric := Color(0.75, 0.9, 1.0)
+		var reach: float = effect.radius * _tile
+		draw_circle(at, reach, Color(electric, 0.35 * fade * fade))
+		draw_arc(at, reach * (0.85 + 0.15 * share if motion else 1.0), 0, TAU, 48, Color(Color.WHITE, fade), 4.0)
+		var rng := RandomNumberGenerator.new()
+		# The bolts flicker to a new shape a few times while they fade, unless reduced motion is on.
+		rng.seed = int(effect.seed) + (int(share * 6.0) if motion else 0)
+		for hit in effect.hits:
+			var spot := _to_screen(hit)
+			_draw_bolt(spot - Vector2(0, _tile * 3.0), spot, rng, Color(Color.WHITE, fade), 5.0)
+			_draw_bolt(at, spot, rng, Color(electric, fade), 3.0)
+			draw_circle(spot, _tile * 0.35, Color(electric, 0.6 * fade))
+		for i in 10:
+			var direction := Vector2.from_angle(rng.randf() * TAU)
+			draw_line(at + direction * reach * 0.9, at + direction * reach * 1.05, Color(electric, fade), 3.0)
+		return
 	# A spell lands with a flash over its whole area and a ring that sweeps out to its edge, in the card's class colour.
 	if effect.get("cast", false):
 		var colour := Color(_class_colours.get(Data.table("cards").cards[effect.card].get("class", ""), "#FFFFFF"))
@@ -330,6 +355,17 @@ func _draw_effect(effect: Dictionary) -> void:
 		var rise := 0.0 if Settings.reduced_motion() else share * _tile
 		var text := str(roundi(effect.amount))
 		draw_string(ThemeDB.fallback_font, at + Vector2(-_tile * 0.3, -_tile * 0.6 - rise), text, HORIZONTAL_ALIGNMENT_LEFT, -1, int(_tile * 0.5), Color(1, 1, 1, 1.0 - share))
+
+
+## A jagged line of electricity between two points.
+func _draw_bolt(from: Vector2, to: Vector2, rng: RandomNumberGenerator, colour: Color, width: float) -> void:
+	var points := PackedVector2Array()
+	var steps := 6
+	var side := (to - from).orthogonal().normalized()
+	for i in steps + 1:
+		var jag := 0.0 if i == 0 or i == steps else rng.randf_range(-0.3, 0.3) * _tile
+		points.append(from.lerp(to, float(i) / steps) + side * jag)
+	draw_polyline(points, colour, width)
 
 
 func _draw_blocked(width: float, length: float) -> void:

@@ -854,6 +854,61 @@
 			"size": 0.6,
 			"abilities": [],
 			"short_name": "Quarter"
+		},
+		"zap": {
+			"number": 26,
+			"name": "The Zap",
+			"class": "CLAM",
+			"threat": 1,
+			"unlock_arena": 2,
+			"type": "spell",
+			"cost": 2,
+			"radius": 2.5,
+			"damage": 40,
+			"tower_damage_share": 1.0,
+			"abilities": [
+				{
+					"id": "zap",
+					"stun": 1.0
+				}
+			],
+			"short_name": "Zap",
+			"how_it_works": "Zap: everything within {radius} tiles takes {damage|lvl} damage and is stunned for {zap.stun} second, towers included, which resets what they were doing. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
+		},
+		"gazers": {
+			"number": 27,
+			"name": "The Gazers",
+			"class": "CLAM",
+			"threat": 1,
+			"unlock_arena": 2,
+			"type": "troop",
+			"cost": 3,
+			"count": 4,
+			"health": 35,
+			"damage": 3,
+			"hit_speed": 0.25,
+			"range": 4.0,
+			"speed": "medium",
+			"movement": "flying",
+			"attack": "ranged",
+			"targets": "air_ground",
+			"size": 0.6,
+			"abilities": [],
+			"evolution": {
+				"name": "Unblinking",
+				"ability": "unblinking",
+				"haste": 2.0,
+				"duration": 3.0,
+				"how_it_works": "Unblinking: their button makes them stop blinking for {evolution.duration} seconds, and they shoot {evolution.haste} times as fast."
+			},
+			"projectile": {
+				"style": "bolt",
+				"speed": 20,
+				"size": 0.35,
+				"colour": "#E8F4FF"
+			},
+			"short_name": "Gazers",
+			"how_it_works": "{count} floating heads, two pairs of a subspecies of The Individuals. They fly and shoot anything in the air or on the ground within {range} tiles every {hit_speed} seconds, for {damage|lvl} damage a shot. Fragile: {health|lvl} health each, so one Zap takes them all out."
 		}
 	},
 	"spell_kinds": {

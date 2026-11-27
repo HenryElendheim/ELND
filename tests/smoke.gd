@@ -394,6 +394,17 @@ func _check_new_cards() -> int:
 	cheer.queue_free()
 	bar.queue_free()
 
+	# The Zap hurts and stuns, and it one-shots the Gazers at the same level.
+	sim = _quiet_sim()
+	var zapped: Unit = sim.spawn("hobb", enemy, Vector2(9, 19))[0]
+	var heads := sim.spawn("gazers", enemy, Vector2(12, 19))
+	_run(sim, 1.2)
+	sim.spawn("zap", player, Vector2(9, 19))
+	sim.spawn("zap", player, Vector2(12, 19))
+	_run(sim, 0.1)
+	var heads_left := heads.filter(func(u: Unit) -> bool: return u.alive()).size()
+	broken += _expect(zapped.hp < zapped.max_hp and zapped.stun_left > 0.0 and heads.size() == 4 and heads_left == 0, "The Zap missed its stun or left %d Gazers" % heads_left)
+
 	# A troop placed right behind its own side tower walks around it instead of getting stuck.
 	sim = _quiet_sim()
 	var walker: Unit = sim.spawn("hobb", player, Vector2(3.5, 28.5))[0]
@@ -544,10 +555,10 @@ func _expect(ok: bool, problem: String) -> int:
 ## The Admin Mode card search finds cards by name, by tag, and by a picked category.
 func _check_card_search() -> int:
 	var cases := [
-		[CardSearch.find("", "flying"), ["creeler", "pardoned", "cloud", "moth_choir"]],
+		[CardSearch.find("", "flying"), ["creeler", "pardoned", "cloud", "moth_choir", "gazers"]],
 		[CardSearch.find("the chain", "spell"), ["chain"]],
-		[CardSearch.find("ranged troop", ""), ["spacefarer", "pardoned", "give_and_take"]],
-		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take", "moth_choir"]],
+		[CardSearch.find("ranged troop", ""), ["spacefarer", "pardoned", "give_and_take", "gazers"]],
+		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take", "moth_choir", "gazers"]],
 		[CardSearch.find("legendary", "spell"), ["spiker"]],
 	]
 	# Collection filters: any of the picks in one group, all of the groups at once.

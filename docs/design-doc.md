@@ -222,7 +222,7 @@ An **Evolution** is an empowered version of a card.
 - **Rare (2):** John Arms, The Gasket
 - **Epic (2):** The Hobb, Kardemosh
 - **Legendary (1):** The Creeler
-- **Lab 5 unlocks:** The Spiker (Legendary spell), The Cloud, The Hanged One, The Swarm
+- **Lab 5 unlocks:** The Spiker (Legendary spell), The Cloud, The Hanged One, The Swarm, The Zap, The Gazers
 - **Site 12 unlocks:** The Devil In The Forest, Mrs. Give & Take, The Clone
 - **Site 49 unlocks:** The Danger Zone, The Blinker, The Pardoned One, The Weight
 - **Lab 17 unlocks:** The Moth Choir, The Toll
@@ -852,6 +852,44 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 **Passive: Divide:** when it dies it splits into 2 halves (~400 health), and each half splits into 2 quarters (~180 health). Seven bodies in total. A clone never splits. **Evolution idea: Mitosis:** button splits it straight away.
 
 **Counter:** area damage, and The Gasket (it takes one body at a time, but there are seven).
+
+---
+
+### ELND-026 — The Zap
+**Codex (draft):** Class CLAM · Threat 1/5. A jar of what looks like captured static, crackling against the glass. Opened, it leaps to the nearest metal or flesh and freezes everything it touches for a heartbeat.
+
+| Stat | Draft |
+|---|---|
+| Type | Spell (damage + stun) |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 2 |
+| Radius | ~2.5 tiles |
+| Damage | 40, towers included |
+| Unlock | Lab 5 |
+
+**Ability: Zap:** everything in the area takes 40 damage and is **stunned for 1 s**, towers included. Sets off Kardemosh's Halt and closes eyes against The Devil In The Forest. **Animation:** blue white flash, a jagged bolt striking down on every enemy hit, crackling arcs from the middle out to each of them, and a sharp zap sound.
+
+**Evolution:** spells don't evolve.
+
+---
+
+### ELND-027 — The Gazers
+**Codex (draft):** Class CLAM · Threat 1/5. A floating subspecies of ELND-010, The Individuals. Gazers drift at head height in pairs, staring without blinking and spitting tiny bolts at whatever they look at. Fragile: a single jolt of static scatters them. Always two pairs.
+
+| Stat | Draft |
+|---|---|
+| Type | Troop · Flying · Ranged · Swarm (x4, two pairs) |
+| Targets | Air & ground |
+| Rarity | Common (Threat 1) |
+| Ephrocity cost | 3 |
+| Health | ~35 each (one Zap kills them all) |
+| Damage | ~3 per shot · **0.25 s hit speed** · range 4 tiles |
+| Speed | Medium |
+| Unlock | Lab 5 |
+
+**Evolution idea: Unblinking:** button makes them stop blinking for 3 s, and they shoot twice as fast.
+
+**Counter:** The Zap, or any area spell.
 
 
 ---
