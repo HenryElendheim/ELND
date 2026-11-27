@@ -24,7 +24,7 @@ func _ready() -> void:
 	broken += _check_card_search()
 	broken += await _check_new_cards()
 	broken += _check_decks()
-	broken += _check_sort_flip()
+	broken += await _check_sort_flip()
 	broken += _check_items()
 	broken += _check_editor()
 	broken += _check_taps()
@@ -417,6 +417,9 @@ func _check_sort_flip() -> int:
 	var flipped: bool = Settings.get_value("collection_descending") != first
 	cards.call("_on_sort", "rarity")
 	var fresh: bool = Settings.get_value("collection_descending") == true
+	# The screen puts its scroll place back a frame after each change, so it gets those frames before closing.
+	for i in 3:
+		await get_tree().process_frame
 	cards.queue_free()
 	print("Sort flip checked")
 	return _expect(flipped and fresh, "tapping the sort in use did not flip it")
