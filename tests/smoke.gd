@@ -279,9 +279,17 @@ func _check_new_cards() -> int:
 	_run(sim, 1.3)
 	broken += _expect(kardemosh.hp < kardemosh.max_hp and kardemosh.stun_left > 0.0, "The Cloud's lightning missed or was blocked by skin")
 
-	# The Pardoned One is born anew once when killed while flying, and the new body stays dead.
+	# Her base form is never born anew.
 	sim = _quiet_sim()
-	var first: Unit = sim.spawn("pardoned", player, Vector2(9, 21))[0]
+	var plain: Unit = sim.spawn("pardoned", player, Vector2(9, 21))[0]
+	_run(sim, 1.2)
+	sim.deal_damage(null, plain, plain.hp + 1.0)
+	_run(sim, 0.1)
+	broken += _expect(not sim.units.any(func(u: Unit) -> bool: return u.id == "pardoned"), "The Pardoned One was born anew without her evolution")
+
+	# The evolved Pardoned One is born anew once when killed while flying, and the new body stays dead.
+	sim = _quiet_sim()
+	var first: Unit = sim.spawn("pardoned", player, Vector2(9, 21), 1, true)[0]
 	_run(sim, 1.2)
 	sim.deal_damage(null, first, first.hp + 1.0)
 	_run(sim, 0.1)

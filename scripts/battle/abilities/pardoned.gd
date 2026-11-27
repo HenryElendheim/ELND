@@ -1,13 +1,14 @@
 extends Ability
-## The Pardoned One cannot die. Killed while flying, she is born anew once at her side's main tower with some of her health.
-## Killed while grounded, kept in one spot, she is gone for good. A clone was never really her, so it is never reborn.
+## The evolved Pardoned One cannot die. Killed while flying, she is born anew once at her side's main tower
+## with some of her health, still evolved. Killed while grounded, kept in one spot, she is gone for good.
+## Her base form is never reborn, and neither is a clone, which was never really her.
 
 ## True for the new body she is born into, which cannot be reborn again.
 var reborn := false
 
 
 func on_death(sim: BattleSim) -> void:
-	if reborn or unit.is_clone or not unit.flying:
+	if reborn or unit.is_clone or not unit.evolved or not unit.flying:
 		return
 	var team := unit.team
 	var card_id := unit.id
@@ -21,7 +22,7 @@ static func _rise(sim: BattleSim, card_id: String, team: Unit.Team, level: int, 
 	if tower == null:
 		return
 	var forward := -2.5 if team == Unit.Team.PLAYER else 2.5
-	for body in sim.spawn(card_id, team, tower.pos + Vector2(0, forward), level):
+	for body in sim.spawn(card_id, team, tower.pos + Vector2(0, forward), level, true):
 		body.hp = body.max_hp * share
 		for ability in body.abilities:
 			if ability.params.get("id") == "pardoned":

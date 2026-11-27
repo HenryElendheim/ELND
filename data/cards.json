@@ -444,7 +444,7 @@
 				"name": "A Thousand Years",
 				"ability": "feather_storm",
 				"grounded_time": 4.0,
-				"how_it_works": "A Thousand Years: her button, Feather Storm, fires every feather she has left at once, spread over every enemy in range. They all come back and heal her, but she is grounded for {evolution.grounded_time} seconds afterwards."
+				"how_it_works": "A Thousand Years: she is Pardoned. Killed while flying, she is born anew once at your main tower with {pardoned.reborn_health|pct}% health, still evolved. Killed while grounded, she is gone for good. Her button, Feather Storm, fires every feather she has left at once, spread over every enemy in range. They all come back and heal her, but she is grounded for {evolution.grounded_time} seconds afterwards."
 			},
 			"projectile": {
 				"style": "bolt",
@@ -453,7 +453,7 @@
 				"colour": "#E8E8F0"
 			},
 			"short_name": "Pardoned",
-			"how_it_works": "Sharp Wings: every shot is a feather that comes back after {sharp_wings.return_time} seconds and heals her for {sharp_wings.heal_share|pct}% of the damage it dealt. She has {sharp_wings.feathers}. With more than {sharp_wings.grounded_above} out at once she is grounded, so melee ground troops can hit her, until enough come back. Pardoned: killed while flying, she is born anew once at your main tower with {pardoned.reborn_health|pct}% health. Killed while grounded, she is gone for good."
+			"how_it_works": "Sharp Wings: every shot is a feather that comes back after {sharp_wings.return_time} seconds and heals her for {sharp_wings.heal_share|pct}% of the damage it dealt. She has {sharp_wings.feathers}. With more than {sharp_wings.grounded_above} out at once she is grounded, so melee ground troops can hit her, until enough come back."
 		},
 		"cloud": {
 			"number": 14,
