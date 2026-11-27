@@ -7,6 +7,8 @@ extends Control
 const SIDE_MARGIN := 56
 const TOP_MARGIN := 120
 const BACK_SIZE := Vector2(260, 110)
+## How far down from the top of the screen the Back button sits.
+const BACK_TOP := 64
 
 var content := VBoxContainer.new()
 ## The scrolling area around the content, so a screen can scroll to a part of itself.
@@ -40,7 +42,7 @@ func _ready() -> void:
 	_back = Ui.button("Back", func() -> void: go_back())
 	_back.size_flags_horizontal = SIZE_FILL
 	_back.custom_minimum_size = BACK_SIZE
-	_back.position = Vector2(SIDE_MARGIN, 24)
+	_back.position = Vector2(SIDE_MARGIN, BACK_TOP)
 	add_child(_back)
 	build()
 	refresh_back()
@@ -64,7 +66,7 @@ func wants_back() -> bool:
 func refresh_back() -> void:
 	var shown := wants_back()
 	_back.visible = shown
-	_margin.add_theme_constant_override("margin_top", TOP_MARGIN + (int(BACK_SIZE.y) if shown else 0))
+	_margin.add_theme_constant_override("margin_top", TOP_MARGIN + (int(BACK_SIZE.y) + BACK_TOP - 24 if shown else 0))
 
 
 ## Adds a control to the bottom of the column and hands it back, so it can be adjusted further.
