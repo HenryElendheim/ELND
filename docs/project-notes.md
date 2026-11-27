@@ -97,6 +97,7 @@ Keep this file up to date whenever something important changes.
 
 - `CardEditor` (`scripts/ui/card_editor.gd`) is shared by the Admin screen ("Edit cards") and the in-battle Admin panel. Search or Show all, tap a card or tower (side, main, Defense core), and edit its numbers (cost, health, damage, seconds per hit, range, group size, unit size, lifetime, area, unlock place), its type, movement, attack, targets and speed, and every ability and evolution number.
 - Edits go through `Data.set_override`, so they save straight away and reach running battles. A changed value shows its default and has its own reset, and there are resets for abilities, the evolution and the whole card.
+- A troop whose type is edited to spell becomes a still green circle that never leaves (a spell with an ability stays on the field). So a type change in the editor needs a second tap, number boxes only save a value that actually changed, and edited cards and towers are listed at the top of the editor.
 - The in-battle spawn tool lists every collectable card in a sideways row, locked ones included.
 
 ## Items, injections and gold

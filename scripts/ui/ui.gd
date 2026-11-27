@@ -104,10 +104,12 @@ static func slider(text: String, min_value: float, max_value: float, step: float
 	return box
 
 
-## A row with a label and a number box. The value is only used once it is confirmed and is a real number.
+## A row with a label and a number box. The value is only used once it is confirmed, is a real number,
+## and is different from what the box started with, which means tapping into a box and away again changes nothing.
 static func number(text: String, value: float, on_change: Callable) -> Control:
 	var field := LineEdit.new()
 	field.text = str(value)
+	field.set_meta("value", value)
 	field.custom_minimum_size.x = 260
 	field.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL
 	field.select_all_on_focus = true
@@ -165,7 +167,8 @@ static func _show_value(title: Label, text: String, value: float, seconds: bool)
 
 
 static func _number_entered(field: LineEdit, entered: String, on_change: Callable) -> void:
-	if entered.is_valid_float():
+	if entered.is_valid_float() and not is_equal_approx(entered.to_float(), float(field.get_meta("value", INF))):
+		field.set_meta("value", entered.to_float())
 		on_change.call(entered.to_float())
 	field.release_focus()
 

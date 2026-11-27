@@ -436,6 +436,9 @@ func _check_editor() -> int:
 	editor.call("_pick", "cards/hobb")
 	editor.call("_change", "health", 333.0)
 	editor.call("_change", "movement", "flying")
+	# One tap on a new type only asks for a second tap, so the type stays the same.
+	editor.call("_choose", "type", "spell")
+	var type_kept: bool = Data.table("cards").cards.hobb.type == "troop"
 	var changed: bool = int(Data.table("cards").cards.hobb.health) == 333 and Data.table("cards").cards.hobb.movement == "flying"
 	editor.call("_reset", "")
 	editor.call("_pick", "towers/side")
@@ -445,7 +448,7 @@ func _check_editor() -> int:
 	var restored: bool = int(Data.table("cards").cards.hobb.health) == 250 and Data.table("cards").cards.hobb.movement == "ground" and int(Data.table("towers").side.damage) == 15
 	editor.queue_free()
 	print("Card editor checked")
-	return _expect(changed and restored, "the card editor did not change or reset values")
+	return _expect(changed and restored and type_kept, "the card editor did not change or reset values, or changed a type on one tap")
 
 
 ## Every button gets a tap guard. Normal buttons keep pressing themselves, so they still work everywhere,

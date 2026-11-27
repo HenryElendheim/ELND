@@ -33,6 +33,12 @@ var _fields := VBoxContainer.new()
 var _show_button: Button
 ## What is being edited, such as "cards/hobb" or "towers/side". Empty until something is picked.
 var _subject := ""
+## A new type waiting for its second tap, and when the first tap was. Changing the type can break a card,
+## such as a troop turned into a spell, so it never happens from one stray tap.
+var _pending_type := ""
+var _pending_at := -10000
+
+const CONFIRM_MS := 3000
 
 
 func _ready() -> void:
@@ -58,8 +64,17 @@ func _toggle_show_all() -> void:
 
 
 ## The list to pick from: nothing until something is searched for or Show all is on, then towers and cards that match.
+## Cards and towers that have been edited are always listed first, so an edit is never forgotten.
 func _show_picker() -> void:
 	_clear(_picker)
+	var edited := _edited()
+	if not edited.is_empty():
+		_picker.add_child(Ui.label("Edited", "HeadingLabel"))
+		var row := GridContainer.new()
+		row.columns = 2
+		for subject in edited:
+			row.add_child(Ui.button(_name_of(subject), func() -> void: _pick(subject)))
+		_picker.add_child(row)
 	if not _show_all and _query.strip_edges() == "":
 		_picker.add_child(Ui.label("Search, or press Show all, then tap a card or tower to edit it.", "MutedLabel"))
 		return
@@ -72,6 +87,30 @@ func _show_picker() -> void:
 	for id in CardSearch.find(_query, ""):
 		grid.add_child(Ui.button(Data.table("cards").cards[id].name, func() -> void: _pick("cards/" + id)))
 	_picker.add_child(grid)
+
+
+## Every card and tower with an Admin edit, apart from a neutralize switch on its own.
+static func _edited() -> Array:
+	var found := []
+	for kind in TOWERS:
+		if Data.overrides.get("towers", {}).has(kind[0]):
+			found.append("towers/" + kind[0])
+	var cards: Dictionary = Data.overrides.get("cards", {}).get("cards", {})
+	for id in cards:
+		var keys: Array = cards[id].keys() if cards[id] is Dictionary else []
+		keys.erase("neutralized")
+		if not keys.is_empty() and Data.table("cards").cards.has(id):
+			found.append("cards/" + id)
+	return found
+
+
+static func _name_of(subject: String) -> String:
+	var id := subject.get_slice("/", 1)
+	if subject.begins_with("towers/"):
+		for kind in TOWERS:
+			if kind[0] == id:
+				return kind[1]
+	return String(Data.table("cards").cards.get(id, {}).get("name", id))
 
 
 func _pick(subject: String) -> void:
@@ -112,7 +151,7 @@ func _show_fields() -> void:
 	_fields.add_child(Ui.label("Changes save straight away and apply in battles already running. A new type or movement applies to cards played after the change.", "MutedLabel"))
 	for key in CHOICES_FOR.get(kind, []):
 		var current: Variant = values.get(key, CHOICES[key][0][0])
-		_fields.add_child(Ui.choice(_label(key), CHOICES[key], current, func(value: String) -> void: _change(key, value), 3))
+		_fields.add_child(Ui.choice(_label(key), CHOICES[key], current, func(value: String) -> void: _choose(key, value), 3))
 		_add_reset(key)
 	var shown := []
 	for key in NUMBERS.get(kind, []):
@@ -178,6 +217,22 @@ func _add_reset(key: String) -> void:
 		_fields.add_child(Ui.button("Reset " + NAMES.get(key, String(key).capitalize()).to_lower(), func() -> void: _reset(key)))
 
 
+## Picking an option. A new type needs a second tap on the same option within a few seconds.
+func _choose(key: String, value: String) -> void:
+	if value == _values().get(key, CHOICES[key][0][0]):
+		return
+	if key == "type":
+		var now := Time.get_ticks_msec()
+		if _pending_type != value or now - _pending_at > CONFIRM_MS:
+			_pending_type = value
+			_pending_at = now
+			Nav.toast("Tap %s again to change the type. A card's abilities may not work as another type." % value)
+			_show_fields.call_deferred()
+			return
+		_pending_type = ""
+	_change(key, value)
+
+
 func _change(key: String, value: Variant) -> void:
 	_set_path([key], value)
 
@@ -185,6 +240,7 @@ func _change(key: String, value: Variant) -> void:
 func _set_path(keys: Array, value: Variant) -> void:
 	Data.set_override(_file(), _path() + keys, value)
 	_show_fields.call_deferred()
+	_show_picker.call_deferred()
 
 
 ## Abilities are a list in cards.json, so a change stores the card's whole ability list with that one number changed.
@@ -200,6 +256,7 @@ func _reset(key: String) -> void:
 	Data.reset_override(_file(), _path() + ([key] if key != "" else []))
 	Nav.toast("Back to default")
 	_show_fields.call_deferred()
+	_show_picker.call_deferred()
 
 
 static func _clear(box: Node) -> void:
