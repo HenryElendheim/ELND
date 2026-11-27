@@ -11,7 +11,6 @@ extends Screen
 ## A deck is saved whenever it has exactly the right number of cards.
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
-const ITEMS_SCENE := "res://scenes/items.tscn"
 const COLUMNS := 4
 const SORTS := [["cost", "Cost"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "Number"]]
 ## How each order reads, first for highest first and then for lowest first.
@@ -58,7 +57,6 @@ func build() -> void:
 		costs += Hand.cost_of(id)
 	var average := costs / maxf(_deck.size(), 1)
 	add(Ui.label("Average cost %.1f     Towers level %d" % [average, Progress.tower_level()]))
-	add(Ui.button("Foundation items: %d wild cards, %d injections" % [Progress.wild_cards(), Progress.injections()], func() -> void: Nav.go(ITEMS_SCENE)))
 
 	add(Ui.spacer(12))
 	add(Ui.label("Collection", "HeadingLabel"))

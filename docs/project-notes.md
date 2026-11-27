@@ -105,7 +105,7 @@ Keep this file up to date whenever something important changes.
 
 ## Items, injections and gold
 
-- The Foundation items screen (`scenes/items.gd`, from the Battle page and the Cards page) shows gold, wild cards, injections, shards, evolutions unlocked, chests waiting and the games left until the next Injection chest.
+- The Foundation items screen (`scenes/items.gd`, from the Battle page) shows gold, wild cards, injections, shards, evolutions unlocked, chests waiting and the games left until the next Injection chest.
 - Every 10 finished games (`injection_chest.every_games` in `chests.json`) an Injection chest is queued. It holds one Evolution Injection. Epic and Legendary chests no longer give evolutions or injections (decided with Henry on 27 Nov 2026).
 - Card level ups give no gold (`per_card_upgrade_times_level` is 0). Battle wins and player level ups still do.
 
