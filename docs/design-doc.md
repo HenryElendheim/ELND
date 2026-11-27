@@ -566,9 +566,10 @@ Threat 1–2 → Common · Threat 3 → Rare · Threat 4 → Epic · Threat 5 �
 - She has 12 feathers. If more than 8 are out at once, she's grounded: she can't fly, so melee ground troops can hit her, until enough feathers return. With all 12 out she can't shoot.
 - She never lands in the river: over water she stays up until she reaches ground or a bridge
 
-**Passive: Pardoned (reincarnation)**
-- When she dies while flying, she's born anew once at your main tower with ~40% health
+**Pardoned (reincarnation): evolution only**
+- Only the **evolved** Pardoned One is reborn: when she dies while flying, she's born anew once at your main tower with ~40% health, still evolved
 - If she dies while grounded ("kept in one spot"), she's gone for good
+- Her base form is never reborn
 
 **Evolution idea: A Thousand Years**
 - **Ability button:** Feather Storm: fires all her remaining feathers at everything in range at once, a huge burst with big healing, but she's grounded for 4 s afterwards
