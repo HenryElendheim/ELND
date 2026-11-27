@@ -21,7 +21,7 @@ func _init() -> void:
 		"admin_mode": false,
 		"collection_sort": "cost",
 		"collection_descending": true,
-		"collection_filter": "",
+		"collection_filters": [],
 	}
 
 

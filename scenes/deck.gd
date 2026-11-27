@@ -12,14 +12,14 @@ extends Screen
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
 const COLUMNS := 4
-const SORTS := [["cost", "Cost"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "Number"]]
+const SORTS := [["cost", "Cost"], ["rarity", "Rarity"], ["type", "Type"], ["name", "Name"], ["number", "ELND"]]
 ## How each order reads, first for highest first and then for lowest first.
 const ORDER_NAMES := {
 	"cost": ["Most expensive first", "Cheapest first"],
 	"rarity": ["Rarest first", "Commonest first"],
 	"type": ["Spells, then buildings, then troops", "Troops, then buildings, then spells"],
 	"name": ["Z to A", "A to Z"],
-	"number": ["Highest number first", "Lowest number first"],
+	"number": ["Highest ELND number first", "Lowest ELND number first"],
 }
 const TYPE_ORDER := ["troop", "building", "spell"]
 
@@ -33,6 +33,8 @@ var _swap_in := ""
 var _deck_tiles: Array[CardTile] = []
 ## The card being carried after a hold, the copy of it that follows the finger, and the deck place under it.
 var _carrying := ""
+## The sideways sort row, kept so a rebuild can put it back where it was scrolled to.
+var _sort_row: ScrollContainer = null
 var _ghost: CardTile = null
 var _hover := -1
 
@@ -61,11 +63,10 @@ func build() -> void:
 	add(Ui.spacer(12))
 	add(Ui.label("Collection", "HeadingLabel"))
 	add(Ui.label("Sort by", "MutedLabel"))
-	add(Ui.strip(SORTS, Settings.get_value("collection_sort"), _on_sort))
+	_sort_row = add(Ui.strip(SORTS, Settings.get_value("collection_sort"), _on_sort)) as ScrollContainer
 	var names: Array = ORDER_NAMES.get(Settings.get_value("collection_sort"), ["", ""])
 	add(Ui.label("%s. Tap again to flip." % names[0 if Settings.get_value("collection_descending") else 1], "MutedLabel"))
-	add(Ui.label("Show", "MutedLabel"))
-	add(Ui.strip(_filters(), Settings.get_value("collection_filter"), _on_filter))
+	add(_filter_row())
 	var rest := _shown(BattleSim.available_cards().filter(func(id: String) -> bool: return not id in _deck))
 	if rest.is_empty():
 		add(Ui.label("No cards here.", "MutedLabel"))
@@ -87,15 +88,37 @@ func build() -> void:
 		add(grid)
 
 
-## The filter buttons: every card category, apart from neutralized cards, which never show here.
-static func _filters() -> Array:
-	return CardSearch.CATEGORIES.filter(func(option: Array) -> bool: return option[0] != "neutralized")
+## The Filter button, which opens the filter view, with an X beside it while any filter is on.
+func _filter_row() -> Control:
+	var row := HBoxContainer.new()
+	var picked := _picked_filters()
+	var names := picked.map(func(tag: String) -> String: return CardSearch.category_name(tag))
+	var text := "Filter" if picked.is_empty() else "Filter: %s" % ", ".join(names)
+	var open := Ui.button(text, func() -> void: add_child(FilterPicker.new(_picked_filters(), _on_filters)))
+	open.clip_text = true
+	row.add_child(open)
+	if not picked.is_empty():
+		var clear := Ui.button("X", func() -> void: _on_filters([]))
+		clear.size_flags_horizontal = SIZE_FILL
+		clear.custom_minimum_size.x = 130
+		row.add_child(clear)
+	return row
 
 
-## Cards that fit the picked filter, in the picked order.
+static func _picked_filters() -> Array:
+	var picked: Variant = Settings.get_value("collection_filters")
+	return picked if picked is Array else []
+
+
+func _on_filters(picked: Array) -> void:
+	Settings.set_value("collection_filters", picked)
+	_rebuild()
+
+
+## Cards that fit the picked filters, in the picked order.
 func _shown(ids: Array) -> Array:
-	var filter: String = Settings.get_value("collection_filter")
-	var found := ids.filter(func(id: String) -> bool: return CardSearch.matches(id, "", filter))
+	var picked := _picked_filters()
+	var found := ids.filter(func(id: String) -> bool: return CardSearch.fits(id, picked))
 	found.sort_custom(_before)
 	return found
 
@@ -141,11 +164,6 @@ func _on_sort(mode: String) -> void:
 	else:
 		Settings.set_value("collection_sort", mode)
 		Settings.set_value("collection_descending", mode != "name")
-	_rebuild()
-
-
-func _on_filter(tag: String) -> void:
-	Settings.set_value("collection_filter", tag)
 	_rebuild()
 
 
@@ -352,10 +370,21 @@ func _save() -> void:
 
 
 ## Rebuilds the whole screen from the current state, which keeps every label and tile in step after a change.
+## The screen and the sort row stay scrolled where they were, so whatever was just tapped is still in view.
 func _rebuild() -> void:
+	var down := scroll_box.scroll_vertical
+	var along := _sort_row.scroll_horizontal if is_instance_valid(_sort_row) else 0
 	for child in content.get_children():
 		child.queue_free()
 	build()
+	_restore_scroll.call_deferred(down, along)
+
+
+func _restore_scroll(down: int, along: int) -> void:
+	await get_tree().process_frame
+	scroll_box.scroll_vertical = down
+	if is_instance_valid(_sort_row):
+		_sort_row.scroll_horizontal = along
 
 
 ## Leaving the screen never leaves a card stuck to the finger.

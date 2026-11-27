@@ -13,6 +13,38 @@ const CATEGORIES := [
 ]
 
 
+## The categories in groups. Picking several in one group means any of them, such as troops or spells,
+## and picking in several groups means all of those at once, such as flying and legendary.
+const GROUPS := [
+	["Kind", ["troop", "building", "spell"]],
+	["Moves", ["ground", "flying"]],
+	["Attack", ["melee", "ranged", "no attack"]],
+	["Reach", ["hits air"]],
+	["Group", ["swarm"]],
+	["Rarity", ["common", "rare", "epic", "legendary"]],
+	["Class", ["clam", "rekna", "rinner", "heimer"]],
+]
+
+
+## The shown name of a category tag, such as "Hits air" for "hits air".
+static func category_name(tag: String) -> String:
+	for option in CATEGORIES:
+		if option[0] == tag:
+			return option[1]
+	return tag.capitalize()
+
+
+## True when a card fits every group that has something picked in it, which means it has at least one of the
+## picked tags in each of those groups. Nothing picked lets every card through.
+static func fits(id: String, picked: Array) -> bool:
+	var card_tags := tags(id)
+	for group in GROUPS:
+		var wanted: Array = group[1].filter(func(tag: String) -> bool: return tag in picked)
+		if not wanted.is_empty() and not wanted.any(func(tag: String) -> bool: return tag in card_tags):
+			return false
+	return true
+
+
 ## The tags for one card, in the order they read best: kind, movement, attack, reach, rarity and class.
 static func tags(id: String) -> Array:
 	var card: Dictionary = Data.table("cards").cards[id]

@@ -531,6 +531,12 @@ func _check_card_search() -> int:
 		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take", "moth_choir"]],
 		[CardSearch.find("legendary", "spell"), ["spiker"]],
 	]
+	# Collection filters: any of the picks in one group, all of the groups at once.
+	var fits_ok := CardSearch.fits("creeler", ["troop", "spell"]) and CardSearch.fits("creeler", ["flying", "legendary"]) and not CardSearch.fits("hobb", ["flying"]) and not CardSearch.fits("creeler", ["flying", "common"])
+	if not fits_ok:
+		print("Broken file: collection filters let the wrong cards through")
+		return 1
+	add_child(FilterPicker.new(["troop"], func(_picked: Array) -> void: pass))
 	for entry in cases:
 		if entry[0] != entry[1]:
 			print("Broken file: card search found %s instead of %s" % [entry[0], entry[1]])
