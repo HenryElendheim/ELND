@@ -129,6 +129,11 @@ Keep this file up to date whenever something important changes.
 - Skip works on every chest. Skipping, or reaching the last card, shows a summary of everything the chest gave, rarest first, with counts, NEW or level, and extras.
 - Placeholder sounds `card`, `card_rare` and `legendary` are in `sfx.gd`.
 
+## Arena
+
+- Bridges are 3 tiles wide (`arena.bridge_width` in `battle.json`).
+- Groups of fewer than 4 land on whole tiles side by side (the picked tile, then right, then left). Bigger swarms stand in rings around the spot.
+
 ## Troop movement
 
 - Close to its goal (within `steering.approach_tiles` of attack range), a troop heads for a free spot on a ring around the goal at attacking distance, trying further round each way until one is open. Attackers spread around towers and big troops instead of queuing.

@@ -236,10 +236,15 @@ func spawn(card_id: String, team: Unit.Team, at: Vector2, level := 1, evolved :=
 	return made
 
 
-## Where one member of a swarm stands around the spot. The first ring holds up to eight, and the rest go in a wider ring.
+## Where one member of a group stands around the spot. Small groups of up to three stand on whole tiles side by side:
+## the spot itself, then the tile to its right, then the tile to its left. Bigger swarms stand in a ring around the spot,
+## where the first ring holds up to eight and the rest go in a wider ring.
+const SMALL_GROUP := [Vector2(0, 0), Vector2(1, 0), Vector2(-1, 0)]
+
+
 func _swarm_offset(i: int, count: int) -> Vector2:
-	if count <= 1:
-		return Vector2.ZERO
+	if count < 4:
+		return SMALL_GROUP[i] if i < SMALL_GROUP.size() else Vector2.ZERO
 	var spread := float(_battle.swarm_spread_tiles)
 	var inner := mini(count, 8)
 	if i < inner:

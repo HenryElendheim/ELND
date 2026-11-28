@@ -416,6 +416,14 @@ func _check_new_cards() -> int:
 	var described := Rule.describe(Rule.STARTER)
 	broken += _expect(poisoned.hp < poisoned.max_hp and described.begins_with("Every 3 s"), "a custom power did nothing or described itself wrong: %s" % described)
 
+	# A small group of three lands on whole tiles, side by side.
+	Data.set_override("cards", ["cards", "hobb", "count"], 3)
+	sim = _quiet_sim()
+	var trio := sim.spawn("hobb", player, Vector2(9.5, 22.5))
+	Data.reset_override("cards", ["cards", "hobb", "count"])
+	var on_tiles := trio.size() == 3 and trio.all(func(u: Unit) -> bool: return u.pos == BattleSim.snap(u.pos))
+	broken += _expect(on_tiles, "a small group did not land on whole tiles")
+
 	# A troop placed right behind its own side tower walks around it instead of getting stuck.
 	sim = _quiet_sim()
 	var walker: Unit = sim.spawn("hobb", player, Vector2(3.5, 28.5))[0]
