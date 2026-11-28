@@ -561,6 +561,17 @@ func _check_card_search() -> int:
 		[CardSearch.find("air", ""), ["spacefarer", "pardoned", "give_and_take", "moth_choir", "gazers"]],
 		[CardSearch.find("legendary", "spell"), ["spiker"]],
 	]
+	# Foundation Items have their own numbers, and anomaly numbers have no gaps.
+	var cards_table: Dictionary = Data.table("cards").cards
+	var numbers := []
+	for id in cards_table:
+		if BattleSim.is_collectable(cards_table[id]) and not cards_table[id].get("item", false):
+			numbers.append(int(cards_table[id].number))
+	numbers.sort()
+	var gapless := numbers == range(1, numbers.size() + 1)
+	if CardSearch.code(cards_table.weight) != "FI-001" or CardSearch.code(cards_table.zap) != "FI-002" or not gapless:
+		print("Broken file: Foundation Item or ELND numbers are wrong")
+		return 1
 	# Collection filters: any of the picks in one group, all of the groups at once.
 	var fits_ok := CardSearch.fits("creeler", ["troop", "spell"]) and CardSearch.fits("creeler", ["flying", "legendary"]) and not CardSearch.fits("hobb", ["flying"]) and not CardSearch.fits("creeler", ["flying", "common"])
 	if not fits_ok:

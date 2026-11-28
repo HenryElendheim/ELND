@@ -657,7 +657,7 @@
 			"how_it_works": "{count} short humanoids with sharp swords, {damage|lvl} damage each. No special ability, just numbers: they shred tanks and anything that can only handle one troop at a time."
 		},
 		"weight": {
-			"number": 21,
+			"number": 1,
 			"name": "The Weight",
 			"class": "CLAM",
 			"threat": 3,
@@ -674,10 +674,11 @@
 				}
 			],
 			"short_name": "Weight",
-			"how_it_works": "Gravity: every enemy flyer within {radius} tiles, hovering buildings included, slams to the ground for {gravity.grounded_time} seconds and takes {gravity.impact_damage|lvl} damage. While grounded, melee ground troops can hit it, and The Pardoned One killed while grounded is gone for good. Ground troops are not affected."
+			"how_it_works": "Gravity: every enemy flyer within {radius} tiles, hovering buildings included, slams to the ground for {gravity.grounded_time} seconds and takes {gravity.impact_damage|lvl} damage. While grounded, melee ground troops can hit it, and The Pardoned One killed while grounded is gone for good. Ground troops are not affected.",
+			"item": true
 		},
 		"moth_choir": {
-			"number": 22,
+			"number": 21,
 			"name": "The Moth Choir",
 			"class": "CLAM",
 			"threat": 1,
@@ -705,7 +706,7 @@
 			"how_it_works": "{count} humming moths that fly and bite anything, in the air or on the ground, for {damage|lvl} damage each. Cheap air cover that can chase down other flyers."
 		},
 		"toll": {
-			"number": 23,
+			"number": 22,
 			"name": "The Toll",
 			"class": "REKNA",
 			"threat": 3,
@@ -734,7 +735,7 @@
 			"how_it_works": "Toll: every {toll.interval} seconds the bell rings. Every enemy troop within {toll.radius} tiles, flying or not, is stunned for {toll.stun} seconds and takes {toll.damage|lvl} damage. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
 		},
 		"brood": {
-			"number": 24,
+			"number": 23,
 			"name": "The Brood",
 			"class": "RINNER",
 			"threat": 4,
@@ -781,7 +782,7 @@
 			"short_name": "Broodling"
 		},
 		"splitter": {
-			"number": 25,
+			"number": 24,
 			"name": "The Splitter",
 			"class": "HEIMER",
 			"threat": 4,
@@ -856,7 +857,7 @@
 			"short_name": "Quarter"
 		},
 		"zap": {
-			"number": 26,
+			"number": 2,
 			"name": "The Zap",
 			"class": "CLAM",
 			"threat": 1,
@@ -873,10 +874,11 @@
 				}
 			],
 			"short_name": "Zap",
-			"how_it_works": "Zap: everything within {radius} tiles takes {damage|lvl} damage and is stunned for {zap.stun} second, towers included, which resets what they were doing. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest."
+			"how_it_works": "Zap: everything within {radius} tiles takes {damage|lvl} damage and is stunned for {zap.stun} second, towers included, which resets what they were doing. The stun sets off Kardemosh's Halt and closes eyes against The Devil In The Forest.",
+			"item": true
 		},
 		"gazers": {
-			"number": 27,
+			"number": 25,
 			"name": "The Gazers",
 			"class": "CLAM",
 			"threat": 1,

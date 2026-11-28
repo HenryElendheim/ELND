@@ -62,7 +62,7 @@ static func _cards_by_place() -> Dictionary:
 		if BattleSim.is_collectable(card) and not card.get("neutralized", false):
 			groups.get_or_add(int(card.get("unlock_arena", 1)), []).append(id)
 	for place in groups:
-		groups[place].sort_custom(func(a: String, b: String) -> bool: return int(cards[a].number) < int(cards[b].number))
+		groups[place].sort_custom(func(a: String, b: String) -> bool: return CardSearch.order(cards[a]) < CardSearch.order(cards[b]))
 	return groups
 
 

@@ -78,6 +78,13 @@ Every anomaly has a class (from the Elendheim Codex), shown as a coloured tag on
 
 ---
 
+### Foundation Items
+- Not every card is an anomaly. Tools and objects the Foundation uses are **Foundation Items**, numbered on their own: **FI-001**, **FI-002** and so on, shown as "Foundation Item FI-001" in the Codex
+- ELND numbers are for anomalies only and have no gaps
+- So far: FI-001 The Weight, FI-002 The Zap
+
+---
+
 ## 2b. Art Style
 
 - **Pixel art**
@@ -767,7 +774,7 @@ No special ability: pure numbers. Fifteen sharp swords shred tanks and single-ta
 
 ---
 
-### ELND-021 — The Weight *(draft by Claude, rename or rewrite freely)*
+### FI-001 — The Weight (Foundation Item) *(draft by Claude, rename or rewrite freely)*
 **Codex (draft):** Class CLAM · Threat 3/5. A smooth grey stone the size of a fist, impossibly heavy for its size. Anything airborne near it feels its own weight multiply: birds drop, drones fall, and a thrown ball comes straight down. No effect on anything already on the ground.
 
 | Stat | Draft |
@@ -787,7 +794,7 @@ No special ability: pure numbers. Fifteen sharp swords shred tanks and single-ta
 
 ---
 
-### ELND-022 — The Moth Choir *(draft by Claude)*
+### ELND-021 — The Moth Choir *(draft by Claude)*
 **Codex (draft):** Class CLAM · Threat 1/5. A cloud of pale moths that hum in perfect harmony. They gather around any light and slowly eat through fabric, then skin. Turn the lights off and they go silent and settle.
 
 | Stat | Draft |
@@ -805,7 +812,7 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 
 ---
 
-### ELND-023 — The Toll *(draft by Claude)*
+### ELND-022 — The Toll *(draft by Claude)*
 **Codex (draft):** Class REKNA · Threat 3/5. A cracked bronze bell that rings by itself. Everyone who hears it freezes for a moment, as if remembering something. It rings more often when people are near.
 
 | Stat | Draft |
@@ -820,7 +827,7 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 
 ---
 
-### ELND-024 — The Brood *(draft by Claude)*
+### ELND-023 — The Brood *(draft by Claude)*
 **Codex (draft):** Class RINNER · Threat 4/5. A warm, fleshy mass grown into a wall. Every few minutes something small and hungry crawls out of it and goes looking for food. Removing the mass only makes it grow back larger.
 
 | Stat | Draft |
@@ -835,7 +842,7 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 
 ---
 
-### ELND-025 — The Splitter *(draft by Claude)*
+### ELND-024 — The Splitter *(draft by Claude)*
 **Codex (draft):** Class HEIMER · Threat 4/5. A grey, rubbery humanoid that does not die so much as divide. Each wound that would kill it splits it into two smaller copies, and those split once more. The pieces always try to find each other again.
 
 | Stat | Draft |
@@ -855,7 +862,7 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 
 ---
 
-### ELND-026 — The Zap
+### FI-002 — The Zap (Foundation Item)
 **Codex (draft):** Class CLAM · Threat 1/5. A jar of what looks like captured static, crackling against the glass. Opened, it leaps to the nearest metal or flesh and freezes everything it touches for a heartbeat.
 
 | Stat | Draft |
@@ -873,7 +880,7 @@ Cheap air cover that can chase down other flyers. **Evolution idea: Lights Out:*
 
 ---
 
-### ELND-027 — The Gazers
+### ELND-025 — The Gazers
 **Codex (draft):** Class CLAM · Threat 1/5. A floating subspecies of ELND-010, The Individuals. Gazers drift at head height in pairs, staring without blinking and spitting tiny bolts at whatever they look at. Fragile: a single jolt of static scatters them. Always two pairs.
 
 | Stat | Draft |
@@ -1125,7 +1132,7 @@ Saved locally. Ideas:
 - [x] Cards for Arena 3 and 4 (ELND-012 to 020)
 - [ ] Cards for Arena 5+
 - [x] An answer to all flyers: The Weight (replaces the Birdfeed idea)
-- [ ] Rewrite the draft codex entries for ELND-021 to 025, or swap in your own anomalies
+- [ ] Rewrite the draft codex entries for ELND-021 to 025 and FI-001 to 002, or swap in your own
 - [ ] Full codex entries (abilities and containment) for The Hanged One and The Swarm
 - [ ] Which cards can evolve, and each one's cycle requirement
 - [ ] Pixel art colour palette

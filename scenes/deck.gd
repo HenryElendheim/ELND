@@ -155,11 +155,11 @@ func _ahead(a: String, b: String) -> bool:
 			if first.name != second.name:
 				return String(first.name).naturalnocasecmp_to(String(second.name)) < 0
 		"number":
-			x = float(first.number)
-			y = float(second.number)
+			x = float(CardSearch.order(first))
+			y = float(CardSearch.order(second))
 	if x != y:
 		return x < y
-	return int(first.number) < int(second.number)
+	return CardSearch.order(first) < CardSearch.order(second)
 
 
 ## Picking a new sort starts with the highest first, apart from names, which start at A.

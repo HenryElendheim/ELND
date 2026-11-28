@@ -171,7 +171,7 @@ func _level() -> int:
 ## The Codex page: the ELND number, the Codex name when it differs from the card's, class, threat and tags,
 ## and the Foundation entry once the card is acquired.
 func _codex_lines(card: Dictionary) -> Array:
-	var facts := [["Number", "ELND-%03d" % int(card.number)]]
+	var facts := [["Foundation Item" if card.get("item", false) else "Number", CardSearch.code(card)]]
 	if card.has("codex_name"):
 		facts.append(["Codex name", String(card.codex_name)])
 	facts.append_array([["Class", String(card["class"])], ["Threat", "%d of 5" % int(card.threat)], ["Rarity", Progress.card_rarity(card_id).capitalize()]])

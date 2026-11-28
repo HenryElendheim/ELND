@@ -277,7 +277,8 @@ func _make_copy() -> void:
 	var id := "custom_%d" % count
 	var top := 0
 	for other in cards:
-		top = maxi(top, int(cards[other].get("number", 0)))
+		if cards[other].get("item", false) == card.get("item", false) and not cards[other].get("token", false):
+			top = maxi(top, int(cards[other].get("number", 0)))
 	card.number = top + 1
 	card.name = "%s Copy" % card.get("name", "Card")
 	card.short_name = "%s Copy" % card.get("short_name", "Card")

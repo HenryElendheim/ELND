@@ -8,7 +8,7 @@ const CATEGORIES := [
 	["ground", "Ground"], ["flying", "Flying"], ["melee", "Melee"], ["ranged", "Ranged"],
 	["hits air", "Hits air"], ["swarm", "Swarm"], ["no attack", "No attack"],
 	["common", "Common"], ["rare", "Rare"], ["epic", "Epic"], ["legendary", "Legendary"],
-	["clam", "CLAM"], ["rekna", "REKNA"], ["rinner", "RINNER"], ["heimer", "HEIMER"],
+	["clam", "CLAM"], ["rekna", "REKNA"], ["rinner", "RINNER"], ["heimer", "HEIMER"], ["item", "Foundation Item"],
 	["neutralized", "Neutralized"],
 ]
 
@@ -23,6 +23,7 @@ const GROUPS := [
 	["Group", ["swarm"]],
 	["Rarity", ["common", "rare", "epic", "legendary"]],
 	["Class", ["clam", "rekna", "rinner", "heimer"]],
+	["Origin", ["item"]],
 ]
 
 
@@ -60,6 +61,8 @@ static func tags(id: String) -> Array:
 			result.append("swarm")
 	result.append(Progress.card_rarity(id))
 	result.append(String(card["class"]).to_lower())
+	if card.get("item", false):
+		result.append("item")
 	if card.get("neutralized", false):
 		result.append("neutralized")
 	return result
@@ -108,4 +111,14 @@ static func find(query: String, category: String) -> Array:
 
 static func _by_number(a: String, b: String) -> bool:
 	var cards: Dictionary = Data.table("cards").cards
-	return int(cards[a].number) < int(cards[b].number)
+	return order(cards[a]) < order(cards[b])
+
+
+## A card's place in number order: anomalies by their ELND number first, then Foundation Items by their own.
+static func order(card: Dictionary) -> int:
+	return int(card.get("number", 0)) + (1000 if card.get("item", false) else 0)
+
+
+## The number shown on a card's Codex page, such as ELND-012 for an anomaly or FI-001 for a Foundation Item.
+static func code(card: Dictionary) -> String:
+	return ("FI-%03d" if card.get("item", false) else "ELND-%03d") % int(card.get("number", 0))
