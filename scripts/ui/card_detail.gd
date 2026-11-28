@@ -155,9 +155,15 @@ func _info_lines(card: Dictionary) -> Array:
 	if card.has("how_it_works"):
 		lines.append(["How it works", "HeadingLabel"])
 		lines.append([CardText.fill(card_id, card.how_it_works, _level()), ""])
+	# Powers built in the Admin editor describe themselves in plain words.
+	for ability in card.get("abilities", []):
+		if ability.get("id") == "rule":
+			lines.append([Rule.describe(ability), ""])
 	if card.has("evolution"):
 		lines.append(["Evolution: %s" % card.evolution.name, "HeadingLabel"])
 		lines.append([CardText.fill(card_id, card.evolution.get("how_it_works", ""), _level()), ""])
+		if card.evolution.get("ability") == "rule":
+			lines.append([Rule.describe(card.evolution), ""])
 		var status := "Unlocked" if Progress.has_evolution(card_id) else "Locked"
 		lines.append(["%s. Needs %d cycle%s before it comes out evolved." % [status, Hand.cycles_needed(card_id), "" if Hand.cycles_needed(card_id) == 1 else "s"], "MutedLabel"])
 	return lines

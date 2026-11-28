@@ -405,6 +405,17 @@ func _check_new_cards() -> int:
 	var heads_left := heads.filter(func(u: Unit) -> bool: return u.alive()).size()
 	broken += _expect(zapped.hp < zapped.max_hp and zapped.stun_left > 0.0 and heads.size() == 4 and heads_left == 0, "The Zap missed its stun or left %d Gazers" % heads_left)
 
+	# A custom power built in the editor works: every second, poison enemies nearby, which hurts them over time.
+	Data.set_override("cards", ["cards", "editor", "abilities"], [{"id": "rule", "when": "every", "do": "poison", "to": "enemies_near", "amount": 30.0, "radius": 3.0, "seconds": 2.0, "every": 1.0, "chance": 1.0}])
+	sim = _quiet_sim()
+	sim.spawn("editor", player, Vector2(9, 21))
+	var poisoned: Unit = sim.spawn("hobb", enemy, Vector2(9, 19.5))[0]
+	poisoned.speed = 0.0
+	_run(sim, 2.5)
+	Data.reset_override("cards", ["cards", "editor", "abilities"])
+	var described := Rule.describe(Rule.STARTER)
+	broken += _expect(poisoned.hp < poisoned.max_hp and described.begins_with("Every 3 s"), "a custom power did nothing or described itself wrong: %s" % described)
+
 	# A troop placed right behind its own side tower walks around it instead of getting stuck.
 	sim = _quiet_sim()
 	var walker: Unit = sim.spawn("hobb", player, Vector2(3.5, 28.5))[0]

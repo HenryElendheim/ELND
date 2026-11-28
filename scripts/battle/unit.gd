@@ -28,6 +28,9 @@ var flying := false
 var base_flying := false
 ## Seconds left of being pulled out of the air, as The Weight does.
 var grounded_left := 0.0
+## Effects that last a while, from custom powers: slow, haste or poison. Each has a key for the power that gave it,
+## so the same power renews its effect instead of stacking it.
+var timed := []
 var targets := "ground"
 
 var area := false
@@ -124,6 +127,15 @@ func is_spell() -> bool:
 
 
 ## The enemy core in Defense mode counts as a tower too.
+func add_timed(key: String, kind: String, amount: float, until: float) -> void:
+	for effect in timed:
+		if effect.key == key and effect.kind == kind:
+			effect.amount = amount
+			effect.until = until
+			return
+	timed.append({"key": key, "kind": kind, "amount": amount, "until": until})
+
+
 func is_tower() -> bool:
 	return kind == "side" or kind == "main" or kind == "core"
 

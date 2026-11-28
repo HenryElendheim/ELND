@@ -447,6 +447,7 @@ func step() -> void:
 		# A flyer pulled down by The Weight walks on the ground until it wears off, but never over the river.
 		unit.grounded_left = maxf(unit.grounded_left - tick, 0.0)
 		unit.flying = unit.base_flying and not (unit.grounded_left > 0.0 and not in_river(unit.pos))
+		_apply_timed(unit)
 		unit.calm_left = maxf(unit.calm_left - tick, 0.0)
 		unit.hidden_left = maxf(unit.hidden_left - tick, 0.0)
 		if unit.calm_left > 0.0:
@@ -473,6 +474,29 @@ func step() -> void:
 	_check_result()
 
 
+## Lasting effects from custom powers: a slow or haste changes speed for this tick, and poison deals its damage.
+## Effects that have run out are dropped.
+func _apply_timed(unit: Unit) -> void:
+	if unit.timed.is_empty():
+		return
+	var still := []
+	for effect in unit.timed:
+		if time >= float(effect.until):
+			continue
+		still.append(effect)
+		match String(effect.kind):
+			"slow":
+				unit.move_speed *= 1.0 - float(effect.amount)
+				unit.attack_speed *= 1.0 - float(effect.amount)
+				unit.slowed = true
+			"haste":
+				unit.move_speed *= 1.0 + float(effect.amount)
+				unit.attack_speed *= 1.0 + float(effect.amount)
+			"poison":
+				deal_damage(null, unit, float(effect.amount) * tick, false)
+	unit.timed = still
+
+
 ## Runs something once the current tick is over.
 func later(action: Callable) -> void:
 	_after_tick.append(action)
@@ -495,6 +519,7 @@ func clear() -> void:
 		unit.carrier = null
 		unit.charmed_by = null
 		unit.approach_goal = null
+		unit.timed.clear()
 		unit.abilities.clear()
 		unit.evolution = null
 	units.clear()

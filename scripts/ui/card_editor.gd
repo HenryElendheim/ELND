@@ -193,6 +193,8 @@ func _show_fields() -> void:
 		remove.size_flags_horizontal = SIZE_FILL
 		row.add_child(remove)
 		_fields.add_child(row)
+		if abilities[i].id == "rule":
+			_rule_fields(abilities[i], func(key: String, value: Variant) -> void: _set_ability(abilities, i, key, value), false)
 		for key in abilities[i]:
 			if abilities[i][key] is float or abilities[i][key] is int:
 				_fields.add_child(Ui.number(String(key).capitalize(), abilities[i][key], func(v: float) -> void: _set_ability(abilities, i, key, v)))
@@ -208,6 +210,8 @@ func _show_fields() -> void:
 			_fields.add_child(Ui.label("%s: %s" % [evolution.get("name", ""), _power_name(String(evolution.get("ability", "")))], "HeadingLabel"))
 			_fields.add_child(Ui.text("Evolution name", String(evolution.get("name", "")), func(value: String) -> void: _set_path(["evolution", "name"], value)))
 			_fields.add_child(Ui.text("Evolution how it works", String(evolution.get("how_it_works", "")), func(value: String) -> void: _set_path(["evolution", "how_it_works"], value)))
+			if evolution.get("ability") == "rule":
+				_rule_fields(evolution, func(key: String, value: Variant) -> void: _set_path(["evolution", key], value), true)
 			for key in evolution:
 				if evolution[key] is float or evolution[key] is int:
 					_fields.add_child(Ui.number(String(key).capitalize(), evolution[key], func(v: float) -> void: _set_path(["evolution", key], v)))
@@ -291,22 +295,46 @@ static func _catalog(evolutions: bool) -> Array:
 		var card: Dictionary = cards[id]
 		if evolutions:
 			var evolution: Variant = card.get("evolution")
-			if evolution is Dictionary and evolution.has("ability") and not found.has(evolution.ability):
+			if evolution is Dictionary and evolution.has("ability") and evolution.ability != "rule" and not found.has(evolution.ability):
 				var settings: Dictionary = evolution.duplicate(true)
 				for key in ["name", "how_it_works", "ability"]:
 					settings.erase(key)
 				found[evolution.ability] = [evolution.ability, "%s (from %s)" % [_power_name(evolution.ability), card.name], settings]
 		else:
 			for ability in card.get("abilities", []):
-				if not found.has(ability.id):
+				if ability.id != "rule" and not found.has(ability.id):
 					found[ability.id] = [ability.id, "%s (from %s)" % [_power_name(ability.id), card.name], ability.duplicate(true)]
 	var list := found.values()
 	list.sort_custom(func(a: Array, b: Array) -> bool: return String(a[1]) < String(b[1]))
+	# The custom power, built from when, what and who, always comes first.
+	var custom: Dictionary = Rule.STARTER.duplicate(true)
+	if evolutions:
+		custom.erase("id")
+		custom["when"] = "button"
+	list.push_front(["rule", "Custom power (build your own)", custom])
 	return list
 
 
 static func _power_name(id: String) -> String:
-	return id.capitalize()
+	return "Custom power" if id == "rule" else id.capitalize()
+
+
+## The parts of a custom power that are picked rather than typed: when, what, who, and which card it spawns.
+## An evolution button's custom power always happens when the button is pressed, so it has no when.
+func _rule_fields(values: Dictionary, on_change: Callable, button: bool) -> void:
+	_fields.add_child(Ui.label(Rule.describe(values), "MutedLabel"))
+	if not button:
+		_fields.add_child(Ui.choice("When", Rule.WHEN, String(values.get("when", "every")), func(value: String) -> void: on_change.call("when", value), 2))
+	_fields.add_child(Ui.choice("Do", Rule.DO, String(values.get("do", "damage")), func(value: String) -> void: on_change.call("do", value), 3))
+	_fields.add_child(Ui.choice("To", Rule.TO, String(values.get("to", "enemies_near")), func(value: String) -> void: on_change.call("to", value), 2))
+	if values.get("do") == "spawn":
+		var cards: Dictionary = Data.table("cards").cards
+		var options := []
+		for id in cards:
+			if cards[id].get("type") == "troop":
+				options.append([id, CardTile.short_name(id)])
+		_fields.add_child(Ui.label("Spawns", "MutedLabel"))
+		_fields.add_child(Ui.strip(options, String(values.get("spawns", "")), func(value: String) -> void: on_change.call("spawns", value)))
 
 
 func _open_list(which: String) -> void:
@@ -435,8 +463,8 @@ func _set_path(keys: Array, value: Variant) -> void:
 	_show_picker.call_deferred()
 
 
-## Abilities are a list in cards.json, so a change stores the card's whole ability list with that one number changed.
-func _set_ability(abilities: Array, index: int, key: String, value: float) -> void:
+## Abilities are a list in cards.json, so a change stores the card's whole ability list with that one value changed.
+func _set_ability(abilities: Array, index: int, key: String, value: Variant) -> void:
 	var changed := abilities.duplicate(true)
 	changed[index][key] = value
 	Data.set_override(_file(), _path() + ["abilities"], changed)
