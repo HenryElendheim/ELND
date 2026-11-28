@@ -79,11 +79,14 @@ func _rebuild() -> void:
 
 
 ## Copies the base and then lays the changes over it, going into nested dictionaries
-## so that changing one stat of one card keeps all its other stats.
+## so that changing one stat of one card keeps all its other stats. A change of null takes the key away,
+## which is how an edit removes something, such as a card's evolution.
 static func _deep_merge(base: Dictionary, changes: Dictionary) -> Dictionary:
 	var result := base.duplicate(true)
 	for key in changes:
-		if result.get(key) is Dictionary and changes[key] is Dictionary:
+		if changes[key] == null:
+			result.erase(key)
+		elif result.get(key) is Dictionary and changes[key] is Dictionary:
 			result[key] = _deep_merge(result[key], changes[key])
 		else:
 			result[key] = changes[key]

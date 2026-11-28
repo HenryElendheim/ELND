@@ -1,6 +1,8 @@
 class_name CardEditor
 extends VBoxContainer
 ## Admin Mode's editor for any card or tower. Search for one by name or kind, or show them all, and tap it to edit.
+## Powers can be added from every power in the game, or removed, and the evolution's button power can be swapped,
+## added or taken away.
 ## Edited ones carry a star after their name. Tokens, such as Broodlings, can be edited too.
 ## Any card can also be the starting point for a brand new card, which then works like every other card
 ## and can be renamed, described, given a Codex entry, tuned and deleted again.
@@ -31,6 +33,12 @@ const NAMES := {"hit_speed": "Seconds per hit", "count": "Group size", "size": "
 ## The text a card has that can be rewritten, with the name shown for each.
 const TEXTS := [["name", "Name"], ["short_name", "Short name on the card"], ["how_it_works", "How it works"]]
 const TOWERS := [["side", "Side tower"], ["main", "Main tower"], ["core", "Defense core"]]
+## Evolution buttons that work by driving another power on the same card. Picking one adds that power too if it is missing.
+const EVOLUTION_NEEDS := {
+	"close_the_lid": "comfortable_end", "drop": "snatch", "flurry_on_demand": "flurry",
+	"deeper_into_the_woods": "happy_face", "feather_storm": "sharp_wings", "storm": "lightning_strike",
+	"last_toll": "toll", "swarming_season": "spawner", "return_pool": "take_and_give", "flay": "skin_stealer",
+}
 
 var _query := ""
 var _show_all := false
@@ -42,6 +50,8 @@ var _subject := ""
 ## A new type waiting for its second tap, and when the first tap was. Changing the type can break a card,
 ## such as a troop turned into a spell, so it never happens from one stray tap.
 var _pending_type := ""
+## Which list of powers to pick from is open under the card: "power", "evolution", or nothing.
+var _adding := ""
 var _pending_at := -10000
 
 const CONFIRM_MS := 3000
@@ -174,18 +184,39 @@ func _show_fields() -> void:
 		if not key in shown and (values[key] is float or values[key] is int) and key != "number":
 			_number(key, values[key])
 	var abilities: Array = values.get("abilities", [])
+	if kind != "tower":
+		_fields.add_child(Ui.label("Powers", "TitleLabel"))
 	for i in abilities.size():
-		_fields.add_child(Ui.label(String(abilities[i].id).capitalize(), "HeadingLabel"))
+		var row := HBoxContainer.new()
+		row.add_child(Ui.label(_power_name(String(abilities[i].id)), "HeadingLabel"))
+		var remove := Ui.button("Remove", func() -> void: _remove_power(i))
+		remove.size_flags_horizontal = SIZE_FILL
+		row.add_child(remove)
+		_fields.add_child(row)
 		for key in abilities[i]:
 			if abilities[i][key] is float or abilities[i][key] is int:
 				_fields.add_child(Ui.number(String(key).capitalize(), abilities[i][key], func(v: float) -> void: _set_ability(abilities, i, key, v)))
-	if not abilities.is_empty():
-		_fields.add_child(Ui.button("Reset abilities", func() -> void: _reset("abilities")))
-	if values.has("evolution"):
-		_fields.add_child(Ui.label("Evolution: %s" % values.evolution.get("name", ""), "HeadingLabel"))
-		for key in values.evolution:
-			if values.evolution[key] is float or values.evolution[key] is int:
-				_fields.add_child(Ui.number(String(key).capitalize(), values.evolution[key], func(v: float) -> void: _set_path(["evolution", key], v)))
+	if kind != "tower":
+		_fields.add_child(Ui.button("Add a power", func() -> void: _open_list("power")))
+		if _adding == "power":
+			_add_choices(_catalog(false), func(id: String) -> void: _add_power(id))
+		_fields.add_child(Ui.button("Reset powers", func() -> void: _reset("abilities")))
+	if kind in ["troop", "building"]:
+		_fields.add_child(Ui.label("Evolution", "TitleLabel"))
+		if values.has("evolution") and values.evolution is Dictionary:
+			var evolution: Dictionary = values.evolution
+			_fields.add_child(Ui.label("%s: %s" % [evolution.get("name", ""), _power_name(String(evolution.get("ability", "")))], "HeadingLabel"))
+			_fields.add_child(Ui.text("Evolution name", String(evolution.get("name", "")), func(value: String) -> void: _set_path(["evolution", "name"], value)))
+			_fields.add_child(Ui.text("Evolution how it works", String(evolution.get("how_it_works", "")), func(value: String) -> void: _set_path(["evolution", "how_it_works"], value)))
+			for key in evolution:
+				if evolution[key] is float or evolution[key] is int:
+					_fields.add_child(Ui.number(String(key).capitalize(), evolution[key], func(v: float) -> void: _set_path(["evolution", key], v)))
+			_fields.add_child(Ui.button("Change the evolution's button power", func() -> void: _open_list("evolution")))
+			_fields.add_child(Ui.button("Remove the evolution", func() -> void: _set_path(["evolution"], null)))
+		else:
+			_fields.add_child(Ui.button("Add an evolution", func() -> void: _open_list("evolution")))
+		if _adding == "evolution":
+			_add_choices(_catalog(true), func(id: String) -> void: _set_evolution(id))
 		_fields.add_child(Ui.button("Reset evolution", func() -> void: _reset("evolution")))
 	_fields.add_child(Ui.spacer(12))
 	if kind != "tower":
@@ -249,6 +280,99 @@ func _choose(key: String, value: String) -> void:
 			return
 		_pending_type = ""
 	_change(key, value)
+
+
+## Every power in the game, found on the cards that use it, with the numbers that card starts it with.
+## Evolution powers are the ones evolution buttons use. Each entry is an id, a name to show, and its starting numbers.
+static func _catalog(evolutions: bool) -> Array:
+	var found := {}
+	var cards: Dictionary = Data.table("cards").cards
+	for id in cards:
+		var card: Dictionary = cards[id]
+		if evolutions:
+			var evolution: Variant = card.get("evolution")
+			if evolution is Dictionary and evolution.has("ability") and not found.has(evolution.ability):
+				var settings: Dictionary = evolution.duplicate(true)
+				for key in ["name", "how_it_works", "ability"]:
+					settings.erase(key)
+				found[evolution.ability] = [evolution.ability, "%s (from %s)" % [_power_name(evolution.ability), card.name], settings]
+		else:
+			for ability in card.get("abilities", []):
+				if not found.has(ability.id):
+					found[ability.id] = [ability.id, "%s (from %s)" % [_power_name(ability.id), card.name], ability.duplicate(true)]
+	var list := found.values()
+	list.sort_custom(func(a: Array, b: Array) -> bool: return String(a[1]) < String(b[1]))
+	return list
+
+
+static func _power_name(id: String) -> String:
+	return id.capitalize()
+
+
+func _open_list(which: String) -> void:
+	_adding = "" if _adding == which else which
+	_show_fields.call_deferred()
+
+
+## The list of powers to pick from, two to a row.
+func _add_choices(options: Array, on_pick: Callable) -> void:
+	var grid := GridContainer.new()
+	grid.columns = 2
+	for option in options:
+		var button := Ui.button(option[1], func() -> void: on_pick.call(option[0]))
+		button.clip_text = true
+		grid.add_child(button)
+	_fields.add_child(grid)
+
+
+## Adds a power to the card with the numbers its own card starts it with.
+func _add_power(id: String) -> void:
+	for option in _catalog(false):
+		if option[0] == id:
+			var abilities: Array = (_values().get("abilities", []) as Array).duplicate(true)
+			abilities.append(option[2].duplicate(true))
+			_adding = ""
+			Data.set_override(_file(), _path() + ["abilities"], abilities)
+			Nav.toast("Added %s" % _power_name(id))
+			_refresh()
+			return
+
+
+func _remove_power(index: int) -> void:
+	var abilities: Array = (_values().get("abilities", []) as Array).duplicate(true)
+	if index < abilities.size():
+		var gone: String = abilities[index].id
+		abilities.remove_at(index)
+		Data.set_override(_file(), _path() + ["abilities"], abilities)
+		Nav.toast("Removed %s" % _power_name(gone))
+		_refresh()
+
+
+## Gives the card an evolution whose button fires the picked power, or changes the power of the one it has.
+## A button power that drives another power brings that power along if the card does not have it yet.
+func _set_evolution(id: String) -> void:
+	for option in _catalog(true):
+		if option[0] != id:
+			continue
+		var current: Variant = _values().get("evolution")
+		var evolution: Dictionary = option[2].duplicate(true)
+		evolution["ability"] = id
+		evolution["name"] = current.get("name", "Evolved") if current is Dictionary else "Evolved"
+		evolution["how_it_works"] = current.get("how_it_works", "") if current is Dictionary else "Its button uses %s." % _power_name(id)
+		_adding = ""
+		Data.set_override(_file(), _path() + ["evolution"], evolution)
+		var needs: String = EVOLUTION_NEEDS.get(id, "")
+		var has_it := (_values().get("abilities", []) as Array).any(func(a: Dictionary) -> bool: return a.get("id") == needs)
+		if needs != "" and not has_it:
+			_add_power(needs)
+			Nav.toast("This button needs %s, so that was added too" % _power_name(needs))
+		_refresh()
+		return
+
+
+func _refresh() -> void:
+	_show_fields.call_deferred()
+	_show_picker.call_deferred()
 
 
 func _id() -> String:

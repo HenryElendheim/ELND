@@ -483,6 +483,19 @@ func _check_editor() -> int:
 	editor.call("_change", "damage", 99.0)
 	changed = changed and int(Data.table("towers").side.damage) == 99
 	editor.call("_reset", "")
+	# Powers can be added and removed, and an evolution swapped and taken away, and a reset puts it all back.
+	editor.call("_pick", "cards/hobb")
+	editor.call("_add_power", "gaze")
+	var hobb_powers: Array = Data.table("cards").cards.hobb.abilities
+	var power_added := hobb_powers.any(func(a: Dictionary) -> bool: return a.id == "gaze")
+	editor.call("_remove_power", hobb_powers.size() - 1)
+	var power_removed: bool = not (Data.table("cards").cards.hobb.abilities as Array).any(func(a: Dictionary) -> bool: return a.id == "gaze")
+	editor.call("_set_evolution", "close_the_lid")
+	var swapped: bool = Data.table("cards").cards.hobb.evolution.ability == "close_the_lid" and (Data.table("cards").cards.hobb.abilities as Array).any(func(a: Dictionary) -> bool: return a.id == "comfortable_end")
+	editor.call("_set_path", ["evolution"], null)
+	var taken: bool = not Data.table("cards").cards.hobb.has("evolution")
+	editor.call("_reset", "")
+	changed = changed and power_added and power_removed and swapped and taken and Data.table("cards").cards.hobb.evolution.ability == "gorge"
 	# A new card made from The Hobb exists, can be collected, and goes away again when deleted.
 	editor.call("_pick", "cards/hobb")
 	editor.call("_make_copy")
